@@ -1,0 +1,15 @@
+Fuji Cookbook
+Copyright 2026 Zachary Grimshaw
+
+This product includes software developed by Zachary Grimshaw as part of the
+Fuji Cookbook project (https://github.com/zgrimz/fuji-cookbook).
+
+Its camera protocol support and its reading of recipes from photos are based
+on the Fujifilm PTP reference by Zachary Grimshaw
+(https://github.com/zgrimz/fujifilm-ptp-reference), licensed under CC BY 4.0
+(https://creativecommons.org/licenses/by/4.0/).
+
+The Fuji Cookbook name, app icon and brand artwork, the sample photographs in
+FujiCookbook/Resources/Lua de Mel.fujirecipe, and the photographs shown in the
+screenshots in docs/images, are not licensed under the Apache License; see
+TRADEMARKS.md.

@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check for settings that must not be committed
+        run: |
+          status=0
+          if grep -n 'DEVELOPMENT_TEAM' FujiCookbook.xcodeproj/project.pbxproj; then
+            echo "::error::DEVELOPMENT_TEAM belongs in Config/Base.xcconfig or Config/Local.xcconfig, not the project file."
+            status=1
+          fi
+          if [ -e Config/Local.xcconfig ]; then
+            echo "::error::Config/Local.xcconfig is per-developer and must not be committed."
+            status=1
+          fi
+          exit $status
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.6.app
+
+      - name: Boot a simulator
+        id: simulator
+        run: |
+          udid=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          runtimes = json.load(sys.stdin)["devices"]
+          for runtime in sorted(runtimes, reverse=True):
+              if ".iOS-" not in runtime:
+                  continue
+              for device in runtimes[runtime]:
+                  if device["name"].startswith("iPhone"):
+                      print(device["udid"])
+                      sys.exit()
+          sys.exit("no iPhone simulator available")
+          ')
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+
+      - name: Build and test
+        run: |
+          # No Apple team on CI: sign for the Simulator only, under a placeholder identifier.
+          printf 'DEVELOPMENT_TEAM =\nAPP_IDENTIFIER_BASE = com.example.fujicookbook.ci\n' > Config/Local.xcconfig
+          xcodebuild test \
+            -scheme FujiCookbook \
+            -destination "id=${{ steps.simulator.outputs.udid }}" \
+            -resultBundlePath TestResults.xcresult \
+            -collect-test-diagnostics never \
+            CODE_SIGN_IDENTITY=-
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: TestResults
+          path: TestResults.xcresult

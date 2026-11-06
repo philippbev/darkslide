@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- The Share Extension is a separate bundle from the app, and the app's manifest lives in
+	     FujiCookbook/, a synchronized group this target does not include. The binary scan reads
+	     embedded executables, so this bundle carries its own manifest.
+
+	     This is deliberately NARROWER than FujiCookbook/PrivacyInfo.xcprivacy. Do not "fix" the two
+	     into being identical:
+	       · no collected-data-type rows — the one network call this bundle CAN make (the share-sheet
+	         AI scan) sends the image directly to the user's own configured provider under the user's
+	         own key; Grove House Studio never receives it. Both manifests declare no collection for
+	         that reason.
+	       · no system-boot-time row — that comes from
+	         FujiCookbook/Camera/ImageCaptureTransport.swift, which this target does not compile. -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<!-- Shared/Services/ScanConfiguration.swift compiles into this target: it reads the scan
+		     settings from the App Group suite (1C8F.1), and ShareScanModel sets `libraryChanged`
+		     there for the app to pick up. CA92.1 covers `UserDefaults.standard`, which Shared code
+		     compiled into this target uses (`AIModelCatalog`'s model-list cache). -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+				<string>1C8F.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<!-- These entries must stay in step with the App Store Connect App Privacy answers; Apple checks
+	     the two against each other. -->
+	<!-- Empty on purpose — the label is "Data Not Collected". The one thing that leaves the device
+	     to a third party (the screenshot the user scans with their own AI provider key) goes
+	     directly device → provider, is never received by us, and the provider is the user's own
+	     vendor, not our partner; an explicit in-app disclosure and consent alert gates the feature.
+	     Any row added here changes the App Store label, so App Store Connect has to change in the
+	     same release. -->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<!-- CA92.1 covers `UserDefaults.standard`, which only the app itself reads and writes. 1C8F.1
+		     covers the App Group suite (`SharedDefaults.suite`), which the app and the Share Extension
+		     share: the extension writes `libraryChangedKey` there and ShareExtensionSaves reads and
+		     clears it, the cross-process case CA92.1's own wording excludes. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+				<string>1C8F.1</string>
+			</array>
+		</dict>
+		<!-- `ImageCaptureTransport` times each PTP round trip with
+		     `DispatchTime.now().uptimeNanoseconds` for the trace's `durationMs`: 35F9.1, time elapsed
+		     between events within the app. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>35F9.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

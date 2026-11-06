@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.developer.icloud-container-identifiers</key>
+	<array>
+		<string>$(ICLOUD_CONTAINER_IDENTIFIER)</string>
+	</array>
+	<key>com.apple.developer.icloud-services</key>
+	<array>
+		<string>CloudKit</string>
+	</array>
+	<!-- APNs delivers CloudKit's silent change notifications only to an app with this entitlement
+	     (`UIBackgroundModes` in Info.plist is the other half). "development" here; Xcode's App Store
+	     export sets "production" from the distribution profile. No notification is ever shown and the
+	     app never asks for notification permission. The Share Extension receives no pushes. -->
+	<key>aps-environment</key>
+	<string>development</string>
+	<!-- Deliberately no ubiquity-kvstore-identifier. The AI settings hang off an API key that is
+	     device-local by design (see AISettings), so they are never mirrored through
+	     NSUbiquitousKeyValueStore, and nothing else in either target uses the key-value store.
+	     Leaving the entitlement out makes "AI settings never leave this device" a property of the
+	     sandbox rather than of the code. -->
+	<!-- Shared container for the Share Extension's screenshot inbox. The same build setting feeds
+	     ShareExtension.entitlements and AppIdentifiers.appGroup. This identifier also names
+	     where the SwiftData store, the on-disk AppLog, saved camera reports, the screenshot inbox
+	     and the settings suite live, so it is not a cosmetic string: changing it relocates all of them, and any install
+	     carrying the old one opens an empty library. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>$(APP_GROUP_IDENTIFIER)</string>
+	</array>
+	<!-- Shared Keychain so the Share Extension can read the AI provider key it scans with. The
+	     same build setting feeds ShareExtension.entitlements and KeychainStore.accessGroup. -->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)$(APP_IDENTIFIER_BASE)</string>
+	</array>
+</dict>
+</plist>

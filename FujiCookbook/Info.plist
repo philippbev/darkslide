@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<!-- Read back by AppIdentifiers; both come from Config/Base.xcconfig. -->
+	<key>FCAppGroupIdentifier</key>
+	<string>$(APP_GROUP_IDENTIFIER)</string>
+	<key>FCAppIdentifierBase</key>
+	<string>$(APP_IDENTIFIER_BASE)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Fuji Cookbook</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<!-- The only cryptography here is CryptoKit hashing of camera serials (SerialHash) and TLS
+	     supplied by URLSession — both exempt, so App Store Connect can stop asking the
+	     export-compliance question on every upload. Revisit if the app ever ships its own crypto. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<!-- Branded launch screen: the app icon's mark above the wordmark, on the icon's field colour, so
+	     the icon's zoom on launch lands on the same colour. A static UILaunchScreen only centres an
+	     image at its natural size, so LaunchMark is the whole group pre-rendered at each scale (the
+	     wordmark outlined, since the app bundles no Source Serif), with a transparent margin that
+	     sets the group 30 pt above the screen's centre. LaunchMark and LaunchBackground each carry a
+	     dark-appearance variant. -->
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIImageName</key>
+		<string>LaunchMark</string>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+	</dict>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+
+	<!-- Lets iOS deliver CloudKit's silent change notifications, so a library synced on another
+	     device reaches this one while the app is in the background, and lets such a notification
+	     launch the app with no scene for the same purpose. The app shows no notifications and never
+	     asks for notification permission: these pushes carry no content, only Apple's signal that the
+	     user's own iCloud database changed. `SessionTermination` is told which kind of launch it is. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+
+	<!-- Required so the app may issue PTP requests to a connected camera via ImageCaptureCore.
+	     Covers both recipe sync (custom slots) and Kitchen RAW conversion (developing RAF files on the camera). -->
+	<key>NSCameraUsageDescription</key>
+	<string>Fuji Cookbook connects to your Fujifilm camera over USB to read and write film simulation recipes in your camera's custom slots, and to develop your RAW (RAF) files using the camera's processor. It never modifies the photos on your camera's card.</string>
+
+	<!-- Lets the user save a Kitchen-converted JPEG, or a Frame & Fit export, into their photo library. -->
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Fuji Cookbook saves the JPEGs it develops from your RAW files, and the photos you frame with Frame &amp; Fit, into your photo library when you choose to save them.</string>
+
+	<!-- Open the user's original file rather than a copy. Without this key iOS copies every opened
+	     recipe into Documents/Inbox and expects the app to delete it afterwards; we never do, so the
+	     copies would pile up invisibly. Importing only reads the file (the recipes are copied into
+	     SwiftData), and `RecipeImportPreparation.read(_:)` brackets the read in
+	     startAccessingSecurityScopedResource(), which is what an in-place open requires. -->
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<!-- Keep developed JPEG recovery copies reachable in Files after a failed library save
+	     or an interrupted app session. Working RAFs stay in Application Support; the library lives in
+	     the App Group container. -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+
+	<!-- Document type registered so .fujirecipe files open in the app from Files, Mail, Messages and the share sheet. -->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Fuji Recipe</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>xyz.grovehouse.fujicookbook.recipe</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>JSON Recipe</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.json</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- Exported UTI for our recipe files. It conforms to public.json so the payload stays human-readable JSON,
+	     while a dedicated identifier + extension lets the app be offered as a handler. -->
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>xyz.grovehouse.fujicookbook.recipe</string>
+			<key>UTTypeDescription</key>
+			<string>Fuji Recipe</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>fujirecipe</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/json</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+</dict>
+</plist>

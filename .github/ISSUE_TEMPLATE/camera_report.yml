@@ -1,0 +1,66 @@
+name: Camera report
+description: Share your Camera Test results, whether every check passed or not.
+labels: [camera-report]
+title: "Camera report: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for running the Camera Test. A clean run is as useful as one that finds a problem: it
+        shows how the app reads, writes and develops recipes on your camera. A run you didn't finish
+        helps too. The test is at the end of the Camera tab, under **Help improve camera support**.
+
+        A report replaces the camera's serial number with a hash keyed to your phone, which nobody
+        else can turn back into the serial. Read both files before you post them: they show your
+        custom-slot names and recipe settings, and anything you typed into the Camera Test, and this
+        issue is public. If you'd rather not post them, email them to fujicookbook@grovehouse.xyz
+        instead.
+
+        If the serial hash line in the text report doesn't end in "(keyed to this phone)", the report
+        came from an older version of the app. Update the app and share the results again, or email
+        them instead.
+  - type: input
+    id: camera-model
+    attributes:
+      label: Camera model
+      placeholder: X-T50
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware version
+      description: From the camera's own menu.
+      placeholder: "1.32"
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Did every check pass?
+      description: The summary at the end of the test shows each check. Every answer is worth reporting.
+      options:
+        - All passed
+        - Some issues
+        - Didn't finish
+    validations:
+      required: true
+  - type: upload
+    id: report-files
+    attributes:
+      label: Report files
+      description: >-
+        Add both files the share sheet makes at the end of the test: the text report,
+        `fuji-cookbook-test-results-<model>-<stamp>.txt`, and the camera report,
+        `fuji-cookbook-camera-report-<model>-<stamp>.json`. On iPhone or iPad, choose Save to Files
+        in the share sheet, then pick both files here.
+    validations:
+      required: true
+      accept: ".txt,.json"
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: >-
+        Anything the report can't show: what you saw on the camera, a step that was unclear, or a
+        check you skipped and why.

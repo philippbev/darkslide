@@ -1,0 +1,65 @@
+# Obsidian vault state. Never commit this: the local-REST-API plugin keeps its
+# API key and a private key in plugins/obsidian-local-rest-api/data.json.
+.obsidian/
+
+# macOS
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Xcode — per-user state
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+
+# Xcode — build products
+build/
+DerivedData/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+
+# CocoaPods / Carthage (unused today, harmless to pre-empt)
+Pods/
+Carthage/Build/
+
+# Provisioning / signing — never commit these
+*.mobileprovision
+*.provisionprofile
+*.p12
+*.cer
+*.certSigningRequest
+
+# Claude Code — local settings and worktrees
+.claude/
+
+# Per-developer signing overrides (see Config/Local.example.xcconfig)
+Config/Local.xcconfig
+
+# Scratch
+*.log
+*.pcap
+*.pcapng
+
+# Test results and archives
+*.xcresult
+*.xcarchive
+
+# App Store Connect API keys and local environment files
+*.p8
+AuthKey_*
+.env
+.env.*
+
+# Camera files — test material that must not be published
+*.RAF
+*.raf
+*.dng

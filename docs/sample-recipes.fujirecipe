@@ -1,0 +1,60 @@
+{
+  "schema" : "fuji-recipe",
+  "version" : 1,
+  "recipes" : [
+    {
+      "name" : "Classic Chrome Everyday",
+      "authoredForModel" : "X-T5",
+      "notes" : "Good for overcast street.",
+      "tags" : ["street", "daily"],
+      "settings" : {
+        "filmSimulation" : "CLASSIC_CHROME",
+        "dynamicRange" : "DR400",
+        "whiteBalance" : { "mode" : "DAYLIGHT", "shiftRed" : -1, "shiftBlue" : -2 },
+        "highlightTone" : -1.0,
+        "shadowTone" : 1.0,
+        "color" : 1,
+        "sharpness" : -1,
+        "highISONR" : -2,
+        "clarity" : 0,
+        "grain" : { "strength" : "WEAK", "size" : "SMALL" },
+        "colorChromeEffect" : "STRONG",
+        "colorChromeFXBlue" : "WEAK"
+      }
+    },
+    {
+      "name" : "ACROS Night",
+      "settings" : {
+        "filmSimulation" : "ACROS_R",
+        "dynamicRange" : "DR200",
+        "whiteBalance" : { "mode" : "AUTO", "shiftRed" : 0, "shiftBlue" : 0 },
+        "monochromaticColorWC" : 2,
+        "highlightTone" : 2.0,
+        "shadowTone" : 2.0,
+        "sharpness" : 0,
+        "highISONR" : -4,
+        "clarity" : 2,
+        "grain" : { "strength" : "STRONG", "size" : "LARGE" }
+      }
+    },
+    {
+      "name" : "Kelvin Studio Portrait",
+      "authoredForModel" : "X-T5",
+      "tags" : ["studio", "portrait"],
+      "settings" : {
+        "filmSimulation" : "ASTIA",
+        "dynamicRange" : "DR100",
+        "dRangePriority" : "OFF",
+        "whiteBalance" : { "mode" : "KELVIN", "shiftRed" : 1, "shiftBlue" : -1, "kelvin" : 5500 },
+        "highlightTone" : -0.5,
+        "shadowTone" : -1.0,
+        "color" : 2,
+        "sharpness" : 0,
+        "highISONR" : -3,
+        "clarity" : -2,
+        "grain" : { "strength" : "OFF" },
+        "exposureBias" : 0.33
+      }
+    }
+  ]
+}

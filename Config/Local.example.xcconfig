@@ -1,0 +1,8 @@
+// Copy this file to Local.xcconfig (git-ignored) to build under your own Apple developer team.
+// Anything set here overrides Config/Base.xcconfig.
+
+// Simulator only, no Apple account: leave the team empty.
+// On a device: your Team ID (Xcode > Settings > Accounts), and a bundle id prefix you own. The
+// team must be able to provision the iCloud and App Groups capabilities.
+DEVELOPMENT_TEAM =
+APP_IDENTIFIER_BASE = com.example.fujicookbook
