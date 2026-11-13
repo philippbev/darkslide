@@ -358,6 +358,11 @@ struct SettingsView: View {
                       systemImage: "wrench.and.screwdriver")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+                NavigationLink {
+                    DesignSystemGallery()
+                } label: {
+                    Label("Design System", systemImage: "swatchpalette")
+                }
             }
         } header: {
             Text("Diagnostics")

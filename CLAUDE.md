@@ -38,8 +38,10 @@ Persönlicher Fork von zgrimz/fuji-cookbook für Philipp (Fujifilm X100VI). Nati
 - Jede Verhaltensänderung braucht einen Test.
 
 ## Design-System
-- Neue UI nur über zentrale Design-Tokens (Farben, Typografie, Abstände, Radien, Komponenten) – keine hartkodierten `Color(...)`/Font-Werte mehr in Views.
-- Bestehende Views schrittweise migrieren, nicht in einem Rutsch.
+- Spezifikation: `docs/fork/design-system.md` (Richtung, Tokens, Komponenten, Referenz-Screens). Vor jeder UI-Arbeit lesen.
+- Code: `FujiCookbook/DesignSystem/` – Tokens `DSColor`, `DSFont`, `DSSpacing`, `DSRadius`, Komponenten unter `Components/` (Präfix `DS`). Vorschau: Settings ▸ Diagnostics ▸ Show Diagnostic Tools ▸ Design System.
+- Neue UI nur über diese Tokens und Komponenten – keine hartkodierten `Color(...)`/Font-Werte mehr in Views.
+- Bestehende Views nutzen noch `Theme` (`Shared/Support/Theme.swift`). Sie werden erst in Phase 5 schrittweise migriert, nicht in einem Rutsch; bis dahin beide Schichten nicht mischen.
 
 ## Git
 - Ein Branch pro Feature (`feature/chapter-share`, `feature/usb-import`, …), PR gegen `main` des Forks.
