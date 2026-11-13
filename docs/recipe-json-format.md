@@ -12,7 +12,8 @@ the importer ignores the file name.
 ## 1. File envelope
 
 Every file is a single JSON object with a versioned header plus **either** one recipe
-or many. A full backup additionally carries chapters. All shapes are accepted by the importer.
+or many. A full backup and a shared chapter additionally carry chapters. All shapes are accepted by
+the importer.
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
@@ -20,7 +21,7 @@ or many. A full backup additionally carries chapters. All shapes are accepted by
 | `version` | integer | ✅ | Currently `1`. A higher number requests an app update. Values at or below `1` retain the existing decoding behavior; no field transformations are currently applied. |
 | `recipe` | object | one of these | A single `PortableRecipe` (see §2). |
 | `recipes` | array | one of these | An array of `PortableRecipe` objects — **this is bulk import**. |
-| `chapters` | array | optional | An array of `PortableChapter` objects (see §6). Present only in a **full backup** of a library that has chapters. Additive — older app versions ignore it. |
+| `chapters` | array | optional | An array of `PortableChapter` objects (see §6). Present in a **full backup** of a library that has chapters, and in a **shared chapter**, which holds that one chapter. Additive — older app versions ignore it. |
 
 If both `recipe` and `recipes` are present, `recipes` wins. The file must contain
 **at least one** recipe or it errors as empty.
@@ -46,7 +47,7 @@ If both `recipe` and `recipes` are present, `recipes` wins. The file must contai
 |---|---|---|---|
 | `name` | string | ✅ | Display name. Duplicate detection matches it trimmed and case-insensitively, or matches identical settings under any name (§7). |
 | `settings` | object | ✅ | The camera parameters — see §3. |
-| `uuid` | string (UUID) | optional | Stable recipe identity. Written only in **full backups** (§6), where chapters re-link to their recipes by uuid; single/combined exports omit it. Optional on import — a fresh id is minted regardless, so this never collides with existing inventory. |
+| `uuid` | string (UUID) | optional | Stable recipe identity. Written only in **full backups** and **shared chapters** (§6), where chapters re-link to their recipes by uuid; single/combined exports omit it. Optional on import — a fresh id is minted regardless, so this never collides with existing inventory. |
 | `cameraName` | string | optional | Camera-slot name (limited character set). Additive and backward-compatible. Every export writes it: the recipe's own slot name, or the one generated from `name`. A file without it imports with a generated slot name. |
 | `cameraNameIsCustom` | boolean | optional | Whether `cameraName` is the author's own choice rather than the name generated from `name`. Every export writes it. When absent, a present `cameraName` counts as custom, as in files written before the key existed. On **overwrite**, only a custom name replaces the local slot name. |
 | `credit` | string | optional | Who the recipe is by, carried with the file so attribution survives sharing. Trimmed on export (`Recipe.displayCredit`); omitted when empty or whitespace-only. Additive and backward-compatible. |
@@ -188,10 +189,12 @@ point, so an integer beyond 2⁵³ loses precision.
 "unsupportedFields": { "someNewToggle": "ON", "futureValue": 3 }
 ```
 
-## 6. `chapters` (full backups, `PortableChapter`)
+## 6. `chapters` (full backups and shared chapters, `PortableChapter`)
 
-A full backup includes a top-level `chapters` array alongside `recipes`. Each chapter
-groups recipes by their stable `uuid`:
+A full backup includes a top-level `chapters` array alongside `recipes`. A shared chapter
+(**Share…** on a chapter) is the same shape with one chapter and only the recipes in it, in slot
+order; a slot whose recipe has been deleted is left out, and a recipe that fills two slots is
+written once. Each chapter groups recipes by their stable `uuid`:
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
