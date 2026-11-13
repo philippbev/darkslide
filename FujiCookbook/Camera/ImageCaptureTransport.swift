@@ -409,12 +409,18 @@ extension ImageCaptureTransport: RawConversionTransport {
     }
 
     func getObjectHandles() async throws -> [UInt32] {
+        try await getObjectHandles(timeout: Self.baseTimeout)
+    }
+
+    /// `GetObjectHandles` with room for a camera that indexes its card first: an X100VI with 2,000
+    /// frames took longer than the 20-second floor in USB Card Reader mode (iPhone, 2026-11-13).
+    func getObjectHandles(timeout: TimeInterval) async throws -> [UInt32] {
         try ensurePTPCapable()
         transactionID &+= 1
         // params: storageID (0xFFFFFFFF = all), objectFormat (0 = any), parent (0).
         let cmd = FujiPTP.commandContainer(operation: .getObjectHandles, transactionID: transactionID,
                                            parameters: [0xFFFF_FFFF, 0, 0])
-        let (inData, response) = try await sendPTP(cmd, outData: nil)
+        let (inData, response) = try await sendPTP(cmd, outData: nil, timeout: timeout)
         let code: UInt16
         do {
             code = try FujiPTP.validatedResponseCode(from: response)
@@ -437,6 +443,30 @@ extension ImageCaptureTransport: RawConversionTransport {
         let (data, response) = try await sendPTP(command, outData: nil)
         try checkResponse(response)
         return try FujiPTP.parseObjectInfo(data)
+    }
+
+    /// `GetThumb` — the small JPEG the camera keeps for an object. Read-only.
+    func getThumb(_ handle: UInt32) async throws -> Data {
+        try ensurePTPCapable()
+        transactionID &+= 1
+        let cmd = FujiPTP.commandContainer(operation: .getThumb, transactionID: transactionID,
+                                           parameters: [handle])
+        let (inData, response) = try await sendPTP(cmd, outData: nil)
+        try checkResponse(response)
+        return inData ?? Data()
+    }
+
+    /// `GetObject` for a file whose size the camera has stated, timed for that size rather than
+    /// the converted JPEG's budget: a RAF from a 40 MP body is over 50 MB. Read-only.
+    func getObject(_ handle: UInt32, expectedBytes: Int) async throws -> Data {
+        try ensurePTPCapable()
+        transactionID &+= 1
+        let cmd = FujiPTP.commandContainer(operation: .getObject, transactionID: transactionID,
+                                           parameters: [handle])
+        let (inData, response) = try await sendPTP(cmd, outData: nil,
+                                                   timeout: Self.transferTimeout(forPayloadBytes: max(expectedBytes, 1_000_000)))
+        try checkResponse(response)
+        return inData ?? Data()
     }
 
     func getObject(_ handle: UInt32) async throws -> Data {

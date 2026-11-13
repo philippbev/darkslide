@@ -17,6 +17,7 @@ enum FujiPTP {
         case getObjectHandles   = 0x1007
         case getObjectInfo      = 0x1008
         case getObject          = 0x1009
+        case getThumb           = 0x100A
         case deleteObject       = 0x100B
         case getDevicePropDesc  = 0x1014
         case getDevicePropValue = 0x1015
@@ -435,6 +436,37 @@ enum FujiPTP {
         let objectFormat: UInt16
         let compressedSize: UInt32
         let filename: String
+        /// The folder the object is in; 0 at the top of the store.
+        var parentObject: UInt32 = 0
+        /// Non-zero for a folder.
+        var associationType: UInt16 = 0
+        /// The PTP date string as the camera wrote it, "20261113T153012"; empty when it gave none.
+        var captureDate: String = ""
+
+        /// A folder rather than a file: an association, or the association object format.
+        var isFolder: Bool { associationType != 0 || objectFormat == 0x3001 }
+    }
+
+    /// A PTP DateTime string, "YYYYMMDDThhmmss" with optional tenths and zone, as a date. Without a
+    /// zone it is the camera's local time, taken to be `fallbackZone`.
+    static func parseDateTime(_ text: String, fallbackZone: TimeZone = .current) -> Date? {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        guard trimmed.count >= 15 else { return nil }
+        let core = String(trimmed.prefix(15))
+        var rest = trimmed.dropFirst(15)
+        if rest.first == "." { rest = rest.dropFirst().drop(while: \.isNumber) }
+        var zone = fallbackZone
+        if rest.first == "Z" {
+            zone = TimeZone(secondsFromGMT: 0) ?? fallbackZone
+        } else if let sign = rest.first, sign == "+" || sign == "-", rest.count >= 5,
+                  let hours = Int(rest.dropFirst().prefix(2)), let minutes = Int(rest.dropFirst(3).prefix(2)) {
+            zone = TimeZone(secondsFromGMT: (hours * 3600 + minutes * 60) * (sign == "-" ? -1 : 1)) ?? fallbackZone
+        }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyyMMdd'T'HHmmss"
+        formatter.timeZone = zone
+        return formatter.date(from: core)
     }
 
     /// Validate the fixed ObjectInfo header and all four length-delimited PTP strings.
@@ -442,7 +474,9 @@ enum FujiPTP {
     static func parseObjectInfo(_ data: Data?) throws -> ObjectInfo {
         guard let data, data.count >= 56,
               let format = data.readLE(UInt16.self, at: 4),
-              let size = data.readLE(UInt32.self, at: 8) else { throw InvalidDataset.objectInfo }
+              let size = data.readLE(UInt32.self, at: 8),
+              let parent = data.readLE(UInt32.self, at: 38),
+              let association = data.readLE(UInt16.self, at: 42) else { throw InvalidDataset.objectInfo }
         var offset = 52
         func string() throws -> String {
             guard let count = data.readLE(UInt8.self, at: offset) else { throw InvalidDataset.objectInfo }
@@ -464,9 +498,11 @@ enum FujiPTP {
             return String(decoding: units, as: UTF16.self)
         }
         let filename = try string()
-        for _ in 0..<3 { _ = try string() }
+        let captureDate = try string()
+        for _ in 0..<2 { _ = try string() }
         guard offset == data.count else { throw InvalidDataset.objectInfo }
-        return ObjectInfo(objectFormat: format, compressedSize: size, filename: filename)
+        return ObjectInfo(objectFormat: format, compressedSize: size, filename: filename,
+                          parentObject: parent, associationType: association, captureDate: captureDate)
     }
 }
 

@@ -18,7 +18,9 @@ final class DemoPhotoSource: PhotoSource {
         self.now = now
     }
 
-    func open() async throws -> [ImportFile] {
+    func open(progress: @escaping @MainActor (CatalogProgress) -> Void,
+              partial: @escaping @MainActor ([ImportFile]) -> Void) async throws -> [ImportFile] {
+        progress(CatalogProgress(percent: 0, files: 0))
         pictures = [:]
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: now)
@@ -34,6 +36,7 @@ final class DemoPhotoSource: PhotoSource {
             pictures[file.id] = data
             files.append(file)
         }
+        progress(CatalogProgress(percent: 100, files: files.count))
         return files
     }
 

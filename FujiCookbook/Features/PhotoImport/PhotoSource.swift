@@ -8,8 +8,17 @@ protocol PhotoSource: AnyObject {
     /// The camera's name, for the status card.
     var displayName: String { get }
 
-    /// Connect and list the card. Throws `PhotoImportError`.
-    func open() async throws -> [ImportFile]
+    /// Connect and list the card. Returns the whole list once the camera has given it; meanwhile
+    /// reports how far it has got and hands over what it has so far, so the newest days can be
+    /// shown and imported long before a full card is listed. Throws `PhotoImportError`.
+    func open(progress: @escaping @MainActor (CatalogProgress) -> Void,
+              partial: @escaping @MainActor ([ImportFile]) -> Void) async throws -> [ImportFile]
+
+    /// Whether older files are left to read: a source that lists a portion at a time.
+    var canLoadMore: Bool { get }
+
+    /// Read the next portion of older files and return everything listed so far.
+    func loadMore(progress: @escaping @MainActor (CatalogProgress) -> Void) async throws -> [ImportFile]
 
     /// A small picture of the file, or nil when the source has none.
     func thumbnail(for file: ImportFile) async -> CGImage?
@@ -20,13 +29,36 @@ protocol PhotoSource: AnyObject {
     func close() async
 }
 
+extension PhotoSource {
+    /// A source that lists the whole card at once has nothing more to read.
+    var canLoadMore: Bool { false }
+    func loadMore(progress: @escaping @MainActor (CatalogProgress) -> Void) async throws -> [ImportFile] { [] }
+}
+
+/// How far a card's listing has got: a full card takes a while over USB.
+struct CatalogProgress: Equatable, Sendable {
+    /// What the camera reports, 0 to 100.
+    var percent: Int
+    /// Files listed so far.
+    var files: Int
+    /// How long the listing has gone without getting further.
+    var idleSeconds: Int = 0
+    /// What the camera is doing, when there is more to say than a percentage.
+    var note: String? = nil
+
+    /// A minute without progress: worth saying, though a camera can sit at 0 % that long before
+    /// the first file arrives (X100VI, iPhone, 2026-11-13), so it isn't treated as a failure.
+    var looksStuck: Bool { idleSeconds >= 60 }
+}
+
 enum PhotoImportError: LocalizedError, Equatable {
     case recipeSessionActive
     case noCamera
     case permissionDenied
     /// The camera answered but lists no photos: an empty card, or a USB mode that doesn't show the
     /// card.
-    case noPhotos
+    /// `diagnostics`: what the camera answered, shown beneath the message.
+    case noPhotos(diagnostics: String? = nil)
     case catalogTimedOut
     case sourceFailed(String)
     case downloadFailed(file: String, detail: String)
@@ -45,8 +77,9 @@ enum PhotoImportError: LocalizedError, Equatable {
             return "No camera detected. Connect it with a USB data cable. \(Self.cardReaderHint)"
         case .permissionDenied:
             return "Camera access is off. Enable it for Fuji Cookbook in Settings, then try again."
-        case .noPhotos:
-            return "The camera lists no photos. If the card isn't empty, the camera is in another USB mode. \(Self.cardReaderHint)"
+        case .noPhotos(let diagnostics):
+            let message = "The camera lists no photos. If the card isn't empty, the camera is in another USB mode. \(Self.cardReaderHint)"
+            return diagnostics.map { "\(message)\n\nWhat the camera answered: \($0)" } ?? message
         case .catalogTimedOut:
             return "The camera didn't finish listing its card. Reconnect it and try again. \(Self.cardReaderHint)"
         case .sourceFailed(let detail):

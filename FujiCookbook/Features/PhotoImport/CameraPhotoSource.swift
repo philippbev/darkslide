@@ -19,10 +19,17 @@ final class CameraPhotoSource: NSObject, PhotoSource {
     private let discovery: @MainActor () -> CameraDiscovery
     private var device: ICCameraDevice?
     private var filesByID: [String: ICCameraFile] = [:]
-    private var catalogWaiter: CheckedContinuation<Void, Never>?
+    /// Set when the camera goes away or the screen closes, to end a listing in progress.
+    private var isEnded = false
+    /// Set by `deviceDidBecomeReady(withCompleteContentCatalog:)`, the one signal that the card has
+    /// been listed. `contentCatalogPercentCompleted` alone isn't: it can read 100 before a single
+    /// file has arrived.
+    private var catalogIsComplete = false
+    /// Files the camera has announced through `didAdd`, for the diagnostics.
+    private var announcedItems = 0
 
-    /// How long a card may take to list. A full card on a slow body takes a while; without a limit
-    /// a camera that never finishes would leave the screen waiting forever.
+    /// How long a listing at 100 % may go on without the camera's done signal before it is taken
+    /// as done. Not a limit on the listing itself: 2,000 frames took minutes on an X100VI.
     private let catalogTimeout: TimeInterval
 
     private(set) var displayName = "Camera"
@@ -38,13 +45,45 @@ final class CameraPhotoSource: NSObject, PhotoSource {
     /// locally signed Mac build) would otherwise leave the screen waiting with no way to tell why.
     static let discoveryTimeout: TimeInterval = 30
 
-    func open() async throws -> [ImportFile] {
+    func open(progress: @escaping @MainActor (CatalogProgress) -> Void,
+              partial: @escaping @MainActor ([ImportFile]) -> Void) async throws -> [ImportFile] {
         guard !SharedContainer.isLocalMacBuild else { throw PhotoImportError.localMacBuild }
+        let device = try await Self.findCamera(discovery: discovery)
+        self.device = device
+        isEnded = false
+        catalogIsComplete = false
+        announcedItems = 0
+        displayName = device.name ?? "Camera"
+        device.delegate = self
+        CameraLog.info("PhotoImport: opening \(displayName)")
+
+        PhotoImportTrace.note("Catalog: camera found, session \(device.hasOpenSession ? "already open" : "opening")")
+        if !device.hasOpenSession {
+            do {
+                try await device.requestOpenSession(options: Self.sessionOptions)
+            } catch {
+                throw PhotoImportError.sourceFailed(error.localizedDescription)
+            }
+        }
+        try await waitForCatalog(of: device, progress: progress, partial: partial)
+        displayName = device.name ?? displayName
+
+        let (files, skipped, listed) = collectFiles(of: device)
+        let diagnostics = Self.diagnostics(of: device, mediaFiles: listed, importable: files.count,
+                                           announced: announcedItems, catalogComplete: catalogIsComplete,
+                                           skipped: skipped, order: Self.order(of: files))
+        CameraLog.info("PhotoImport: \(diagnostics)")
+        AppLog.flushNow()
+        guard !files.isEmpty else { throw PhotoImportError.noPhotos(diagnostics: diagnostics) }
+        return files
+    }
+
+    /// The attached camera, waiting `discoveryTimeout` at most, the permission requests included.
+    static func findCamera(discovery: @escaping @MainActor () -> CameraDiscovery = { CameraDeviceBrowser.shared })
+        async throws -> ICCameraDevice {
         let found: any DiscoveredCamera
         do {
-            found = try await Self.withTimeout(Self.discoveryTimeout) { [discovery] in
-                try await discovery().firstCamera()
-            }
+            found = try await withTimeout(discoveryTimeout) { try await discovery().firstCamera() }
         } catch let error as CameraError where error == .permissionDenied || error == .contentsAccessUnavailable {
             throw PhotoImportError.permissionDenied
         } catch is CancellationError {
@@ -53,34 +92,48 @@ final class CameraPhotoSource: NSObject, PhotoSource {
             throw PhotoImportError.noCamera
         }
         guard let device = found as? ICCameraDevice else { throw PhotoImportError.noCamera }
-        self.device = device
-        displayName = device.name ?? "Camera"
-        device.delegate = self
-        CameraLog.info("PhotoImport: opening \(displayName)")
+        return device
+    }
 
-        if !device.hasOpenSession {
-            do {
-                try await device.requestOpenSession(options: nil)
-            } catch {
-                throw PhotoImportError.sourceFailed(error.localizedDescription)
-            }
-        }
-        try await waitForCatalog(of: device)
+    /// Asks for the card newest first, so the days an import is usually for are listed first.
+    ///
+    /// VERIFY on hardware: Apple documents the key but not its value. This passes
+    /// `ComparisonResult.orderedDescending`; the diagnostics line records the order the camera
+    /// actually listed in. A body that ignores it lists oldest first, which still works, only slower.
+    static var sessionOptions: [ICSessionOptions: Any] {
+        [.enumerationChronologicalOrder: NSNumber(value: ComparisonResult.orderedDescending.rawValue)]
+    }
 
-        filesByID = [:]
+    /// Every importable file the camera has listed so far, refreshing what downloads and thumbnails
+    /// look up. Also the names it skipped and how many media files it listed in all.
+    private func collectFiles(of device: ICCameraDevice) -> (files: [ImportFile], skipped: [String], listed: Int) {
+        var byID: [String: ICCameraFile] = [:]
         var files: [ImportFile] = []
-        for case let item as ICCameraFile in device.mediaFiles ?? [] {
+        var skipped: [String] = []
+        let listed = device.mediaFiles ?? []
+        for case let item as ICCameraFile in listed {
             guard let name = item.name else { continue }
             let folder = Self.path(of: item.parentFolder)
             let id = "\(folder)/\(name)"
             guard let file = ImportFile(id: id, name: name, folder: folder, byteSize: Int64(item.fileSize),
-                                        captureDate: item.exifCreationDate ?? item.fileCreationDate) else { continue }
-            filesByID[id] = item
+                                        captureDate: item.exifCreationDate ?? item.fileCreationDate) else {
+                if skipped.count < 5 { skipped.append(name) }
+                continue
+            }
+            byID[id] = item
             files.append(file)
         }
-        CameraLog.info("PhotoImport: catalog lists \(files.count) importable file\(files.count == 1 ? "" : "s")")
-        guard !files.isEmpty else { throw PhotoImportError.noPhotos }
-        return files
+        filesByID = byID
+        return (files, skipped, listed.count)
+    }
+
+    /// "newest first", "oldest first" or "mixed": how the first files listed run, for the diagnostics.
+    static func order(of files: [ImportFile]) -> String {
+        let dates = files.prefix(50).compactMap(\.captureDate)
+        guard dates.count >= 2 else { return "unknown" }
+        if dates == dates.sorted(by: >) { return "newest first" }
+        if dates == dates.sorted() { return "oldest first" }
+        return "mixed"
     }
 
     /// `operation`, or `PhotoImportError.noCamera` once `seconds` have passed, whichever comes first.
@@ -117,22 +170,60 @@ final class CameraPhotoSource: NSObject, PhotoSource {
         }
     }
 
-    private func waitForCatalog(of device: ICCameraDevice) async throws {
-        if device.contentCatalogPercentCompleted >= 100 { return }
-        let timeout = Task { [weak self, catalogTimeout] in
-            try? await Task.sleep(for: .seconds(catalogTimeout))
-            guard !Task.isCancelled else { return }
-            self?.catalogDidFinish()
+    /// Until the camera says its card is listed, handing over what it has listed whenever that
+    /// grows. No time limit while it is below 100 %: an X100VI sat at 0 % for over a minute before
+    /// its first file (iPhone, 2026-11-13), and the screen says so and can be closed. At 100 % without
+    /// the signal, `catalogTimeout` without progress ends the wait. A camera that says it's done
+    /// with nothing listed gets a few seconds more, for files it announces after the signal.
+    private func waitForCatalog(of device: ICCameraDevice,
+                                progress: @MainActor (CatalogProgress) -> Void,
+                                partial: @MainActor ([ImportFile]) -> Void) async throws {
+        // Listed on an earlier visit, through the session left open (see `close()`): nothing to wait
+        // for. Only with files in it: a listing at 100 % with none is the one that hasn't started.
+        if device.contentCatalogPercentCompleted >= 100, !(device.mediaFiles ?? []).isEmpty {
+            catalogIsComplete = true
         }
-        await withCheckedContinuation { catalogWaiter = $0 }
-        timeout.cancel()
-        try Task.checkCancellation()
-        guard device.contentCatalogPercentCompleted >= 100 else { throw PhotoImportError.catalogTimedOut }
+        var listed = 0
+        var lastPercent = -1
+        var lastChange = Date()
+        while !catalogIsComplete {
+            guard !isEnded else { throw PhotoImportError.sourceFailed("The camera was disconnected.") }
+            let percent = Int(device.contentCatalogPercentCompleted)
+            let count = device.mediaFiles?.count ?? 0
+            if count != listed || percent != lastPercent {
+                PhotoImportTrace.note("Catalog: \(percent)%, \(count) media files")
+                lastChange = Date()
+                lastPercent = percent
+                if count != listed {
+                    listed = count
+                    partial(collectFiles(of: device).files)
+                }
+            }
+            let idle = Date().timeIntervalSince(lastChange)
+            progress(CatalogProgress(percent: percent, files: filesByID.count, idleSeconds: Int(idle)))
+            if percent >= 100, idle > catalogTimeout { break }
+            try await Task.sleep(for: .milliseconds(500))
+        }
+        progress(CatalogProgress(percent: 100, files: max(filesByID.count, device.mediaFiles?.count ?? 0)))
+        for _ in 0..<10 where (device.mediaFiles ?? []).isEmpty {
+            try await Task.sleep(for: .milliseconds(500))
+        }
     }
 
-    private func catalogDidFinish() {
-        catalogWaiter?.resume()
-        catalogWaiter = nil
+    /// What the camera answered, in one line for the error screen and the log.
+    private static func diagnostics(of device: ICCameraDevice, mediaFiles: Int, importable: Int, announced: Int,
+                                    catalogComplete: Bool, skipped: [String], order: String) -> String {
+        var parts = [
+            "device \(device.name ?? "unnamed")",
+            String(format: "usb %04x:%04x", device.usbVendorID, device.usbProductID),
+            "catalog \(device.contentCatalogPercentCompleted)%\(catalogComplete ? " complete" : "")",
+            "items \(device.contents?.count ?? 0) top-level, \(mediaFiles) media, \(announced) announced",
+            "importable \(importable)",
+            "listed \(order)",
+            "PTP \(device.capabilities.contains(ICDeviceCapability.cameraDeviceCanAcceptPTPCommands.rawValue) ? "yes" : "no")"
+        ]
+        if !skipped.isEmpty { parts.append("skipped \(skipped.joined(separator: " "))") }
+        return parts.joined(separator: "  ")
     }
 
     private static func path(of folder: ICCameraFolder?) -> String {
@@ -178,11 +269,13 @@ final class CameraPhotoSource: NSObject, PhotoSource {
     }
 
     func close() async {
-        catalogDidFinish()
+        isEnded = true
         filesByID = [:]
         guard let device else { return }
         self.device = nil
-        if device.hasOpenSession { try? await device.requestCloseSession(options: nil) }
+        // The session stays open while the camera is attached: closing it throws away the card's
+        // listing, which takes minutes on a full card, and the next visit would wait for all of it
+        // again. Unplugging the camera ends it. The recipe connection reuses an open session.
         // The shared browser vends the same device to the recipe connection; only release the
         // delegate if it is still this source's.
         if device.delegate === self { device.delegate = nil }
@@ -193,19 +286,22 @@ final class CameraPhotoSource: NSObject, PhotoSource {
 // ImageCaptureCore's delegate requirements are nonisolated; each hops to the main actor.
 extension CameraPhotoSource: ICCameraDeviceDelegate {
     nonisolated func deviceDidBecomeReady(withCompleteContentCatalog device: ICCameraDevice) {
-        Task { @MainActor in self.catalogDidFinish() }
+        Task { @MainActor in self.catalogIsComplete = true }
     }
 
     nonisolated func didRemove(_ device: ICDevice) {
         Task { @MainActor in
             CameraLog.info("PhotoImport: camera removed")
-            self.catalogDidFinish()
+            self.isEnded = true
         }
     }
 
     nonisolated func device(_ device: ICDevice, didOpenSessionWithError error: Error?) {}
     nonisolated func device(_ device: ICDevice, didCloseSessionWithError error: Error?) {}
-    nonisolated func cameraDevice(_ camera: ICCameraDevice, didAdd items: [ICCameraItem]) {}
+    nonisolated func cameraDevice(_ camera: ICCameraDevice, didAdd items: [ICCameraItem]) {
+        let count = items.count
+        Task { @MainActor in self.announcedItems += count }
+    }
     nonisolated func cameraDevice(_ camera: ICCameraDevice, didRemove items: [ICCameraItem]) {}
     nonisolated func cameraDevice(_ camera: ICCameraDevice, didRenameItems items: [ICCameraItem]) {}
     nonisolated func cameraDeviceDidChangeCapability(_ camera: ICCameraDevice) {}
