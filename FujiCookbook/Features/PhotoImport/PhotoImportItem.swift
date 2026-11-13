@@ -164,3 +164,83 @@ struct PhotoImportLedger {
         try JSONEncoder().encode(keys.sorted()).write(to: url, options: .atomic)
     }
 }
+
+/// Which of a frame's files an import copies: shooting RAW+JPEG leaves both on the card, and most
+/// imports want one or the other.
+enum ImportFileChoice: String, CaseIterable, Identifiable {
+    case all, raw, rendered
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .all: return "RAW + JPEG/HEIF"
+        case .raw: return "RAW"
+        case .rendered: return "JPEG/HEIF"
+        }
+    }
+
+    /// Movies come along only with everything: they are neither a RAW nor a JPEG.
+    var kinds: Set<ImportFile.Kind> {
+        switch self {
+        case .all: return [.raw, .jpeg, .heif, .movie]
+        case .raw: return [.raw]
+        case .rendered: return [.jpeg, .heif]
+        }
+    }
+
+    static let key = "photoImport.fileChoice"
+
+    static func load(from defaults: UserDefaults = .standard) -> ImportFileChoice {
+        defaults.string(forKey: key).flatMap(ImportFileChoice.init(rawValue:)) ?? .all
+    }
+
+    func save(to defaults: UserDefaults = .standard) {
+        defaults.set(rawValue, forKey: Self.key)
+    }
+}
+
+/// Which days of the card the contact sheet shows.
+enum ImportPeriod: Equatable {
+    case all
+    case today
+    /// Today and the six days before it.
+    case lastWeek
+    /// From the first day to the last, both whole days.
+    case days(from: Date, to: Date)
+
+    func contains(_ date: Date?, now: Date = .now, calendar: Calendar = .current) -> Bool {
+        if self == .all { return true }
+        guard let date else { return false }
+        let today = calendar.startOfDay(for: now)
+        switch self {
+        case .all:
+            return true
+        case .today:
+            return calendar.isDate(date, inSameDayAs: today)
+        case .lastWeek:
+            return date >= (calendar.date(byAdding: .day, value: -6, to: today) ?? today)
+        case .days(let from, let to):
+            let start = calendar.startOfDay(for: min(from, to))
+            let end = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: max(from, to))) ?? start
+            return date >= start && date < end
+        }
+    }
+}
+
+extension ImportFrame {
+    /// The frame's files an import with `choice` copies, in display order. Empty when the frame has
+    /// none of those kinds: a JPEG-only frame under RAW.
+    func files(for choice: ImportFileChoice) -> [ImportFile] {
+        files.filter { choice.kinds.contains($0.kind) }
+    }
+}
+
+extension PhotoImportLedger {
+    /// Whether every file `choice` would copy has been imported: after taking the JPEGs, the same
+    /// frames are still new for their RAFs.
+    func contains(_ frame: ImportFrame, choice: ImportFileChoice) -> Bool {
+        let chosen = frame.files(for: choice)
+        return !chosen.isEmpty && chosen.allSatisfy { keys.contains($0.ledgerKey) }
+    }
+}

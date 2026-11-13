@@ -219,10 +219,13 @@ final class GeotaggingTests: XCTestCase {
         PhotoImportModel(source: FakePhotoSource(files: files),
                          ledger: PhotoImportLedger(url: scratch.appendingPathComponent("ledger.json")),
                          stagingRoot: scratch.appendingPathComponent("staging"),
-                         clockOffset: clockOffset, loadTrackPoints: { points }, makeWriter: { _ in writer })
+                         clockOffset: clockOffset, loadTrackPoints: { points },
+                         preferences: UserDefaults(suiteName: "GeotaggingTests-\(UUID().uuidString)")!,
+                         makeWriter: { _ in writer })
     }
 
     private func finish(_ model: PhotoImportModel) async {
+        model.selectAll()
         model.startImport()
         for _ in 0..<400 {
             if case .finished = model.phase { return }
@@ -275,7 +278,7 @@ final class GeotaggingTests: XCTestCase {
     }
 
     func testDemoTracksCoverTheDemoCard() async throws {
-        let files = try await DemoPhotoSource(now: noon).open()
+        let files = try await DemoPhotoSource(now: noon).open(progress: { _ in }, partial: { _ in })
         let matcher = GeoMatcher(points: LocationTrack.demoTracks(now: noon).flatMap(\.points))
         XCTAssertTrue(files.allSatisfy { matcher.point(at: $0.captureDate!) != nil })
     }

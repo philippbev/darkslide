@@ -16,14 +16,24 @@ final class PhotoImportModel {
     }
 
     enum Phase: Equatable {
-        case opening
+        /// Nil until the source first reports.
+        case opening(CatalogProgress?)
         case ready
         case importing(done: Int, total: Int)
         case finished(Summary)
         case failed(String)
     }
 
-    private(set) var phase: Phase = .opening
+    private(set) var phase: Phase = .opening(nil)
+    /// The camera is still listing the card while the sheet already shows what it has so far.
+    private(set) var isListing = false
+    /// How far the listing has got, while `isListing` or `.opening`.
+    private(set) var listingProgress: CatalogProgress?
+    /// Why the listing stopped early, once some of the card is already on screen.
+    private(set) var listingProblem: String?
+    /// Older files are left to read (`PhotoSource.loadMore`).
+    private(set) var canLoadMore = false
+    private(set) var isLoadingMore = false
     private(set) var sourceName: String
     /// Every frame on the card, in the order taken.
     private(set) var frames: [ImportFrame] = []
@@ -31,6 +41,10 @@ final class PhotoImportModel {
     var selection: Set<ImportFrame.ID> = []
     /// Hide what an earlier import already copied.
     private(set) var showsOnlyNew = true
+    /// Which of each frame's files to copy. Remembered between visits.
+    private(set) var fileChoice: ImportFileChoice
+    /// Which days to show.
+    private(set) var period: ImportPeriod = .all
     var destination: PhotoImportDestination
     /// Add the position from the recorded tracks to each photo.
     var addsLocation = false
@@ -46,6 +60,7 @@ final class PhotoImportModel {
     @ObservationIgnored private var importTask: Task<Void, Never>?
     @ObservationIgnored private var thumbnailRequests: Set<ImportFrame.ID> = []
     @ObservationIgnored private let loadTrackPoints: () -> [GeoPoint]
+    @ObservationIgnored private let preferences: UserDefaults
 
     init(source: PhotoSource,
          ledger: PhotoImportLedger = PhotoImportLedger(),
@@ -53,6 +68,7 @@ final class PhotoImportModel {
          stagingRoot: URL = FileManager.default.temporaryDirectory.appendingPathComponent("photo-import", isDirectory: true),
          clockOffset: TimeInterval = CameraClockOffset.load(),
          loadTrackPoints: @escaping () -> [GeoPoint] = { LocationTrackStore.standard.allPoints() },
+         preferences: UserDefaults = .standard,
          makeWriter: @escaping (PhotoImportDestination) -> PhotoImportWriter = { $0.writer }) {
         self.source = source
         self.sourceName = source.displayName
@@ -62,17 +78,30 @@ final class PhotoImportModel {
         self.makeWriter = makeWriter
         self.clockOffset = clockOffset
         self.loadTrackPoints = loadTrackPoints
+        self.preferences = preferences
+        self.fileChoice = ImportFileChoice.load(from: preferences)
     }
 
     // MARK: What the screen shows
 
-    var newFrames: [ImportFrame] { frames.filter { !ledger.contains($0) } }
-    var visibleFrames: [ImportFrame] { showsOnlyNew ? newFrames : frames }
+    /// The frames the file choice and the period leave: what "All" counts.
+    var eligibleFrames: [ImportFrame] {
+        frames.filter { !$0.files(for: fileChoice).isEmpty && period.contains($0.captureDate) }
+    }
+    var newFrames: [ImportFrame] { eligibleFrames.filter { !ledger.contains($0, choice: fileChoice) } }
+    var visibleFrames: [ImportFrame] { showsOnlyNew ? newFrames : eligibleFrames }
     var days: [ImportDay] { ImportDay.days(from: visibleFrames) }
     var selectedFrames: [ImportFrame] { visibleFrames.filter { selection.contains($0.id) } }
     var isImporting: Bool { if case .importing = phase { return true } else { return false } }
 
-    func isAlreadyImported(_ frame: ImportFrame) -> Bool { ledger.contains(frame) }
+    func isAlreadyImported(_ frame: ImportFrame) -> Bool { ledger.contains(frame, choice: fileChoice) }
+
+    /// The first and last day on the card, for choosing a period.
+    var dateBounds: ClosedRange<Date>? {
+        let dates = frames.compactMap(\.captureDate)
+        guard let first = dates.min(), let last = dates.max() else { return nil }
+        return first...last
+    }
 
     /// Where a frame was taken, by the date the card lists for it: a preview for the screen. The
     /// import itself goes by the date in the downloaded file.
@@ -91,27 +120,58 @@ final class PhotoImportModel {
     /// `recipeSessionActive`: the recipe connection holds the camera in the other USB mode, and the
     /// two share one device, so opening over it would take its session away.
     func open(recipeSessionActive: Bool = false) async {
-        phase = .opening
+        PhotoImportTrace.start("Opening \(source.displayName)")
+        phase = .opening(nil)
+        isListing = false
+        listingProgress = nil
+        listingProblem = nil
         guard !recipeSessionActive else {
             phase = .failed(PhotoImportError.recipeSessionActive.localizedDescription)
             return
         }
         do {
-            let files = try await source.open()
-            sourceName = source.displayName
-            frames = ImportFrame.frames(from: files)
-            matcher = GeoMatcher(points: ProcessInfo.processInfo.isMacCatalystApp ? [] : loadTrackPoints())
-            addsLocation = !matcher.isEmpty
-            // What is new is what a visit is usually for.
-            selection = Set(newFrames.map(\.id))
-            if newFrames.isEmpty { showsOnlyNew = false }
-            phase = .ready
+            let files = try await source.open(progress: { [weak self] progress in
+                guard let self else { return }
+                self.listingProgress = progress
+                if case .opening = self.phase { self.phase = .opening(progress) }
+            }, partial: { [weak self] files in
+                self?.receive(files)
+            })
+            receive(files)
+            isListing = false
+            listingProgress = nil
+            canLoadMore = source.canLoadMore
+            // With older files still unread, "nothing new" only means nothing new so far.
+            if newFrames.isEmpty, !canLoadMore { showsOnlyNew = false }
         } catch is CancellationError {
             // The screen was closed while the card was listing.
         } catch {
-            await source.close()
-            phase = .failed(error.localizedDescription)
+            PhotoImportTrace.note("Opening failed — \(error.localizedDescription)")
+            if frames.isEmpty {
+                await source.close()
+                phase = .failed(error.localizedDescription)
+            } else {
+                // Part of the card is on screen and can still be imported.
+                isListing = false
+                listingProblem = error.localizedDescription
+            }
         }
+    }
+
+    /// What the source has listed so far. The first files show the sheet; later ones extend it
+    /// without touching the selection.
+    private func receive(_ files: [ImportFile]) {
+        guard !files.isEmpty else { return }
+        sourceName = source.displayName
+        frames = ImportFrame.frames(from: files)
+        guard case .opening = phase else { return }
+        matcher = GeoMatcher(points: ProcessInfo.processInfo.isMacCatalystApp ? [] : loadTrackPoints())
+        addsLocation = !matcher.isEmpty
+        // Nothing chosen in advance: a visit is usually for one day, picked with Select Day.
+        selection = []
+        isListing = true
+        phase = .ready
+        PhotoImportTrace.note("Sheet shown with \(frames.count) frames")
     }
 
     func close() async {
@@ -121,6 +181,25 @@ final class PhotoImportModel {
         try? FileManager.default.removeItem(at: stagingRoot)
     }
 
+    /// Read the next portion of older files: the sheet calls this when it is scrolled to its end.
+    func loadOlder() {
+        guard canLoadMore, !isLoadingMore, phase == .ready else { return }
+        isLoadingMore = true
+        listingProblem = nil
+        Task {
+            do {
+                let files = try await source.loadMore { [weak self] progress in self?.listingProgress = progress }
+                if !files.isEmpty { frames = ImportFrame.frames(from: files) }
+            } catch is CancellationError {
+            } catch {
+                listingProblem = error.localizedDescription
+            }
+            listingProgress = nil
+            canLoadMore = source.canLoadMore
+            isLoadingMore = false
+        }
+    }
+
     // MARK: Selection
 
     func toggle(_ frame: ImportFrame) {
@@ -128,10 +207,36 @@ final class PhotoImportModel {
         selection.formSymmetricDifference([frame.id])
     }
 
-    /// Switching the filter drops any selected frame it hides: what is imported is what is shown.
+    /// Switching a filter drops any selected frame it hides: what is imported is what is shown.
     func setShowsOnlyNew(_ onlyNew: Bool) {
         showsOnlyNew = onlyNew
+        dropHiddenSelection()
+    }
+
+    func setFileChoice(_ choice: ImportFileChoice) {
+        fileChoice = choice
+        choice.save(to: preferences)
+        dropHiddenSelection()
+    }
+
+    func setPeriod(_ period: ImportPeriod) {
+        self.period = period
+        dropHiddenSelection()
+    }
+
+    private func dropHiddenSelection() {
         selection.formIntersection(visibleFrames.map(\.id))
+    }
+
+    func isSelected(_ day: ImportDay) -> Bool {
+        !day.frames.isEmpty && day.frames.allSatisfy { selection.contains($0.id) }
+    }
+
+    /// Select every frame of the day, or, when all are, none of them.
+    func toggle(_ day: ImportDay) {
+        guard !isImporting else { return }
+        let ids = Set(day.frames.map(\.id))
+        if isSelected(day) { selection.subtract(ids) } else { selection.formUnion(ids) }
     }
 
     func selectAll() { selection = Set(visibleFrames.map(\.id)) }
@@ -159,10 +264,11 @@ final class PhotoImportModel {
         importTask?.cancel()
     }
 
-    /// Back to the contact sheet after a finished import, with what was copied now marked.
+    /// Back to the contact sheet after a finished import. A frame that failed stays selected, ready
+    /// to try again.
     func acknowledgeSummary() {
         guard case .finished = phase else { return }
-        selection = Set(newFrames.map(\.id))
+        dropHiddenSelection()
         if newFrames.isEmpty { showsOnlyNew = false }
         phase = .ready
     }
@@ -184,6 +290,7 @@ final class PhotoImportModel {
     /// the destination didn't take.
     private func runImport(_ selected: [ImportFrame]) async {
         let writer = makeWriter(destination)
+        let choice = fileChoice
         var summary = Summary(imported: 0, located: addsLocation ? 0 : nil)
         phase = .importing(done: 0, total: selected.count)
         for (index, frame) in selected.enumerated() {
@@ -192,14 +299,15 @@ final class PhotoImportModel {
             do {
                 try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
                 var downloaded: [(file: ImportFile, url: URL)] = []
-                for file in frame.files {
+                let chosen = frame.files(for: choice)
+                for file in chosen {
                     try Task.checkCancellation()
                     downloaded.append((file, try await source.download(file, to: staging)))
                 }
                 try Task.checkCancellation()
                 let position = addsLocation ? locate(downloaded, frame: frame) : nil
                 try await writer.write(downloaded, position: position)
-                try ledger.record(frame.files)
+                try ledger.record(chosen)
                 if position != nil { summary.located? += 1 }
                 selection.remove(frame.id)
                 summary.imported += 1

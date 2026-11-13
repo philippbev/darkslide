@@ -17,8 +17,23 @@ final class FakePhotoSource: PhotoSource {
 
     init(files: [ImportFile]) { self.files = files }
 
-    func open() async throws -> [ImportFile] {
+    /// Handed over first, after which the listing waits for `release()`.
+    var holdAfterPartial: [ImportFile]?
+    private var gate: CheckedContinuation<Void, Never>?
+
+    func release() {
+        gate?.resume()
+        gate = nil
+    }
+
+    func open(progress: @escaping @MainActor (CatalogProgress) -> Void,
+              partial: @escaping @MainActor ([ImportFile]) -> Void) async throws -> [ImportFile] {
         openCount += 1
+        progress(CatalogProgress(percent: 50, files: files.count / 2))
+        if let first = holdAfterPartial {
+            partial(first)
+            await withCheckedContinuation { gate = $0 }
+        }
         if let openError { throw openError }
         return files
     }
@@ -67,6 +82,8 @@ final class PhotoImportTests: XCTestCase {
     }
 
     private let noon = Date(timeIntervalSince1970: 1_794_571_200) // 2026-11-13 12:00 UTC
+    /// The model's remembered choices, apart from the app's own.
+    private let preferences = UserDefaults(suiteName: "PhotoImportTests-\(UUID().uuidString)")!
 
     private func file(_ name: String, folder: String = "DCIM/100_FUJI", size: Int64 = 100,
                       at date: Date? = nil) throws -> ImportFile {
@@ -78,7 +95,7 @@ final class PhotoImportTests: XCTestCase {
                        ledger: String = "ledger.json") -> PhotoImportModel {
         PhotoImportModel(source: source, ledger: PhotoImportLedger(url: scratch.appendingPathComponent(ledger)),
                          stagingRoot: scratch.appendingPathComponent("staging"), clockOffset: 0,
-                         loadTrackPoints: { [] }, makeWriter: { _ in writer })
+                         loadTrackPoints: { [] }, preferences: preferences, makeWriter: { _ in writer })
     }
 
     private func runImport(_ model: PhotoImportModel) async {
@@ -219,13 +236,14 @@ final class PhotoImportTests: XCTestCase {
 
     // MARK: The import
 
-    func testOpeningSelectsWhatIsNew() async throws {
+    func testOpeningSelectsNothing() async throws {
         let source = FakePhotoSource(files: [try file("DSCF0001.JPG"), try file("DSCF0002.JPG", at: noon.addingTimeInterval(60))])
         let model = model(source)
         await model.open()
         XCTAssertEqual(model.phase, .ready)
         XCTAssertEqual(model.sourceName, "X100VI")
-        XCTAssertEqual(model.selectedFrames.map(\.frameNumber), ["0001", "0002"])
+        XCTAssertTrue(model.selectedFrames.isEmpty, "a visit is for a day, not the whole card")
+        XCTAssertEqual(model.newFrames.count, 2)
     }
 
     func testImportHandsWholeFramesToTheDestinationAndRemembersThem() async throws {
@@ -234,6 +252,7 @@ final class PhotoImportTests: XCTestCase {
         let writer = RecordingWriter()
         let first = model(source, writer: writer)
         await first.open()
+        first.selectAll()
         await runImport(first)
 
         XCTAssertEqual(first.phase, .finished(.init(imported: 2)))
@@ -258,6 +277,7 @@ final class PhotoImportTests: XCTestCase {
         let writer = RecordingWriter()
         let model = model(source, writer: writer)
         await model.open()
+        model.selectAll()
         await runImport(model)
 
         guard case .finished(let summary) = model.phase else { return XCTFail("not finished") }
@@ -274,7 +294,7 @@ final class PhotoImportTests: XCTestCase {
         let writer = RecordingWriter()
         let model = model(source, writer: writer)
         await model.open()
-        model.toggle(model.frames[0])
+        model.toggle(model.frames[1])
         await runImport(model)
         XCTAssertEqual(writer.frames, [["DSCF0002.JPG"]])
         XCTAssertEqual(source.downloaded, ["DSCF0002.JPG"])
@@ -286,7 +306,8 @@ final class PhotoImportTests: XCTestCase {
         try ledger.record([files[0]])
         let model = model(FakePhotoSource(files: files))
         await model.open()
-        XCTAssertEqual(model.selectedFrames.map(\.frameNumber), ["0002"])
+        model.selectAll()
+        XCTAssertEqual(model.selectedFrames.map(\.frameNumber), ["0002"], "only the new frame is shown")
         model.setShowsOnlyNew(false)
         model.selectAll()
         XCTAssertEqual(model.selectedFrames.count, 2)
@@ -304,12 +325,174 @@ final class PhotoImportTests: XCTestCase {
 
     func testCardThatListsNothingNamesTheUSBMode() async throws {
         let source = FakePhotoSource(files: [])
-        source.openError = .noPhotos
+        source.openError = .noPhotos(diagnostics: "device X100VI  importable 0")
         let model = model(source)
         await model.open()
         guard case .failed(let message) = model.phase else { return XCTFail("not failed") }
         XCTAssertTrue(message.contains("USB Card Reader"))
+        XCTAssertTrue(message.contains("What the camera answered: device X100VI"), "the diagnostics reach the screen")
         XCTAssertEqual(source.closeCount, 1)
+    }
+
+    // MARK: Files, days and periods
+
+    func testFileChoiceDecidesWhatACameraFrameContributes() throws {
+        let frames = ImportFrame.frames(from: [try file("DSCF0001.RAF"), try file("DSCF0001.JPG"),
+                                               try file("DSCF0002.HIF", at: noon.addingTimeInterval(60)),
+                                               try file("DSCF0003.MOV", at: noon.addingTimeInterval(120))])
+        XCTAssertEqual(frames[0].files(for: .all).map(\.name), ["DSCF0001.JPG", "DSCF0001.RAF"])
+        XCTAssertEqual(frames[0].files(for: .raw).map(\.name), ["DSCF0001.RAF"])
+        XCTAssertEqual(frames[0].files(for: .rendered).map(\.name), ["DSCF0001.JPG"])
+        XCTAssertEqual(frames[1].files(for: .rendered).map(\.name), ["DSCF0002.HIF"])
+        XCTAssertTrue(frames[1].files(for: .raw).isEmpty)
+        XCTAssertTrue(frames[2].files(for: .rendered).isEmpty, "a movie is neither RAW nor JPEG")
+        XCTAssertEqual(frames[2].files(for: .all).map(\.name), ["DSCF0003.MOV"])
+    }
+
+    func testRawOnlyImportCopiesTheRAFAndLeavesTheJPEGNew() async throws {
+        let source = FakePhotoSource(files: [try file("DSCF0001.RAF"), try file("DSCF0001.JPG"),
+                                             try file("DSCF0002.JPG", at: noon.addingTimeInterval(60))])
+        let writer = RecordingWriter()
+        let model = model(source, writer: writer)
+        await model.open()
+        model.setFileChoice(.raw)
+        XCTAssertEqual(model.visibleFrames.map(\.frameNumber), ["0001"], "a JPEG-only frame has nothing for RAW")
+        model.selectAll()
+        await runImport(model)
+
+        XCTAssertEqual(source.downloaded, ["DSCF0001.RAF"])
+        XCTAssertEqual(writer.frames, [["DSCF0001.RAF"]])
+        model.acknowledgeSummary()
+        XCTAssertTrue(model.newFrames.isEmpty)
+        model.setFileChoice(.rendered)
+        XCTAssertEqual(model.newFrames.map(\.frameNumber), ["0001", "0002"], "its JPEG hasn't been imported yet")
+    }
+
+    func testFileChoiceIsRememberedAndDropsWhatItHides() async throws {
+        let model = model(FakePhotoSource(files: [try file("DSCF0001.RAF"), try file("DSCF0002.JPG", at: noon.addingTimeInterval(60))]))
+        await model.open()
+        model.selectAll()
+        model.setFileChoice(.rendered)
+        XCTAssertEqual(model.selectedFrames.map(\.frameNumber), ["0002"])
+        XCTAssertEqual(model.selection.count, 1, "a hidden frame isn't imported behind the user's back")
+        XCTAssertEqual(ImportFileChoice.load(from: preferences), .rendered)
+        XCTAssertEqual(self.model(FakePhotoSource(files: [])).fileChoice, .rendered, "the next visit starts with it")
+    }
+
+    func testSelectDayTakesTheWholeDayAndAgainNone() async throws {
+        let model = model(FakePhotoSource(files: [try file("DSCF0001.JPG", at: noon.addingTimeInterval(-86_400)),
+                                                  try file("DSCF0002.JPG"), try file("DSCF0003.JPG", at: noon.addingTimeInterval(60))]))
+        await model.open()
+        let newest = try XCTUnwrap(model.days.first)
+        XCTAssertEqual(newest.frames.count, 2)
+        XCTAssertFalse(model.isSelected(newest))
+        model.toggle(newest)
+        XCTAssertTrue(model.isSelected(newest))
+        XCTAssertEqual(model.selectedFrames.map(\.frameNumber), ["0002", "0003"], "only that day")
+        model.toggle(model.frames[1])
+        XCTAssertFalse(model.isSelected(newest), "a day with one frame left out isn't selected")
+        model.toggle(newest)
+        XCTAssertTrue(model.isSelected(newest), "a part-selected day is completed first")
+        model.toggle(newest)
+        XCTAssertTrue(model.selectedFrames.isEmpty)
+    }
+
+    func testPeriodsCoverWholeDays() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        let day: TimeInterval = 86_400
+        func check(_ period: ImportPeriod, _ offset: TimeInterval) -> Bool {
+            period.contains(noon.addingTimeInterval(offset), now: noon, calendar: calendar)
+        }
+        XCTAssertTrue(check(.all, -100 * day))
+        XCTAssertTrue(ImportPeriod.all.contains(nil), "all dates includes the undated")
+        XCTAssertFalse(ImportPeriod.today.contains(nil, now: noon, calendar: calendar))
+        XCTAssertTrue(check(.today, -11 * 3600), "just after midnight")
+        XCTAssertFalse(check(.today, -13 * 3600), "yesterday evening")
+        XCTAssertTrue(check(.lastWeek, -6 * day))
+        XCTAssertFalse(check(.lastWeek, -7 * day))
+        let range = ImportPeriod.days(from: noon.addingTimeInterval(-2 * day), to: noon.addingTimeInterval(-day))
+        XCTAssertTrue(check(range, -2 * day - 11 * 3600), "the first day from its start")
+        XCTAssertTrue(check(range, -day + 11 * 3600), "the last day to its end")
+        XCTAssertFalse(check(range, 0))
+        let reversed = ImportPeriod.days(from: noon.addingTimeInterval(-day), to: noon.addingTimeInterval(-2 * day))
+        XCTAssertTrue(check(reversed, -1.5 * day), "the order of the two days doesn't matter")
+    }
+
+    func testPeriodNarrowsTheSheet() async throws {
+        let model = model(FakePhotoSource(files: [try file("DSCF0001.JPG", at: noon.addingTimeInterval(-3 * 86_400)),
+                                                  try file("DSCF0002.JPG")]))
+        await model.open()
+        model.setPeriod(.days(from: noon, to: noon))
+        XCTAssertEqual(model.visibleFrames.map(\.frameNumber), ["0002"])
+        XCTAssertEqual(model.eligibleFrames.count, 1, "All counts within the period")
+    }
+
+    func testOpeningReportsProgressAndTheWordingSaysSo() async throws {
+        let model = model(FakePhotoSource(files: [try file("DSCF0001.JPG"), try file("DSCF0002.JPG", at: noon.addingTimeInterval(60))]))
+        XCTAssertEqual(model.phase, .opening(nil))
+        await model.open()
+        XCTAssertEqual(model.phase, .ready)
+        XCTAssertEqual(PhotoImportView.openingLabel(nil), "Reading the card")
+        XCTAssertEqual(PhotoImportView.openingLabel(CatalogProgress(percent: 42, files: 1234)),
+                       "Reading the card   42%   \(1234.formatted()) Files")
+        XCTAssertNil(PhotoImportView.daysLabel(.today))
+        XCTAssertNotNil(PhotoImportView.daysLabel(.days(from: noon, to: noon)))
+    }
+
+    // MARK: Listing in the background
+
+    private func waitUntil(_ condition: () -> Bool) async {
+        for _ in 0..<400 where !condition() { try? await Task.sleep(for: .milliseconds(5)) }
+        XCTAssertTrue(condition(), "timed out")
+    }
+
+    func testSheetShowsTheFirstFilesWhileTheCardIsStillListed() async throws {
+        let newest = try file("DSCF0002.JPG", at: noon.addingTimeInterval(60))
+        let source = FakePhotoSource(files: [try file("DSCF0001.JPG"), newest])
+        source.holdAfterPartial = [newest]
+        let model = model(source)
+        let opening = Task { await model.open() }
+        await waitUntil { model.phase == .ready }
+
+        XCTAssertTrue(model.isListing)
+        XCTAssertEqual(model.frames.map(\.frameNumber), ["0002"], "the newest day, before the card is listed")
+        XCTAssertNotNil(model.listingProgress)
+        model.toggle(model.frames[0])
+
+        source.release()
+        await opening.value
+        XCTAssertFalse(model.isListing)
+        XCTAssertEqual(model.frames.map(\.frameNumber), ["0001", "0002"])
+        XCTAssertEqual(model.selectedFrames.map(\.frameNumber), ["0002"], "the rest arriving keeps the selection")
+    }
+
+    func testListingThatBreaksOffKeepsWhatIsShown() async throws {
+        let newest = try file("DSCF0002.JPG", at: noon.addingTimeInterval(60))
+        let source = FakePhotoSource(files: [try file("DSCF0001.JPG"), newest])
+        source.holdAfterPartial = [newest]
+        source.openError = .sourceFailed("The camera was disconnected.")
+        let model = model(source)
+        let opening = Task { await model.open() }
+        await waitUntil { model.phase == .ready }
+        source.release()
+        await opening.value
+
+        XCTAssertEqual(model.phase, .ready, "what is on screen can still be imported")
+        XCTAssertFalse(model.isListing)
+        XCTAssertEqual(model.listingProblem?.contains("disconnected"), true)
+        XCTAssertEqual(model.frames.count, 1)
+    }
+
+    func testListingOrderAndStallWording() throws {
+        let older = try file("DSCF0001.JPG"), newer = try file("DSCF0002.JPG", at: noon.addingTimeInterval(60))
+        XCTAssertEqual(CameraPhotoSource.order(of: [newer, older]), "newest first")
+        XCTAssertEqual(CameraPhotoSource.order(of: [older, newer]), "oldest first")
+        XCTAssertEqual(CameraPhotoSource.order(of: [older]), "unknown")
+        XCTAssertFalse(CatalogProgress(percent: 0, files: 0, idleSeconds: 59).looksStuck)
+        XCTAssertTrue(CatalogProgress(percent: 0, files: 0, idleSeconds: 60).looksStuck)
+        XCTAssertEqual(PhotoImportView.listingLabel(CatalogProgress(percent: 34, files: 800)), "Still reading the card   34%")
+        XCTAssertEqual(PhotoImportView.listingLabel(nil), "Still reading the card")
     }
 
     // MARK: Finding the camera
@@ -344,7 +527,7 @@ final class PhotoImportTests: XCTestCase {
 
     func testDemoCardSpansTwoDaysAndItsPicturesCarryTheirDate() async throws {
         let source = DemoPhotoSource(now: noon)
-        let files = try await source.open()
+        let files = try await source.open(progress: { _ in }, partial: { _ in })
         XCTAssertEqual(files.count, 9)
         XCTAssertEqual(ImportDay.days(from: ImportFrame.frames(from: files)).count, 2)
 

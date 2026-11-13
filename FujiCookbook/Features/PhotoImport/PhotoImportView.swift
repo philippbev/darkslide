@@ -10,7 +10,7 @@ enum PhotoImportRequest: String, Identifiable {
     @MainActor
     func makeSource() -> PhotoSource {
         switch self {
-        case .camera: return CameraPhotoSource()
+        case .camera: return CameraCardSource.camera()
         case .demo: return DemoPhotoSource()
         }
     }
@@ -25,6 +25,8 @@ struct PhotoImportView: View {
     @State private var choosingFolder = false
     @State private var rememberedFolder = PhotoImportFolderBookmark.load()
     @State private var editingClock = false
+    @State private var choosingDays = false
+    @State private var dayRange = (from: Date.now, to: Date.now)
 
     init(source: PhotoSource) {
         _model = State(initialValue: PhotoImportModel(source: source))
@@ -40,12 +42,10 @@ struct PhotoImportView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Close") { dismiss() }
                 }
-                if model.phase == .ready, !model.visibleFrames.isEmpty {
+                // No Select All: an import is for a day or two, picked with each day's own button.
+                if model.phase == .ready, !model.selectedFrames.isEmpty {
                     ToolbarItem(placement: .topBarTrailing) {
-                        let allSelected = model.selectedFrames.count == model.visibleFrames.count
-                        Button(allSelected ? "Select None" : "Select All") {
-                            if allSelected { model.selectNone() } else { model.selectAll() }
-                        }
+                        Button("Select None") { model.selectNone() }
                     }
                 }
             }
@@ -62,6 +62,7 @@ struct PhotoImportView: View {
                 NavigationStack { CameraClockOffsetView(offset: $model.clockOffset) }
                     .presentationDetents([.medium])
             }
+            .sheet(isPresented: $choosingDays) { dayRangeSheet }
             .alert("Import Finished", isPresented: summaryIsPresented) {
                 Button("OK") { model.acknowledgeSummary() }
             } message: {
@@ -72,11 +73,24 @@ struct PhotoImportView: View {
     @ViewBuilder
     private var content: some View {
         switch model.phase {
-        case .opening:
+        case .opening(let progress):
             VStack(spacing: DSSpacing.m) {
-                ProgressView()
-                Text("Reading the card").dsLabelMono()
+                if let progress, progress.percent > 0 {
+                    ProgressView(value: Double(progress.percent), total: 100)
+                        .frame(maxWidth: 280)
+                } else {
+                    ProgressView()
+                }
+                Text(Self.openingLabel(progress)).dsLabelMono()
+                Text(progress?.note ?? (progress?.looksStuck == true
+                     ? "No progress for a while. A full card can take a minute or two before the first photo appears. If nothing changes, unplug the camera, plug it in again and reopen this screen."
+                     : "The photos appear as soon as the camera lists the first ones."))
+                    .font(DSFont.footnote)
+                    .foregroundStyle(DSColor.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 320)
             }
+            .padding(DSSpacing.screenMargin)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .failed(let message):
             failure(message)
@@ -111,24 +125,23 @@ struct PhotoImportView: View {
     private var sheet: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DSSpacing.xl) {
-                DSStatusCard(systemImage: "camera", title: model.sourceName, meta: cardMeta) { DSStatusDot() }
-                    .padding(.horizontal, DSSpacing.screenMargin)
+                DSStatusCard(systemImage: "camera", title: model.sourceName, meta: cardMeta) {
+                    if model.isListing { ProgressView() } else { DSStatusDot() }
+                }
+                .padding(.horizontal, DSSpacing.screenMargin)
+                if model.isListing || model.listingProblem != nil {
+                    listingStatus
+                        .padding(.horizontal, DSSpacing.screenMargin)
+                }
                 // Tracks are recorded on the phone and stay there, so the Mac has none to use.
                 if !ProcessInfo.processInfo.isMacCatalystApp {
                     locationCard
                         .padding(.horizontal, DSSpacing.screenMargin)
                 }
-                DSChipRow {
-                    DSChip(label: "New  \(model.newFrames.count)", isSelected: model.showsOnlyNew) {
-                        model.setShowsOnlyNew(true)
-                    }
-                    DSChip(label: "All  \(model.frames.count)", isSelected: !model.showsOnlyNew) {
-                        model.setShowsOnlyNew(false)
-                    }
-                }
-                .disabled(model.isImporting)
+                filters
+                    .disabled(model.isImporting)
                 if model.visibleFrames.isEmpty {
-                    Text("Everything on this card has been imported.")
+                    Text(emptyText)
                         .font(DSFont.subhead)
                         .foregroundStyle(DSColor.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -138,20 +151,161 @@ struct PhotoImportView: View {
                 }
                 ForEach(model.days) { day in
                     VStack(alignment: .leading, spacing: DSSpacing.s) {
-                        Text(Self.heading(for: day.day))
-                            .dsLabelMono()
-                            .padding(.horizontal, DSSpacing.xs)
-                            .accessibilityAddTraits(.isHeader)
+                        dayHeader(day)
                         LazyVGrid(columns: DSContactSheet.columns, spacing: DSContactSheet.spacing) {
                             ForEach(day.frames) { frame in tile(for: frame) }
                         }
                     }
                     .padding(.horizontal, DSSpacing.screenMargin)
                 }
+                if model.canLoadMore {
+                    loadOlderFooter
+                        .padding(.horizontal, DSSpacing.screenMargin)
+                }
             }
             .padding(.vertical, DSSpacing.l)
         }
         .safeAreaInset(edge: .bottom) { actionBar }
+    }
+
+    // MARK: Older photos
+
+    /// At the end of the sheet: reaching it reads the next portion of older photos.
+    private var loadOlderFooter: some View {
+        VStack(spacing: DSSpacing.s) {
+            if model.isLoadingMore {
+                ProgressView(value: Double(model.listingProgress?.percent ?? 0), total: 100)
+                Text("Loading older photos").dsLabelMono()
+            } else {
+                Button("Load Older Photos") { model.loadOlder() }
+                    .buttonStyle(.dsSecondary)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, DSSpacing.s)
+        .onAppear { model.loadOlder() }
+    }
+
+    // MARK: Listing in the background
+
+    @ViewBuilder
+    private var listingStatus: some View {
+        if let problem = model.listingProblem {
+            VStack(alignment: .leading, spacing: DSSpacing.xs) {
+                DSHintPill(text: "Card only partly read", systemImage: "exclamationmark.triangle")
+                Text(problem).font(DSFont.footnote).foregroundStyle(DSColor.textSecondary)
+            }
+        } else {
+            VStack(alignment: .leading, spacing: DSSpacing.xs) {
+                DSHintPill(text: Self.listingLabel(model.listingProgress), systemImage: "arrow.down.circle")
+                Text("You can already import what is shown; the rest of the card is still being read.")
+                    .font(DSFont.footnote)
+                    .foregroundStyle(DSColor.textSecondary)
+            }
+        }
+    }
+
+    /// "Still reading the card   34%".
+    static func listingLabel(_ progress: CatalogProgress?) -> String {
+        guard let progress, progress.percent > 0 else { return "Still reading the card" }
+        return "Still reading the card   \(progress.percent)%"
+    }
+
+    // MARK: Filters
+
+    private var filters: some View {
+        VStack(alignment: .leading, spacing: DSSpacing.xs) {
+            filterRow("Files") {
+                ForEach(ImportFileChoice.allCases) { choice in
+                    DSChip(label: choice.label, isSelected: model.fileChoice == choice) { model.setFileChoice(choice) }
+                }
+            }
+            filterRow("Period") {
+                DSChip(label: "All Dates", isSelected: model.period == .all) { model.setPeriod(.all) }
+                DSChip(label: "Today", isSelected: model.period == .today) { model.setPeriod(.today) }
+                DSChip(label: "7 Days", isSelected: model.period == .lastWeek) { model.setPeriod(.lastWeek) }
+                DSChip(label: Self.daysLabel(model.period) ?? "Choose Days…", isSelected: Self.daysLabel(model.period) != nil) {
+                    let bounds = model.dateBounds
+                    if case .days(let from, let to) = model.period { dayRange = (from, to) }
+                    else { dayRange = (bounds?.upperBound ?? .now, bounds?.upperBound ?? .now) }
+                    choosingDays = true
+                }
+            }
+            filterRow("Show") {
+                DSChip(label: "New  \(model.newFrames.count)", isSelected: model.showsOnlyNew) { model.setShowsOnlyNew(true) }
+                DSChip(label: "All  \(model.eligibleFrames.count)", isSelected: !model.showsOnlyNew) { model.setShowsOnlyNew(false) }
+            }
+        }
+    }
+
+    private func filterRow<Chips: View>(_ title: String, @ViewBuilder chips: () -> Chips) -> some View {
+        DSChipRow {
+            Text(title).dsLabelMono().frame(minWidth: 52, alignment: .leading)
+            chips()
+        }
+    }
+
+    private var emptyText: String {
+        if model.frames.allSatisfy({ model.isAlreadyImported($0) || $0.files(for: model.fileChoice).isEmpty }) {
+            return "Everything on this card has been imported as \(model.fileChoice.label)."
+        }
+        return model.showsOnlyNew ? "Nothing new for these days and files." : "No photos for these days and files."
+    }
+
+    private func dayHeader(_ day: ImportDay) -> some View {
+        HStack {
+            Text(Self.heading(for: day.day))
+                .dsLabelMono()
+                .accessibilityAddTraits(.isHeader)
+            Spacer()
+            Button(model.isSelected(day) ? "Deselect Day" : "Select Day  \(day.frames.count)") { model.toggle(day) }
+                .font(DSFont.footnote.weight(.semibold))
+                .foregroundStyle(DSColor.accentText)
+                .frame(minHeight: DSSize.touchTarget)
+                .disabled(model.isImporting)
+        }
+        .padding(.horizontal, DSSpacing.xs)
+    }
+
+    private var dayRangeSheet: some View {
+        NavigationStack {
+            Form {
+                let bounds = model.dateBounds ?? (Date.distantPast...Date.now)
+                DatePicker("From", selection: $dayRange.from, in: bounds.lowerBound...max(bounds.upperBound, dayRange.to),
+                           displayedComponents: .date)
+                DatePicker("To", selection: $dayRange.to, in: min(bounds.lowerBound, dayRange.from)...max(bounds.upperBound, .now),
+                           displayedComponents: .date)
+            }
+            .navigationTitle("Choose Days")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { choosingDays = false } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Show") {
+                        model.setPeriod(.days(from: dayRange.from, to: dayRange.to))
+                        choosingDays = false
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
+    /// "13 Nov", "12 Nov – 15 Nov" for a chosen period; nil for the others.
+    static func daysLabel(_ period: ImportPeriod, calendar: Calendar = .current) -> String? {
+        guard case .days(let from, let to) = period else { return nil }
+        let style = Date.FormatStyle.dateTime.day().month(.abbreviated)
+        let first = min(from, to), last = max(from, to)
+        return calendar.isDate(first, inSameDayAs: last)
+            ? first.formatted(style) : "\(first.formatted(style)) – \(last.formatted(style))"
+    }
+
+    /// "Reading the card", "Reading the card   42%   1,234 Files".
+    static func openingLabel(_ progress: CatalogProgress?) -> String {
+        guard let progress, progress.percent > 0 || progress.files > 0 else { return "Reading the card" }
+        var parts = ["Reading the card", "\(progress.percent)%"]
+        if progress.files > 0 { parts.append("\(progress.files.formatted()) Files") }
+        return parts.joined(separator: "   ")
     }
 
     // MARK: Location
@@ -188,7 +342,9 @@ struct PhotoImportView: View {
 
     private var cardMeta: String {
         let count = model.frames.count
-        return "USB   Card Reader   \(count) Photo\(count == 1 ? "" : "s")"
+        return model.canLoadMore
+            ? "USB   Card Reader   Newest \(count)"
+            : "USB   Card Reader   \(count) Photo\(count == 1 ? "" : "s")"
     }
 
     private func tile(for frame: ImportFrame) -> some View {
