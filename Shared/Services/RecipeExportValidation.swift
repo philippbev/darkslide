@@ -52,6 +52,25 @@ struct RecipeExportSnapshot {
             chapters: chapters.isEmpty ? nil : chapters.map(RecipePortability.portableChapter(from:)))
     }
 
+    /// One chapter and the recipes in it, for sharing: the recipes in slot order with their `uuid`,
+    /// so the chapter re-links to them on import the way a backup's chapters do.
+    ///
+    /// `recipes` is the library to resolve the chapter's slots against. A slot whose recipe is gone
+    /// is left out of the file and of the chapter in it, so what arrives is a chapter with no holes.
+    /// Nil when no slot resolves: a file without recipes can't be imported.
+    static func chapter(_ chapter: Chapter, recipes: [Recipe], includePhotos: Bool) -> RecipeExportSnapshot? {
+        let byUUID = Dictionary(recipes.map { ($0.uuid, $0) }, uniquingKeysWith: { first, _ in first })
+        let slots = chapter.recipeUUIDs.filter { byUUID[$0] != nil }
+        guard !slots.isEmpty else { return nil }
+        // A recipe that fills two slots is written once; both slots refer to it.
+        var written = Set<UUID>()
+        let entries = slots.filter { written.insert($0).inserted }
+            .compactMap { byUUID[$0] }
+            .map { entry($0, includePhotos: includePhotos, includeIdentity: true) }
+        return RecipeExportSnapshot(shape: .many, entries: entries,
+                                    chapters: [PortableChapter(name: chapter.name, recipeUUIDs: slots)])
+    }
+
     private static func entry(_ recipe: Recipe, includePhotos: Bool, includeIdentity: Bool = false) -> Entry {
         Entry(recipe: RecipePortability.portable(from: recipe, includeIdentity: includeIdentity),
               photos: includePhotos ? recipe.sortedPhotos.map(\.imageData) : [])

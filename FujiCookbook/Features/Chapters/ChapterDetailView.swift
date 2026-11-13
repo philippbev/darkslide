@@ -16,6 +16,10 @@ struct ChapterDetailView: View {
     @State private var showingEditor = false
     @State private var showingPush = false
     @State private var showingDeleteConfirm = false
+    @State private var showingShareOptions = false
+    @State private var shareItem: ShareItem?
+    @State private var exportError: String?
+    @State private var exportRunner = RecipeExportRunner()
 
     @AppStorage(RememberedCamera.displayNameKey) private var rememberedName = ""
     @AppStorage(RememberedCamera.slotCountKey) private var rememberedSlotCount = 0
@@ -24,6 +28,9 @@ struct ChapterDetailView: View {
     private var isEmpty: Bool { chapter.recipeUUIDs.isEmpty }
 
     private var canPush: Bool { camera.slotWriter.canPush }
+
+    /// The recipes a shared file would carry: the chapter's slots that still have a recipe.
+    private var shareableRecipes: [Recipe] { chapter.recipeUUIDs.compactMap(recipe(for:)) }
 
     /// The camera this chapter's slots are measured against: the connected one when it can be pushed
     /// to, else the last one that could. Nil when there is no such camera, or while a connected body
@@ -123,6 +130,8 @@ struct ChapterDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button { showingEditor = true } label: { Label("Edit", systemImage: "pencil") }
+                    Button { initiateShare() } label: { Label("Share…", systemImage: "square.and.arrow.up") }
+                        .disabled(shareableRecipes.isEmpty)
                     Divider()
                     Button(role: .destructive) { showingDeleteConfirm = true } label: {
                         Label("Delete", systemImage: "trash")
@@ -140,6 +149,18 @@ struct ChapterDetailView: View {
                 PushView(preselectedRecipe: nil, preassignedSlots: chapter.slotAssignments)
             }
         }
+        .sheet(item: $shareItem) { ShareSheet(items: $0.urls) }
+        .confirmationDialog("Share Chapter", isPresented: $showingShareOptions, titleVisibility: .visible) {
+            Button("Include Sample Photos") { share(includePhotos: true) }
+            Button("Recipes Only") { share(includePhotos: false) }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("The file holds this chapter and its recipes. Opening it in Fuji Cookbook restores both.")
+        }
+        .alert("Export Failed", isPresented: Binding(isPresent: $exportError)) {
+            Button("OK", role: .cancel) {}
+        } message: { Text(exportError ?? "") }
+        .exportProgress(exportRunner)
         .confirmationDialog("Delete “\(chapter.name)”?", isPresented: $showingDeleteConfirm, titleVisibility: .visible) {
             Button("Delete Chapter", role: .destructive) {
                 modelContext.delete(chapter)
@@ -148,6 +169,24 @@ struct ChapterDetailView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This removes the chapter only. The recipes in it stay in your library.")
+        }
+    }
+
+    /// Ask whether to embed photos when a recipe in the chapter has any; otherwise export straight
+    /// away.
+    private func initiateShare() {
+        if shareableRecipes.contains(where: { !$0.sortedPhotos.isEmpty }) { showingShareOptions = true }
+        else { share(includePhotos: false) }
+    }
+
+    private func share(includePhotos: Bool) {
+        guard let snapshot = RecipeExportSnapshot.chapter(chapter, recipes: allRecipes,
+                                                          includePhotos: includePhotos) else { return }
+        exportRunner.start(snapshot, named: chapter.name) { result in
+            switch result {
+            case .success(let url): shareItem = ShareItem(url: url)
+            case .failure(let error): exportError = error.localizedDescription
+            }
         }
     }
 
