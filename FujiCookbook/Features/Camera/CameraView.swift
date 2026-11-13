@@ -5,6 +5,7 @@ import SwiftUI
 /// loaded; Import / Push are equal-weight buttons.
 struct CameraView: View {
     @Environment(CameraServices.self) private var camera
+    @Environment(AppRouter.self) private var router
 
     /// Gates the Demo Camera and the property report — see `DiagnosticMode`.
     @AppStorage(DiagnosticMode.key) private var diagnosticMode = false
@@ -147,6 +148,12 @@ struct CameraView: View {
             .onAppear(perform: refreshTestRecords)
             .sheet(isPresented: $showingImport) { NavigationStack { CameraImportView() } }
             .sheet(isPresented: $showingLocationTrack) { NavigationStack { LocationTrackView() } }
+            // The menu bar's Import Photos: taken over here, so it opens like the row above.
+            .onChange(of: router.photoImport, initial: true) { _, request in
+                guard let request else { return }
+                photoImport = request
+                router.photoImport = nil
+            }
             .sheet(item: $photoImport) { request in
                 NavigationStack { PhotoImportView(source: request.makeSource()) }
             }
@@ -798,16 +805,28 @@ struct CameraView: View {
                 .padding(.horizontal, 4)
             // One connect at a time: the rows wait out the one under way, whose progress shows above.
             VStack(spacing: 0) {
-                connectRow(title: "Connect Camera (USB)", systemImage: "cable.connector") {
-                    Task { await camera.connector.connectHardware() }
+                if SharedContainer.isLocalMacBuild {
+                    // See `SharedContainer.isLocalMacBuild`: no USB camera in this build.
+                    Text("This Mac build is signed to run locally, so it can't reach a camera over USB. Recipes, chapters and the Kitchen work; the Demo Camera and Demo Card are under the diagnostic tools.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.ink2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(14)
+                } else {
+                    connectRow(title: "Connect Camera (USB)", systemImage: "cable.connector") {
+                        Task { await camera.connector.connectHardware() }
+                    }
+                    Rectangle().fill(Theme.line).frame(height: 1)
+                    connectRow(title: "Import Photos (USB)", systemImage: "photo.on.rectangle.angled") {
+                        photoImport = .camera
+                    }
                 }
-                Rectangle().fill(Theme.line).frame(height: 1)
-                connectRow(title: "Import Photos (USB)", systemImage: "photo.on.rectangle.angled") {
-                    photoImport = .camera
-                }
-                connectRow(title: LocationRecorder.shared.isRecording ? "Location Track (Recording)" : "Location Track",
-                           systemImage: "location") {
-                    showingLocationTrack = true
+                // Recorded on the walk, so on the phone that goes along: not on the Mac.
+                if !ProcessInfo.processInfo.isMacCatalystApp {
+                    connectRow(title: LocationRecorder.shared.isRecording ? "Location Track (Recording)" : "Location Track",
+                               systemImage: "location") {
+                        showingLocationTrack = true
+                    }
                 }
                 if diagnosticMode {
                     connectRow(title: "Import Photos from Demo Card", systemImage: "play.circle") {

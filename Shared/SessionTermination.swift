@@ -138,8 +138,7 @@ public enum SessionTermination {
     // MARK: Marker
 
     private static var markerURL: URL? {
-        FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: ScreenshotInbox.appGroupID)?
+        SharedContainer.url?
             .appendingPathComponent("Logs", isDirectory: true)
             .appendingPathComponent("session-foreground.marker")
     }

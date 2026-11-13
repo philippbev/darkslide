@@ -31,8 +31,17 @@ enum SharedModelStore {
     /// why the extension reads what the app actually did from ``ScanConfiguration`` rather than
     /// deciding for itself.
     static func configuration(cloudKit: Bool) -> ModelConfiguration {
-        ModelConfiguration(schema: schema,
-                           groupContainer: .identifier(ScreenshotInbox.appGroupID),
-                           cloudKitDatabase: cloudKit ? .automatic : .none)
+        #if targetEnvironment(macCatalyst)
+        // A locally signed Mac build has no App Group (`SharedContainer`): its own store, where
+        // the App Group's would be, and never CloudKit, which needs the entitlement it lacks.
+        if !SharedContainer.isAppGroup, let container = SharedContainer.url {
+            let url = container.appendingPathComponent("Library/Application Support/default.store")
+            try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            return ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
+        }
+        #endif
+        return ModelConfiguration(schema: schema,
+                                  groupContainer: .identifier(ScreenshotInbox.appGroupID),
+                                  cloudKitDatabase: cloudKit ? .automatic : .none)
     }
 }

@@ -312,6 +312,34 @@ final class PhotoImportTests: XCTestCase {
         XCTAssertEqual(source.closeCount, 1)
     }
 
+    // MARK: Finding the camera
+
+    func testCameraSearchThatNeverAnswersEndsInTheNoCameraMessage() async {
+        let started = Date()
+        do {
+            _ = try await CameraPhotoSource.withTimeout(0.2) { () async throws -> Int in
+                // A permission request whose answer never comes.
+                await withCheckedContinuation { (_: CheckedContinuation<Void, Never>) in }
+                return 1
+            }
+            XCTFail("a search that never answers must end")
+        } catch {
+            XCTAssertEqual(error as? PhotoImportError, .noCamera)
+        }
+        XCTAssertLessThan(Date().timeIntervalSince(started), 5)
+    }
+
+    func testCameraSearchThatAnswersInTimeGivesItsAnswer() async throws {
+        let value = try await CameraPhotoSource.withTimeout(5) { 42 }
+        XCTAssertEqual(value, 42)
+        do {
+            _ = try await CameraPhotoSource.withTimeout(5) { () async throws -> Int in throw PhotoImportError.permissionDenied }
+            XCTFail("the operation's own error comes through")
+        } catch {
+            XCTAssertEqual(error as? PhotoImportError, .permissionDenied)
+        }
+    }
+
     // MARK: Demo card and wording
 
     func testDemoCardSpansTwoDaysAndItsPicturesCarryTheirDate() async throws {

@@ -100,7 +100,7 @@ final class PhotoImportModel {
             let files = try await source.open()
             sourceName = source.displayName
             frames = ImportFrame.frames(from: files)
-            matcher = GeoMatcher(points: loadTrackPoints())
+            matcher = GeoMatcher(points: ProcessInfo.processInfo.isMacCatalystApp ? [] : loadTrackPoints())
             addsLocation = !matcher.isEmpty
             // What is new is what a visit is usually for.
             selection = Set(newFrames.map(\.id))

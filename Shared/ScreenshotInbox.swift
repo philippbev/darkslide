@@ -12,8 +12,7 @@ enum ScreenshotInbox {
     static let appGroupID = AppIdentifiers.appGroup
 
     private static var inboxURL: URL? {
-        FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: appGroupID)?
+        SharedContainer.url?
             .appendingPathComponent("ScreenshotInbox", isDirectory: true)
     }
 

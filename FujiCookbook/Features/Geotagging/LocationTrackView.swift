@@ -22,7 +22,7 @@ struct LocationTrackView: View {
                 }
                 clockCard
                 trackList
-                Text("Tracks stay on this iPhone. Importing photos from the camera adds the position recorded at the time each one was taken: into JPEG and HEIF files, and as an XMP sidecar beside a RAF. Nothing on the camera's card is changed.")
+                Text("Tracks stay on this device. Importing photos from the camera adds the position recorded at the time each one was taken: into JPEG and HEIF files, and as an XMP sidecar beside a RAF. Nothing on the camera's card is changed.")
                     .font(DSFont.footnote)
                     .foregroundStyle(DSColor.textSecondary)
             }

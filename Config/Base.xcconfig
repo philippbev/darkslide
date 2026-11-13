@@ -17,4 +17,7 @@ APP_IDENTIFIER_BASE = xyz.grovehouse.fujicookbookapp
 APP_GROUP_IDENTIFIER = group.$(APP_IDENTIFIER_BASE)
 ICLOUD_CONTAINER_IDENTIFIER = iCloud.$(APP_IDENTIFIER_BASE)
 
+// Every target also builds for the Mac through Mac Catalyst. iOS builds are unaffected.
+SUPPORTS_MACCATALYST = YES
+
 #include? "Local.xcconfig"

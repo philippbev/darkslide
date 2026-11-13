@@ -113,8 +113,11 @@ struct PhotoImportView: View {
             VStack(alignment: .leading, spacing: DSSpacing.xl) {
                 DSStatusCard(systemImage: "camera", title: model.sourceName, meta: cardMeta) { DSStatusDot() }
                     .padding(.horizontal, DSSpacing.screenMargin)
-                locationCard
-                    .padding(.horizontal, DSSpacing.screenMargin)
+                // Tracks are recorded on the phone and stay there, so the Mac has none to use.
+                if !ProcessInfo.processInfo.isMacCatalystApp {
+                    locationCard
+                        .padding(.horizontal, DSSpacing.screenMargin)
+                }
                 DSChipRow {
                     DSChip(label: "New  \(model.newFrames.count)", isSelected: model.showsOnlyNew) {
                         model.setShowsOnlyNew(true)

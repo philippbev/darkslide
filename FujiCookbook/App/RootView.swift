@@ -25,6 +25,7 @@ struct RootView: View {
             NavigationStack { DiagnosticsReportView() }
         }
         .environment(router)
+        .focusedSceneValue(\.appRouter, router)
         // On the connection, not on the tabs' redraws: a removal in My Cameras holds until that
         // camera next connects, and a recovery re-assigns an equal value and so does not fire this.
         .onChange(of: camera.session.connected) { _, connected in
