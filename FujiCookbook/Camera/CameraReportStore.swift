@@ -5,8 +5,7 @@ import Foundation
 /// report; the JSON carries its own timestamps.
 enum CameraReportStore {
     static var directoryURL: URL? {
-        FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: ScreenshotInbox.appGroupID)?
+        SharedContainer.url?
             .appendingPathComponent("Reports", isDirectory: true)
     }
 

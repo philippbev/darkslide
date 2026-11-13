@@ -58,7 +58,8 @@ struct FujiCookbookApp: App {
         // configuration, so the two processes cannot drift apart.
         // The store configuration is fixed when it's created here, so toggling the preference only
         // takes effect on the next launch.
-        let wantsCloud = UserDefaults.standard.bool(forKey: Self.iCloudSyncKey)
+        // A locally signed Mac build has no App Group and no iCloud entitlement (`SharedContainer`).
+        let wantsCloud = UserDefaults.standard.bool(forKey: Self.iCloudSyncKey) && SharedContainer.isAppGroup
         let opened: OpenedStore<ModelContainer>
         do {
             opened = try OpenedStore.open(wantsCloud: wantsCloud) { cloudKit in
@@ -108,5 +109,6 @@ struct FujiCookbookApp: App {
                 }
         }
         .modelContainer(modelContainer)
+        .commands { AppCommands() }
     }
 }

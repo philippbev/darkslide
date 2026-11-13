@@ -12,6 +12,7 @@ Persönlicher Fork von zgrimz/fuji-cookbook für Philipp (Fujifilm X100VI). Nati
   `xcodebuild test -scheme FujiCookbook -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -collect-test-diagnostics never`
 - Nach jeder Änderung bauen und die betroffenen Tests laufen lassen; vor einem Merge die ganze Suite.
 - Kamera ohne Hardware: Simulator → Settings ▸ Diagnostics ▸ Show Diagnostic Tools ▸ Connect Demo Camera.
+- Mac (Mac Catalyst, ohne Apple-Team): `scripts/run-mac.sh` baut, signiert lokal mit `Config/LocalMac.entitlements` und startet. Dieser Build hat eine eigene Bibliothek (`SharedContainer`), kein iCloud, keine Share Extension und keinen USB-Kamerazugriff (`SharedContainer.isLocalMacBuild`). Location Track gibt es am Mac nicht (Tracks entstehen auf dem iPhone unterwegs). Mac-UI-Prüfung: Menüs per `osascript`/System Events, Fenster per `screencapture -l`.
 
 ## Niemals committen
 - `Config/Local.xcconfig` (git-ignored)

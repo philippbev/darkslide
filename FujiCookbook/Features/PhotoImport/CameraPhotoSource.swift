@@ -33,10 +33,18 @@ final class CameraPhotoSource: NSObject, PhotoSource {
         self.catalogTimeout = catalogTimeout
     }
 
+    /// How long finding a camera may take in all, the permission requests included. Discovery's own
+    /// wait covers only a camera's arrival; a permission request the system never answers (seen on a
+    /// locally signed Mac build) would otherwise leave the screen waiting with no way to tell why.
+    static let discoveryTimeout: TimeInterval = 30
+
     func open() async throws -> [ImportFile] {
+        guard !SharedContainer.isLocalMacBuild else { throw PhotoImportError.localMacBuild }
         let found: any DiscoveredCamera
         do {
-            found = try await discovery().firstCamera()
+            found = try await Self.withTimeout(Self.discoveryTimeout) { [discovery] in
+                try await discovery().firstCamera()
+            }
         } catch let error as CameraError where error == .permissionDenied || error == .contentsAccessUnavailable {
             throw PhotoImportError.permissionDenied
         } catch is CancellationError {
@@ -73,6 +81,40 @@ final class CameraPhotoSource: NSObject, PhotoSource {
         CameraLog.info("PhotoImport: catalog lists \(files.count) importable file\(files.count == 1 ? "" : "s")")
         guard !files.isEmpty else { throw PhotoImportError.noPhotos }
         return files
+    }
+
+    /// `operation`, or `PhotoImportError.noCamera` once `seconds` have passed, whichever comes first.
+    /// The operation is cancelled then; one that never returns is left behind rather than waited
+    /// for, which a task group would do.
+    static func withTimeout<T>(_ seconds: TimeInterval,
+                               _ operation: @escaping @MainActor () async throws -> T) async throws -> T {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<T, Error>) in
+            let outcome = FirstOutcome()
+            let work = Task { @MainActor in
+                do {
+                    let value = try await operation()
+                    if outcome.claim() { continuation.resume(returning: value) }
+                } catch {
+                    if outcome.claim() { continuation.resume(throwing: error) }
+                }
+            }
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(seconds))
+                guard outcome.claim() else { return }
+                work.cancel()
+                continuation.resume(throwing: PhotoImportError.noCamera)
+            }
+        }
+    }
+
+    /// Lets exactly one of the two racers resume the continuation.
+    @MainActor
+    private final class FirstOutcome {
+        private var claimed = false
+        func claim() -> Bool {
+            defer { claimed = true }
+            return !claimed
+        }
     }
 
     private func waitForCatalog(of device: ICCameraDevice) async throws {

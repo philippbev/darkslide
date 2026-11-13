@@ -32,6 +32,7 @@ enum PhotoImportError: LocalizedError, Equatable {
     case downloadFailed(file: String, detail: String)
     case photoLibraryDenied
     case destinationUnavailable(String)
+    case localMacBuild
 
     /// The setting a Fujifilm body needs for the card to be readable over USB.
     static let cardReaderHint = "On the camera, set Network/USB Setting → Connection Mode to “USB Card Reader”. Recipes need “USB RAW Conv./Backup Restore”, so switch back afterwards."
@@ -56,6 +57,8 @@ enum PhotoImportError: LocalizedError, Equatable {
             return "Photo library access is off. Enable it for Fuji Cookbook in Settings, then try again."
         case .destinationUnavailable(let detail):
             return "The destination folder can't be written to: \(detail)"
+        case .localMacBuild:
+            return "This Mac build is signed to run locally, without an Apple developer team, and macOS doesn't let such a build reach a camera over USB. The Demo Card under the diagnostic tools works. A build signed with your team can import from the camera."
         }
     }
 }

@@ -356,8 +356,7 @@ public enum AppLog {
     /// by append order rather than by timestamp, which is fine: the extension runs when the app is
     /// backgrounded, so in practice they don't overlap.
     private static var containerURL: URL? {
-        FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: ScreenshotInbox.appGroupID)?
+        SharedContainer.url?
             .appendingPathComponent("Logs", isDirectory: true)
     }
 

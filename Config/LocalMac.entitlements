@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- For a Mac Catalyst build signed to run locally, without an Apple team (scripts/run-mac.sh).
+
+	     macOS refuses to launch an app whose signature claims iCloud or push without a provisioning
+	     profile, and without one the sandbox refuses the App Group container the library lives in.
+	     So this build runs unsandboxed and claims only the App Group, which still names where the
+	     library and the settings are. iCloud sync and the shared Keychain are off in it.
+
+	     A build signed by a team uses FujiCookbook.entitlements as on iOS. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>$(APP_GROUP_IDENTIFIER)</string>
+	</array>
+</dict>
+</plist>
