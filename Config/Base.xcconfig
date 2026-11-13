@@ -17,6 +17,12 @@ APP_IDENTIFIER_BASE = xyz.grovehouse.fujicookbookapp
 APP_GROUP_IDENTIFIER = group.$(APP_IDENTIFIER_BASE)
 ICLOUD_CONTAINER_IDENTIFIER = iCloud.$(APP_IDENTIFIER_BASE)
 
+// The entitlements each target signs with. A personal team (a free Apple ID) can't sign iCloud
+// or push, so Local.xcconfig points these at Config/PersonalTeam-*.entitlements for a build on
+// your own iPhone; see Local.example.xcconfig.
+FC_APP_ENTITLEMENTS = FujiCookbook/FujiCookbook.entitlements
+FC_EXTENSION_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements
+
 // Every target also builds for the Mac through Mac Catalyst. iOS builds are unaffected.
 SUPPORTS_MACCATALYST = YES
 
