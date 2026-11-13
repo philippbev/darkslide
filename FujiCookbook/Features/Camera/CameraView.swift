@@ -25,6 +25,9 @@ struct CameraView: View {
     /// avoids a stale-parameter race, where the sheet builds with the previous wave.
     @State private var cameraTest: CameraTestRequest?
     @State private var recoveryTest: GuidedRecoveryRecord?
+    /// Which card the photo import opens with, or nil when it isn't showing.
+    @State private var photoImport: PhotoImportRequest?
+    @State private var showingLocationTrack = false
     /// What the Camera Test row shows, read from the store when the tab appears and whenever a test
     /// sheet closes. Held in state because nothing on this screen observes those files: the flow
     /// writes them from inside a sheet, and a body that read them directly would only notice when
@@ -143,6 +146,10 @@ struct CameraView: View {
             }
             .onAppear(perform: refreshTestRecords)
             .sheet(isPresented: $showingImport) { NavigationStack { CameraImportView() } }
+            .sheet(isPresented: $showingLocationTrack) { NavigationStack { LocationTrackView() } }
+            .sheet(item: $photoImport) { request in
+                NavigationStack { PhotoImportView(source: request.makeSource()) }
+            }
             .sheet(isPresented: $showingPush) { NavigationStack { PushView(preselectedRecipe: nil) } }
             .sheet(item: $restoreTarget) { target in
                 RestoreView(slot: target.slot, slotName: target.name,
@@ -794,7 +801,18 @@ struct CameraView: View {
                 connectRow(title: "Connect Camera (USB)", systemImage: "cable.connector") {
                     Task { await camera.connector.connectHardware() }
                 }
+                Rectangle().fill(Theme.line).frame(height: 1)
+                connectRow(title: "Import Photos (USB)", systemImage: "photo.on.rectangle.angled") {
+                    photoImport = .camera
+                }
+                connectRow(title: LocationRecorder.shared.isRecording ? "Location Track (Recording)" : "Location Track",
+                           systemImage: "location") {
+                    showingLocationTrack = true
+                }
                 if diagnosticMode {
+                    connectRow(title: "Import Photos from Demo Card", systemImage: "play.circle") {
+                        photoImport = .demo
+                    }
                     Rectangle().fill(Theme.line).frame(height: 1)
                     connectRow(title: "Connect Demo Camera", systemImage: "play.circle") {
                         Task { await camera.connector.connectDemo() }
@@ -811,8 +829,8 @@ struct CameraView: View {
             .opacity(camera.connector.isConnecting ? 0.45 : 1)
             .themedCard(cornerRadius: 16)
             Text(diagnosticMode
-                 ? "No Fuji body handy? “Connect Demo Camera” runs the full read/import/push workflow with a simulated camera. For real hardware, connect by USB in “USB RAW Conv./Backup Restore” mode — see Connection Help."
-                 : "Connect your camera by USB in “USB RAW Conv./Backup Restore” mode — see Connection Help.")
+                 ? "No Fuji body handy? “Connect Demo Camera” runs the full read/import/push workflow with a simulated camera. For real hardware, connect by USB in “USB RAW Conv./Backup Restore” mode — see Connection Help. Importing photos needs “USB Card Reader” mode instead."
+                 : "Connect your camera by USB in “USB RAW Conv./Backup Restore” mode — see Connection Help. Importing photos needs “USB Card Reader” mode instead.")
                 .font(.caption)
                 .foregroundStyle(Theme.ink3)
                 .padding(.horizontal, 4)

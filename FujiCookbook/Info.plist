@@ -56,6 +56,9 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
+		<!-- Keeps a location track recording while the phone is locked during a photo walk.
+		     Only between Start and Stop in Location Track; iOS shows the location indicator. -->
+		<string>location</string>
 	</array>
 
 	<key>UISupportedInterfaceOrientations</key>
@@ -80,6 +83,11 @@
 	<!-- Lets the user save a Kitchen-converted JPEG, or a Frame & Fit export, into their photo library. -->
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Fuji Cookbook saves the JPEGs it develops from your RAW files, and the photos you frame with Frame &amp; Fit, into your photo library when you choose to save them.</string>
+
+	<!-- Records a location track while the user takes pictures, so imported photos can be placed.
+	     The track stays on the device. -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Fuji Cookbook records where you go while you take pictures, so the photos you import from your camera can show where each was taken. The track stays on this iPhone.</string>
 
 	<!-- Open the user's original file rather than a copy. Without this key iOS copies every opened
 	     recipe into Documents/Inbox and expects the app to delete it afterwards; we never do, so the
