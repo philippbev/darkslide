@@ -42,10 +42,16 @@ struct PhotoImportView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Close") { dismiss() }
                 }
-                // No Select All: an import is for a day or two, picked with each day's own button.
-                if model.phase == .ready, !model.selectedFrames.isEmpty {
+                // All or none of what is shown: the filters above narrow it to a day or two first.
+                if model.phase == .ready, !model.visibleFrames.isEmpty {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button("Select None") { model.selectNone() }
+                        if PhotoImportHeader.selectsAll(selected: model.selectedFrames.count, shown: model.visibleFrames.count) {
+                            Button("All") { model.selectAll() }
+                                .accessibilityLabel("Select All Shown")
+                        } else {
+                            Button("None") { model.selectNone() }
+                                .accessibilityLabel("Select None")
+                        }
                     }
                 }
             }
@@ -125,10 +131,14 @@ struct PhotoImportView: View {
     private var sheet: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DSSpacing.xl) {
-                DSDevicePanel(title: model.sourceName, meta: cardMeta) {
-                    if model.isListing { ProgressView() } else { DSLEDIndicator(label: "Link", isOn: true) }
-                }
-                .padding(.horizontal, DSSpacing.screenMargin)
+                DSDataFieldRow(fields: PhotoImportHeader.fields(sourceName: model.sourceName,
+                                                                isListing: model.isListing,
+                                                                loadedCount: model.frames.count,
+                                                                hasOlder: model.canLoadMore,
+                                                                fileChoice: model.fileChoice,
+                                                                selected: model.selectedFrames.count,
+                                                                shown: model.visibleFrames.count))
+                    .padding(.horizontal, DSSpacing.screenMargin)
                 if model.isListing || model.listingProblem != nil {
                     listingStatus
                         .padding(.horizontal, DSSpacing.screenMargin)
@@ -252,12 +262,12 @@ struct PhotoImportView: View {
         return model.showsOnlyNew ? "Nothing new for these days and files." : "No photos for these days and files."
     }
 
+    /// The day and its frame range on one line, the day's own select key under it on the right, so
+    /// a long weekday and a four-digit range never crowd the key.
     private func dayHeader(_ day: ImportDay) -> some View {
-        HStack {
-            Text(Self.heading(for: day.day))
-                .dsMetaMono()
-                .accessibilityAddTraits(.isHeader)
-            Spacer()
+        VStack(alignment: .trailing, spacing: 0) {
+            DSContactSheetDayHeader(title: Self.heading(for: day.day),
+                                    frameRange: PhotoImportHeader.frameRange(day.frames.map(\.frameNumber)))
             Button(model.isSelected(day) ? "Deselect Day" : "Select Day  \(day.frames.count)") { model.toggle(day) }
                 .font(DSFont.subhead.weight(.semibold))
                 .foregroundStyle(DSColor.signalText)
@@ -312,7 +322,7 @@ struct PhotoImportView: View {
 
     private var locationCard: some View {
         VStack(alignment: .leading, spacing: DSSpacing.s) {
-            DSDevicePanel(title: "Location", meta: locationMeta) {
+            DSDevicePanel(title: "Location from Track", meta: locationMeta) {
                 Toggle("Add Location", isOn: $model.addsLocation)
                     .toggleStyle(.dsHardwareSwitchOnly)
                     .disabled(model.matcher.isEmpty || model.isImporting)
@@ -338,13 +348,6 @@ struct PhotoImportView: View {
         let selected = model.selectedFrames
         let located = selected.filter { model.previewPosition(of: $0) != nil }.count
         return "\(located) of \(selected.count) Located"
-    }
-
-    private var cardMeta: String {
-        let count = model.frames.count
-        return model.canLoadMore
-            ? "USB   Card Reader   Newest \(count)"
-            : "USB   Card Reader   \(count) Photo\(count == 1 ? "" : "s")"
     }
 
     private func tile(for frame: ImportFrame) -> some View {
