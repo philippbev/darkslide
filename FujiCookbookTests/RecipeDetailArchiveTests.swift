@@ -32,6 +32,24 @@ final class RecipeDetailArchiveTests: XCTestCase {
         XCTAssertEqual(Archive.spaced("Auto · R+3 B\u{2212}5"), "Auto   R+3 B\u{2212}5")
     }
 
+    func testTheSheetHasNoCommaAndNoSignedZero() {
+        XCTAssertEqual(Archive.spaced("Weak, Small"), "Weak  Small")
+        XCTAssertEqual(Archive.spaced("+0"), "0")
+        XCTAssertEqual(Archive.spaced("\u{2212}0"), "0")
+        XCTAssertEqual(Archive.spaced("+0.0"), "0")
+        XCTAssertEqual(Archive.spaced("+1"), "+1")
+        XCTAssertEqual(Archive.spaced("+0.0 EV"), "0 EV")
+        XCTAssertEqual(Archive.spaced("+0.7 EV"), "+0.7 EV")
+        XCTAssertEqual(Archive.spaced("\u{2212}0.5"), "\u{2212}0.5")
+        var settings = RecipeSettings.neutral
+        settings.sharpness = 0
+        settings.grain = GrainEffect(strength: .weak, size: .small)
+        for field in Archive.dataSheetFields(for: settings) {
+            XCTAssertFalse(field.value.contains(","), "\(field.label): \(field.value)")
+            XCTAssertFalse(field.value.hasPrefix("+0"), "\(field.label): \(field.value)")
+        }
+    }
+
     func testAGeneratedSlotNameSaysWhereItComesFrom() {
         XCTAssertEqual(Archive.slotNameField(name: "CLASSIC CHROME", isCustom: false).note, "From name")
         XCTAssertNil(Archive.slotNameField(name: "KODA64", isCustom: true).note)

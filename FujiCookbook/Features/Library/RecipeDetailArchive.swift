@@ -49,8 +49,20 @@ enum RecipeDetailArchive {
         return "\(cameraID)   \(verdict.title)"
     }
 
-    /// The formatter's "·" between parts, as space alone.
+    /// The formatter's value as the archive writes it: parts apart by space alone, never by "·" or
+    /// ",", and zero without a sign ("0", not "+0"). The shared formatter keeps its own form for
+    /// export and share cards.
     static func spaced(_ value: String) -> String {
-        value.replacingOccurrences(of: " · ", with: "   ")
+        let parts = value.replacingOccurrences(of: " · ", with: "   ")
+            .replacingOccurrences(of: ", ", with: "  ")
+        // The number leads, a unit may follow: "+0.0 EV" reads "0 EV".
+        let number = parts.prefix { $0 != " " }
+        return isSignedZero(String(number)) ? "0" + parts.dropFirst(number.count) : parts
+    }
+
+    /// "+0", "−0", "+0.0": a zero the formatter signed.
+    private static func isSignedZero(_ value: String) -> Bool {
+        guard let sign = value.first, "+-\u{2212}".contains(sign) else { return false }
+        return Double(value.dropFirst()) == 0
     }
 }

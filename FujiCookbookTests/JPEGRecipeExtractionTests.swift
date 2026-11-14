@@ -529,3 +529,15 @@ final class JPEGRecipeExtractionTests: XCTestCase {
         for index in 0..<4 { data[offset + index] = UInt8(truncatingIfNeeded: value >> (8 * (bigEndian ? 3 - index : index))) }
     }
 }
+
+/// The import's simulation code comes from a preview's MakerNote, read like any camera JPEG.
+extension JPEGRecipeExtractionTests {
+    func testAPreviewWithAMakerNoteNamesItsSimulation() {
+        XCTAssertEqual(PreviewSimulation.read(jpeg([.short(0x1401, 0), .short(0x1003, 0)]), name: "DSCF0001.JPG"), .provia)
+    }
+
+    func testAPreviewWithoutOneNamesNothing() {
+        XCTAssertNil(PreviewSimulation.read(Data([0xFF, 0xD8, 0xFF, 0xD9]), name: "DSCF0001.JPG"))
+        XCTAssertNil(PreviewSimulation.read(Data(), name: "DSCF0001.JPG"))
+    }
+}

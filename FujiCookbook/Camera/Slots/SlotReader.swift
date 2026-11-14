@@ -38,9 +38,17 @@ final class SlotReader {
         guard case .finished(let slotCount) = walk else { return nil }
         return slotCount
     }
-    /// Where the last push-capable body is remembered (`RememberedCamera`). Swappable so a test's
-    /// connect doesn't overwrite the app's own.
-    @ObservationIgnored var rememberedCameraDefaults: UserDefaults = .standard
+    /// Where the last push-capable body and its slots are remembered (`RememberedCamera`,
+    /// `CameraSlotSnapshot`). Swappable so a test's connect doesn't overwrite the app's own.
+    @ObservationIgnored var rememberedCameraDefaults: UserDefaults = SlotReader.defaultRememberedCameraDefaults
+
+    /// The app's own defaults, except while the unit tests run inside the app: there every demo or
+    /// mock connect of a writable body would land in the Library the simulator shows (the CAMERA
+    /// field once read "GFX100 II" after a test run). Tests that check the write pass a suite.
+    static let defaultRememberedCameraDefaults: UserDefaults =
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil
+            ? .standard
+            : UserDefaults(suiteName: "FujiCookbookTests.rememberedCamera") ?? .standard
     /// Slots whose film simulation changed since the last push that applied to them, found on
     /// connect by comparing the carried-forward push history against the fresh slot read. Empty on
     /// a body that was never written to.

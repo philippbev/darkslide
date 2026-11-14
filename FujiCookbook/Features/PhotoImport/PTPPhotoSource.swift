@@ -73,6 +73,8 @@ final class PTPPhotoSource: PhotoSource {
     /// Handles whose metadata hasn't been read yet, newest first.
     private var pending: [UInt32] = []
     private var handles: [String: UInt32] = [:]
+    /// Previews already fetched, by file, so the tile and its simulation code share one read.
+    private var previews: [String: Data] = [:]
     private var files: [ImportFile] = []
     private var objectCount = 0
     private var foldersSkipped = 0
@@ -226,10 +228,25 @@ final class PTPPhotoSource: PhotoSource {
     }
 
     func thumbnail(for file: ImportFile) async -> CGImage? {
-        guard let transport, let handle = handles[file.id],
-              let data = try? await transport.getThumb(handle), !data.isEmpty,
+        guard let data = await previewData(for: file),
               let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
         return CGImageSourceCreateImageAtIndex(source, 0, nil)
+    }
+
+    /// From the preview the thumbnail already fetched, so reading the simulation costs no second
+    /// GetThumb.
+    func filmSimulation(for file: ImportFile) async -> FilmSimulation? {
+        guard let data = await previewData(for: file) else { return nil }
+        return PreviewSimulation.read(data, name: file.name)
+    }
+
+    /// The camera's preview of a file, fetched once (GetThumb, a read).
+    private func previewData(for file: ImportFile) async -> Data? {
+        if let cached = previews[file.id] { return cached }
+        guard let transport, let handle = handles[file.id],
+              let data = try? await transport.getThumb(handle), !data.isEmpty else { return nil }
+        previews[file.id] = data
+        return data
     }
 
     func download(_ file: ImportFile, to directory: URL) async throws -> URL {
@@ -309,6 +326,7 @@ final class CameraCardSource: PhotoSource {
     }
 
     func thumbnail(for file: ImportFile) async -> CGImage? { await active.thumbnail(for: file) }
+    func filmSimulation(for file: ImportFile) async -> FilmSimulation? { await active.filmSimulation(for: file) }
     func download(_ file: ImportFile, to directory: URL) async throws -> URL { try await active.download(file, to: directory) }
     func close() async { await active.close() }
 }

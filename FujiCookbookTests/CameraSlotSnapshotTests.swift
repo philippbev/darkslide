@@ -101,3 +101,10 @@ final class CameraSlotSnapshotTests: XCTestCase {
         XCTAssertEqual(unnamed.slotLabels(for: [first, twin]), [:], "no badge on a guess")
     }
 }
+
+/// A test run inside the app leaves the app's own camera memory alone.
+final class RememberedCameraIsolationTests: XCTestCase {
+    func testTheTestHostNeverWritesTheAppsCameraMemory() {
+        XCTAssertFalse(SlotReader.defaultRememberedCameraDefaults === UserDefaults.standard)
+    }
+}

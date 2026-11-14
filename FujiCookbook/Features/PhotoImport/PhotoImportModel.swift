@@ -38,6 +38,9 @@ final class PhotoImportModel {
     /// Every frame on the card, in the order taken.
     private(set) var frames: [ImportFrame] = []
     private(set) var thumbnails: [ImportFrame.ID: CGImage] = [:]
+    /// Each frame's film simulation, read from its preview while the diagnostic switch is on
+    /// (`DiagnosticMode.readsImportSimulationKey`); a frame whose preview has none is missing.
+    private(set) var simulations: [ImportFrame.ID: FilmSimulation] = [:]
     var selection: Set<ImportFrame.ID> = []
     /// Hide what an earlier import already copied.
     private(set) var showsOnlyNew = true
@@ -61,6 +64,7 @@ final class PhotoImportModel {
     @ObservationIgnored private var thumbnailRequests: Set<ImportFrame.ID> = []
     @ObservationIgnored private let loadTrackPoints: () -> [GeoPoint]
     @ObservationIgnored private let preferences: UserDefaults
+    @ObservationIgnored let readsSimulation: Bool
 
     init(source: PhotoSource,
          ledger: PhotoImportLedger = PhotoImportLedger(),
@@ -79,6 +83,7 @@ final class PhotoImportModel {
         self.clockOffset = clockOffset
         self.loadTrackPoints = loadTrackPoints
         self.preferences = preferences
+        self.readsSimulation = preferences.bool(forKey: DiagnosticMode.readsImportSimulationKey)
         self.fileChoice = ImportFileChoice.load(from: preferences)
     }
 
@@ -244,12 +249,28 @@ final class PhotoImportModel {
 
     // MARK: Thumbnails
 
-    /// Ask for a frame's picture once; the tile shows its placeholder until it arrives.
+    /// Ask for a frame's picture once; the tile shows its placeholder until it arrives. With the
+    /// diagnostic switch on, the simulation follows from the same preview, and the log records
+    /// how long it took and whether the preview had one: the figures that decide whether the
+    /// codes can be on for everyone.
     func loadThumbnail(for frame: ImportFrame) {
         guard thumbnails[frame.id] == nil, thumbnailRequests.insert(frame.id).inserted else { return }
         Task {
+            let clock = ContinuousClock()
+            let start = clock.now
             if let image = await source.thumbnail(for: frame.preview) { thumbnails[frame.id] = image }
+            guard readsSimulation else { return }
+            let thumbnailTime = clock.now - start
+            let simulation = await source.filmSimulation(for: frame.preview)
+            let total = clock.now - start
+            if let simulation { simulations[frame.id] = simulation }
+            AppLog.info(.importExport, "Import simulation: \(frame.preview.name) \(simulation?.dsCode ?? "none")"
+                + "   preview \(Self.milliseconds(thumbnailTime)) ms   total \(Self.milliseconds(total)) ms")
         }
+    }
+
+    private static func milliseconds(_ duration: Duration) -> Int {
+        Int(duration.components.seconds * 1000 + duration.components.attoseconds / 1_000_000_000_000_000)
     }
 
     // MARK: Importing
