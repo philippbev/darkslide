@@ -13,7 +13,8 @@ import SwiftUI
 /// lets the list scroll under it, as it does under the tab bar.
 ///
 /// On iOS 26 the field and button are Liquid Glass, so they read like the picker sheet's system
-/// field on the glass tab bar; below that they are the theme's paper inset over a soft paper fade.
+/// field on the glass tab bar (the design system allows glass on floating bars); below that the
+/// field is the `panel` inset and the menu a hardware key, on the design system's bar material.
 struct LibrarySearchBar<MenuExtra: View>: View {
     @Binding var searchText: String
     @Binding var filter: RecipeFilter
@@ -45,25 +46,27 @@ struct LibrarySearchBar<MenuExtra: View>: View {
         if #available(iOS 26.0, *) {
             // One container so the field's and the button's glass blend as a group.
             GlassEffectContainer(spacing: 10) { row }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 8)
+                .padding(.horizontal, DSSpacing.screenMargin)
+                .padding(.bottom, DSSpacing.s)
         } else {
             row
-                .padding(.horizontal, 16)
-                .padding(.bottom, 8)
+                .padding(.horizontal, DSSpacing.screenMargin)
+                .padding(.vertical, DSSpacing.s)
                 .background {
-                    // Soft edge so cards fade out under the capsule instead of scrolling straight
-                    // through it. iOS 26's own scroll-edge effect does this for the glass version.
-                    LinearGradient(colors: [Theme.paper.opacity(0), Theme.paper],
-                                   startPoint: .top, endPoint: .bottom)
-                        .padding(.top, -24)
+                    // A floating bar before iOS 26: material under `chromeGlass`, a hairline on
+                    // top, so rows don't scroll straight through the field. No gradients in the
+                    // design system; iOS 26's own scroll-edge effect does this for the glass.
+                    Rectangle()
+                        .fill(.regularMaterial)
+                        .overlay(DSColor.chromeGlass)
+                        .overlay(alignment: .top) { DSSeparator() }
                         .ignoresSafeArea(edges: .bottom)
                 }
         }
     }
 
     private var row: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: DSSpacing.s) {
             LibrarySearchField(searchText: $searchText, isFocused: $isFocused)
             filterMenu
         }
@@ -74,7 +77,7 @@ struct LibrarySearchBar<MenuExtra: View>: View {
                          availableFilmSimulations: availableFilmSimulations,
                          cameras: cameras,
                          extraContent: menuExtra)
-            .buttonStyle(RoundIconButtonStyle())
+            .buttonStyle(RoundIconButtonStyle(isActive: filter.isActive))
             .accessibilityLabel("Sort and filter")
     }
 }
@@ -90,18 +93,18 @@ private struct LibrarySearchField: View {
             // Tinted, not plain, glass: the system search field is a frosted, near-opaque capsule,
             // and untinted glass lets the cards show straight through the field.
             fieldContent
-                .glassEffect(.regular.tint(Theme.card.opacity(0.7)), in: .capsule)
+                .glassEffect(.regular.tint(DSColor.panel.opacity(0.7)), in: .capsule)
         } else {
             fieldContent
-                .background(Theme.paper2, in: Capsule())
-                .overlay { Capsule().strokeBorder(isFocused ? Theme.accent : Theme.line) }
+                .background(DSColor.panel, in: Capsule())
+                .overlay { if isFocused { Capsule().strokeBorder(DSColor.signal, lineWidth: DSLine.rule) } }
         }
     }
 
     private var fieldContent: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DSSpacing.s) {
             Image(systemName: "magnifyingglass")
-                .foregroundStyle(Theme.ink3)
+                .foregroundStyle(DSColor.textSecondary)
                 .accessibilityHidden(true)
             TextField("Search recipes", text: $searchText)
                 .focused($isFocused)
@@ -109,42 +112,43 @@ private struct LibrarySearchField: View {
                 .autocorrectionDisabled()
                 .submitLabel(.search)
                 .onSubmit { isFocused = false }
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(DSColor.textPrimary)
                 .accessibilityAddTraits(.isSearchField)
             if !searchText.isEmpty {
                 Button { searchText = "" } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(Theme.ink3)
+                        .foregroundStyle(DSColor.textSecondary)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Clear search")
             }
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, DSSpacing.m)
         // A minimum, not a fixed height, so accessibility type sizes grow the row instead of
         // clipping it.
-        .frame(minHeight: 44)
+        .frame(minHeight: DSSize.touchTarget)
     }
 }
 
 /// A 44pt round tap target for a bare-symbol `Menu`. A button style rather than a frame on the menu
 /// itself, because a `Menu` hit-tests only its label; the style wraps the label, so the whole circle
-/// opens the menu. Glass on iOS 26, the theme's paper inset below it.
+/// opens the menu. Glass on iOS 26 beside the glass field; before that the design system's icon
+/// key, lit while a filter is on.
 private struct RoundIconButtonStyle: ButtonStyle {
+    let isActive: Bool
+
     func makeBody(configuration: Configuration) -> some View {
-        let label = configuration.label
-            .font(.title3.weight(.medium))
-            // A `Menu` label inside a button style doesn't pick up the tint the toolbar gives it.
-            .foregroundStyle(Theme.accent)
-            .frame(minWidth: 44, minHeight: 44)
-            .contentShape(Circle())
-            .opacity(configuration.isPressed ? 0.6 : 1)
         if #available(iOS 26.0, *) {
-            label.glassEffect(.regular.interactive(), in: .circle)
+            configuration.label
+                .font(.title3.weight(.medium))
+                // A `Menu` label inside a button style doesn't pick up the tint the toolbar gives it.
+                .foregroundStyle(isActive ? DSColor.signalText : DSColor.textPrimary)
+                .frame(minWidth: DSSize.touchTarget, minHeight: DSSize.touchTarget)
+                .contentShape(Circle())
+                .opacity(configuration.isPressed ? 0.6 : 1)
+                .glassEffect(.regular.interactive(), in: .circle)
         } else {
-            label
-                .background(Theme.paper2, in: Circle())
-                .overlay { Circle().strokeBorder(Theme.line) }
+            DSHardwareKeyStyle(variant: .icon, isActive: isActive).makeBody(configuration: configuration)
         }
     }
 }

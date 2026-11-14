@@ -13,16 +13,34 @@ struct DSRecipeRow: View {
     var slot: String?
     /// Whether that slot holds the recipe as written right now.
     var slotIsLoaded = true
+    /// A star after the name.
+    var isFavorite = false
+    /// A warning mark after the name, with what VoiceOver reads for it.
+    var warning: String?
 
     var body: some View {
         HStack(spacing: 0) {
             simulationColumn
             DSRule(vertical: true)
             VStack(alignment: .leading, spacing: DSSpacing.xs) {
-                Text(name)
-                    .font(DSFont.headline)
-                    .foregroundStyle(DSColor.textPrimary)
-                    .lineLimit(1)
+                HStack(spacing: DSSpacing.s) {
+                    Text(name)
+                        .font(DSFont.headline)
+                        .foregroundStyle(DSColor.textPrimary)
+                        .lineLimit(1)
+                    if isFavorite {
+                        Image(systemName: "star.fill")
+                            .font(DSFont.metaMono)
+                            .foregroundStyle(DSColor.textSecondary)
+                            .accessibilityLabel("Favorite")
+                    }
+                    if let warning {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(DSFont.metaMono)
+                            .foregroundStyle(DSColor.textSecondary)
+                            .accessibilityLabel(warning)
+                    }
+                }
                 Text(meta).dsMetaMono().lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -105,7 +123,8 @@ struct DSArchiveList<Item: Identifiable, Row: View>: View {
                  Item(id: "Untitled", simulation: nil, slot: nil)]
     return DSArchiveList(items: items) { item in
         DSRecipeRow(simulation: item.simulation, objectNumber: "034", name: item.id,
-                    meta: "\(item.simulation?.displayName ?? "None")   Grain Weak", slot: item.slot)
+                    meta: "\(item.simulation?.displayName ?? "None")   Grain Weak", slot: item.slot,
+                    isFavorite: item.id == "Lua de Mel")
     }
     .padding()
     .background(DSColor.background)
