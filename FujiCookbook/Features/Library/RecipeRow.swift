@@ -4,10 +4,13 @@ import SwiftUI
 /// column, the archive number, a star for a favorite and a mark for fields the app keeps but
 /// doesn't model.
 ///
-/// The camera slot badge stays off: a recipe doesn't know which slot it sits in until a camera is
-/// connected and read.
+/// The camera slot badge comes from the camera's last read slots (`CameraSlotSnapshot`), its LED
+/// lit while that camera is connected.
 struct RecipeRow: View {
     let recipe: Recipe
+    /// "C1" when the last read found this recipe in a slot.
+    var slot: String?
+    var slotIsLive = false
 
     var body: some View {
         DSRecipeRow(simulation: recipe.settings.filmSimulation,
@@ -15,6 +18,8 @@ struct RecipeRow: View {
                     name: recipe.name,
                     meta: Self.meta(filmSimulation: recipe.settings.filmSimulation,
                                     authoredFor: recipe.authoredForModel),
+                    slot: slot,
+                    slotIsLoaded: slotIsLive,
                     isFavorite: recipe.isFavorite,
                     warning: recipe.hasPreservedUnsupportedFields ? "Contains fields not modeled by this app" : nil)
     }

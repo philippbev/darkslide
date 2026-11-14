@@ -23,9 +23,39 @@ final class LibraryRolloutTests: XCTestCase {
         XCTAssertEqual(RecipeRow.meta(filmSimulation: nil, authoredFor: nil), "No film simulation")
     }
 
-    func testTheHeaderCountsTheArchiveAndNamesTheFirstCamera() {
-        XCTAssertEqual(LibraryHeaderFields.fields(recipeCount: 24, cameraIDs: ["X100VI", "X-T5"]),
-                       [DSDataField(label: "Archive", value: "024"), DSDataField(label: "Camera", value: "X100VI")])
-        XCTAssertEqual(LibraryHeaderFields.fields(recipeCount: 0, cameraIDs: []).map(\.value), ["000", "—"])
+    func testTheHeaderCountsTheArchive() {
+        XCTAssertEqual(LibraryHeaderFields.fields(recipeCount: 24, camera: .neverRead).first,
+                       DSDataField(label: "Archive", value: "024"))
+    }
+
+    func testACameraNeverReadShowsADashAndNoLED() {
+        let field = LibraryHeaderFields.fields(recipeCount: 0, camera: .neverRead)[1]
+        XCTAssertEqual(field, DSDataField(label: "Camera", value: "—", led: nil, note: nil))
+    }
+
+    func testTheConnectedCameraShowsItsSlotsWithTheLEDLit() {
+        let field = LibraryHeaderFields.fields(
+            recipeCount: 0, camera: LibraryCameraField(snapshot: snapshot(occupied: 5, of: 7), connectedCameraName: "X100VI"))[1]
+        XCTAssertEqual(field, DSDataField(label: "Camera", value: "5/7", led: true, note: nil))
+    }
+
+    func testAnUnpluggedCameraShowsItsLastReadWithTheDateAndTheLEDOff() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Europe/Berlin")!
+        let read = calendar.date(from: DateComponents(year: 2026, month: 11, day: 4, hour: 12))!
+        let camera = LibraryCameraField(snapshot: snapshot(occupied: 5, of: 7, readAt: read),
+                                        connectedCameraName: nil, calendar: calendar)
+        XCTAssertEqual(LibraryHeaderFields.fields(recipeCount: 0, camera: camera)[1],
+                       DSDataField(label: "Camera", value: "5/7", led: false, note: "As of 04.11."))
+        // Another camera on the cable doesn't light this one's LED.
+        XCTAssertFalse(LibraryCameraField(snapshot: snapshot(occupied: 5, of: 7), connectedCameraName: "X-T5").isLive)
+    }
+
+    private func snapshot(occupied: Int, of count: Int, readAt: Date = Date()) -> CameraSlotSnapshot {
+        CameraSlotSnapshot(cameraName: "X100VI", slotCount: count, readAt: readAt,
+                           slots: (1...count).map {
+                               CameraSlotSnapshot.Slot(index: $0, label: "C\($0)", isOccupied: $0 <= occupied,
+                                                       name: nil, settings: nil)
+                           })
     }
 }

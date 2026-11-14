@@ -17,6 +17,10 @@ struct LibraryView: View {
     @Environment(ImportCoordinator.self) private var importCoordinator
     @Environment(AISettings.self) private var aiSettings
     @Environment(OwnedCameras.self) private var ownedCameras
+    @Environment(CameraServices.self) private var camera
+    /// The camera's slots as last read, and which camera that was (`CameraSlotSnapshot`).
+    @AppStorage(CameraSlotSnapshot.storageKey) private var slotSnapshotsJSON = ""
+    @AppStorage(RememberedCamera.displayNameKey) private var rememberedCameraName = ""
     @Query(Recipe.listFetch(sortBy: [SortDescriptor(\Recipe.updatedAt, order: .reverse)]))
     private var recipes: [Recipe]
 
@@ -162,8 +166,8 @@ struct LibraryView: View {
         // Every way a recipe arrives (new, import, scan, camera, sync) shows up here as an
         // unnumbered row; a recipe in the new-recipe editor waits until the sheet closes, so a
         // cancel doesn't use up a number.
-        .onChange(of: unnumberedCount, initial: true) { _, count in
-            if count > 0 { numberRecipes() }
+        .onChange(of: numberingState, initial: true) { _, state in
+            if state.needsWork { numberRecipes() }
         }
         .onChange(of: editTarget?.value.uuid) { _, open in
             if open == nil { numberRecipes() }
@@ -189,7 +193,12 @@ struct LibraryView: View {
 
     private var starterCopyCount: Int { recipes.count { $0.uuid == StarterRecipe.uuid } }
 
-    private var unnumberedCount: Int { recipes.count { $0.archiveNumber <= 0 } }
+    /// What the numbering watches: recipes without a number, numbers held twice (two devices that
+    /// numbered before syncing), and the highest number, which the high-water mark has to follow
+    /// even when nothing needs a number, so a restored recipe's number isn't freed by deleting it.
+    private var numberingState: ArchiveNumberingState {
+        ArchiveNumberingState(numbers: recipes.map(\.archiveNumber))
+    }
 
     /// The user's cameras for the chips, and every body for the menu.
     private var filterCameras: RecipeFilterCameras {
@@ -213,8 +222,10 @@ struct LibraryView: View {
                 .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: DSSpacing.l, trailing: 0))
                 .selectionDisabled()
 
+            let slots = slotSnapshot?.slotLabels(for: recipes) ?? [:]
+            let slotsAreLive = cameraField.isLive
             LibraryRecipeRows(recipes: recipes, searchText: $searchText, filter: $filter) { recipe, isLast in
-                recipeCard(for: recipe)
+                recipeCard(for: recipe, slot: slots[recipe.uuid], slotIsLive: slotsAreLive)
                     .dsArchiveListRow(isLast: isLast)
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
@@ -244,18 +255,18 @@ struct LibraryView: View {
     /// chevron, which the archive row doesn't have; in the split layout tapping drives the detail
     /// pane and the chosen row sits on `panel`.
     @ViewBuilder
-    private func recipeCard(for recipe: Recipe) -> some View {
+    private func recipeCard(for recipe: Recipe, slot: String?, slotIsLive: Bool) -> some View {
         if isSplit {
             let isChosen = splitSelection == recipe.persistentModelID
             Button { splitSelection = recipe.persistentModelID } label: {
-                RecipeRow(recipe: recipe)
+                RecipeRow(recipe: recipe, slot: slot, slotIsLive: slotIsLive)
                     .background(isChosen ? DSColor.panel : DSColor.surface)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityAddTraits(isChosen ? .isSelected : [])
         } else {
-            RecipeRow(recipe: recipe)
+            RecipeRow(recipe: recipe, slot: slot, slotIsLive: slotIsLive)
                 .overlay {
                     NavigationLink(value: recipe) { EmptyView() }.opacity(0)
                 }
@@ -268,9 +279,18 @@ struct LibraryView: View {
             Text("Recipes")
                 .dsLargeTitle()
                 .accessibilityAddTraits(.isHeader)
-            DSDataFieldRow(fields: LibraryHeaderFields.fields(recipeCount: recipes.count,
-                                                               cameraIDs: ownedCameras.models.map(\.id)))
+            DSDataFieldRow(fields: LibraryHeaderFields.fields(recipeCount: recipes.count, camera: cameraField))
         }
+    }
+
+    /// The last read of the camera the app last pushed to; nil when it was never read.
+    private var slotSnapshot: CameraSlotSnapshot? {
+        CameraSlotSnapshot.all(from: slotSnapshotsJSON)[rememberedCameraName]
+    }
+
+    private var cameraField: LibraryCameraField {
+        LibraryCameraField(snapshot: slotSnapshot,
+                           connectedCameraName: camera.session.isConnected ? camera.session.model?.displayName : nil)
     }
 
     /// The filters as keys with an LED at the top of the list, the same chips the recipe picker
