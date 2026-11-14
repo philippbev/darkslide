@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// "Works With": which cameras run this recipe as written, which need a change, and which can't,
-/// from `RecipeCameraFit`. The user's own cameras come first; every other body sits in a collapsed
+/// from `RecipeCameraFit`. The body of a `DSArchiveSection` on the recipe's detail. The user's own cameras come first; every other body sits in a collapsed
 /// list grouped by verdict. Nothing here is about USB: a read-only body can still run a recipe its
 /// menus express.
 struct RecipeWorksWithCard: View {
@@ -21,8 +21,8 @@ struct RecipeWorksWithCard: View {
         VStack(alignment: .leading, spacing: 12) {
             ForEach(caveats, id: \.self) { caveat in
                 Label(caveat.text, systemImage: "info.circle")
-                    .font(.caption)
-                    .foregroundStyle(Theme.ink2)
+                    .font(DSFont.subhead)
+                    .foregroundStyle(DSColor.textSecondary)
             }
             if owned.isEmpty {
                 noOwnedCameras
@@ -31,22 +31,19 @@ struct RecipeWorksWithCard: View {
                     ForEach(owned) { row($0) }
                 }
             }
-            Divider()
+            DSSeparator()
             DisclosureGroup(isExpanded: $showingAllCameras) {
-                allCameras(all).padding(.top, 10)
+                allCameras(all).padding(.top, DSSpacing.s)
             } label: {
-                Text("All cameras · \(all.count)")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink)
+                Text("All cameras   \(all.count)")
+                    .font(DSFont.headline)
+                    .foregroundStyle(DSColor.textPrimary)
             }
-            .tint(Theme.ink2)
+            .tint(DSColor.textSecondary)
             Text("Checks the recipe's settings against each camera's controls on current firmware. It doesn't promise an identical look, and pushing over USB is a separate question.")
-                .font(.caption)
-                .foregroundStyle(Theme.ink3)
+                .font(DSFont.subhead)
+                .foregroundStyle(DSColor.textSecondary)
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .themedCard(cornerRadius: 16)
         .sheet(isPresented: $showingMyCameras) {
             NavigationStack { OwnedCamerasView() }
         }
@@ -55,22 +52,20 @@ struct RecipeWorksWithCard: View {
     private var noOwnedCameras: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Pick your cameras to see them here first.")
-                .font(.subheadline)
-                .foregroundStyle(Theme.ink2)
+                .font(DSFont.subhead)
+                .foregroundStyle(DSColor.textSecondary)
             Button("Manage My Cameras") { showingMyCameras = true }
-                .font(.subheadline.weight(.semibold))
-                .tint(Theme.accent)
+                .font(DSFont.subhead.weight(.semibold))
+                .foregroundStyle(DSColor.signalText)
         }
     }
 
     private func allCameras(_ fits: [RecipeCameraFit]) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: DSSpacing.m) {
             ForEach(fits.groupedByVerdict(), id: \.verdict) { group in
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("\(group.verdict.title) · \(group.fits.count)")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(Theme.ink2)
-                        .textCase(.uppercase)
+                VStack(alignment: .leading, spacing: DSSpacing.s) {
+                    Text("\(group.verdict.title)   \(group.fits.count)")
+                        .dsMetaMono()
                     ForEach(group.fits) { row($0) }
                 }
             }
@@ -78,23 +73,23 @@ struct RecipeWorksWithCard: View {
     }
 
     private func row(_ fit: RecipeCameraFit) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
+        HStack(alignment: .firstTextBaseline, spacing: DSSpacing.s) {
             Image(systemName: fit.verdict.symbol)
                 .foregroundStyle(fit.verdict.color)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(fit.model.id)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink)
+                    .font(DSFont.valueMono)
+                    .foregroundStyle(DSColor.textPrimary)
                 if !fit.changes.isEmpty {
-                    Text(fit.changes.map(\.text).joined(separator: " · "))
-                        .font(.caption)
-                        .foregroundStyle(Theme.ink2)
+                    Text(fit.changes.map(\.text).joined(separator: "   "))
+                        .font(DSFont.subhead)
+                        .foregroundStyle(DSColor.textSecondary)
                 }
                 if !fit.unverifiedRanges.isEmpty {
                     Text(Self.unverifiedText(for: fit))
-                        .font(.caption)
-                        .foregroundStyle(Theme.ink3)
+                        .font(DSFont.subhead)
+                        .foregroundStyle(DSColor.textSecondary)
                 }
             }
         }
@@ -136,11 +131,12 @@ extension RecipeCameraFit.Verdict {
         }
     }
 
+    /// The symbol's shape tells the verdicts apart; the design system keeps color for the signal
+    /// and the film simulations, so a body that can't run the recipe is merely quieter.
     var color: Color {
         switch self {
-        case .worksAsWritten: return Theme.accent
-        case .worksWithChanges: return Theme.warning
-        case .notAvailable: return Theme.ink3
+        case .worksAsWritten, .worksWithChanges: return DSColor.textPrimary
+        case .notAvailable: return DSColor.textSecondary
         }
     }
 }
