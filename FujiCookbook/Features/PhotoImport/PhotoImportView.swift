@@ -35,7 +35,7 @@ struct PhotoImportView: View {
     var body: some View {
         content
             .background(DSColor.background.ignoresSafeArea())
-            .tint(DSColor.accent)
+            .tint(DSColor.signal)
             .navigationTitle("Import Photos")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -81,11 +81,11 @@ struct PhotoImportView: View {
                 } else {
                     ProgressView()
                 }
-                Text(Self.openingLabel(progress)).dsLabelMono()
+                Text(Self.openingLabel(progress)).dsMetaMono()
                 Text(progress?.note ?? (progress?.looksStuck == true
                      ? "No progress for a while. A full card can take a minute or two before the first photo appears. If nothing changes, unplug the camera, plug it in again and reopen this screen."
                      : "The photos appear as soon as the camera lists the first ones."))
-                    .font(DSFont.footnote)
+                    .font(DSFont.subhead)
                     .foregroundStyle(DSColor.textSecondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 320)
@@ -104,13 +104,13 @@ struct PhotoImportView: View {
     private func failure(_ message: String) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DSSpacing.l) {
-                DSStatusCard(systemImage: "camera", title: model.sourceName, meta: "No Photos to Show") { EmptyView() }
+                DSDevicePanel(title: model.sourceName, meta: "No Photos to Show") { EmptyView() }
                 Text(message)
                     .font(DSFont.subhead)
                     .foregroundStyle(DSColor.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(DSSpacing.l)
-                    .dsCard()
+                    .dsArchiveFrame()
                 Button("Try Again") {
                     Task { await model.open(recipeSessionActive: camera.session.isConnected) }
                 }
@@ -125,8 +125,8 @@ struct PhotoImportView: View {
     private var sheet: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DSSpacing.xl) {
-                DSStatusCard(systemImage: "camera", title: model.sourceName, meta: cardMeta) {
-                    if model.isListing { ProgressView() } else { DSStatusDot() }
+                DSDevicePanel(title: model.sourceName, meta: cardMeta) {
+                    if model.isListing { ProgressView() } else { DSLEDIndicator(label: "Link", isOn: true) }
                 }
                 .padding(.horizontal, DSSpacing.screenMargin)
                 if model.isListing || model.listingProblem != nil {
@@ -146,13 +146,13 @@ struct PhotoImportView: View {
                         .foregroundStyle(DSColor.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(DSSpacing.l)
-                        .dsCard()
+                        .dsArchiveFrame()
                         .padding(.horizontal, DSSpacing.screenMargin)
                 }
                 ForEach(model.days) { day in
                     VStack(alignment: .leading, spacing: DSSpacing.s) {
                         dayHeader(day)
-                        LazyVGrid(columns: DSContactSheet.columns, spacing: DSContactSheet.spacing) {
+                        DSContactSheetGrid {
                             ForEach(day.frames) { frame in tile(for: frame) }
                         }
                     }
@@ -175,7 +175,7 @@ struct PhotoImportView: View {
         VStack(spacing: DSSpacing.s) {
             if model.isLoadingMore {
                 ProgressView(value: Double(model.listingProgress?.percent ?? 0), total: 100)
-                Text("Loading older photos").dsLabelMono()
+                Text("Loading older photos").dsMetaMono()
             } else {
                 Button("Load Older Photos") { model.loadOlder() }
                     .buttonStyle(.dsSecondary)
@@ -192,14 +192,14 @@ struct PhotoImportView: View {
     private var listingStatus: some View {
         if let problem = model.listingProblem {
             VStack(alignment: .leading, spacing: DSSpacing.xs) {
-                DSHintPill(text: "Card only partly read", systemImage: "exclamationmark.triangle")
-                Text(problem).font(DSFont.footnote).foregroundStyle(DSColor.textSecondary)
+                DSTag(text: "Card only partly read", systemImage: "exclamationmark.triangle")
+                Text(problem).font(DSFont.subhead).foregroundStyle(DSColor.textSecondary)
             }
         } else {
             VStack(alignment: .leading, spacing: DSSpacing.xs) {
-                DSHintPill(text: Self.listingLabel(model.listingProgress), systemImage: "arrow.down.circle")
+                DSTag(text: Self.listingLabel(model.listingProgress), systemImage: "arrow.down.circle")
                 Text("You can already import what is shown; the rest of the card is still being read.")
-                    .font(DSFont.footnote)
+                    .font(DSFont.subhead)
                     .foregroundStyle(DSColor.textSecondary)
             }
         }
@@ -217,14 +217,14 @@ struct PhotoImportView: View {
         VStack(alignment: .leading, spacing: DSSpacing.xs) {
             filterRow("Files") {
                 ForEach(ImportFileChoice.allCases) { choice in
-                    DSChip(label: choice.label, isSelected: model.fileChoice == choice) { model.setFileChoice(choice) }
+                    DSTextKey(label: choice.label, isOn: model.fileChoice == choice) { model.setFileChoice(choice) }
                 }
             }
             filterRow("Period") {
-                DSChip(label: "All Dates", isSelected: model.period == .all) { model.setPeriod(.all) }
-                DSChip(label: "Today", isSelected: model.period == .today) { model.setPeriod(.today) }
-                DSChip(label: "7 Days", isSelected: model.period == .lastWeek) { model.setPeriod(.lastWeek) }
-                DSChip(label: Self.daysLabel(model.period) ?? "Choose Days…", isSelected: Self.daysLabel(model.period) != nil) {
+                DSTextKey(label: "All Dates", isOn: model.period == .all) { model.setPeriod(.all) }
+                DSTextKey(label: "Today", isOn: model.period == .today) { model.setPeriod(.today) }
+                DSTextKey(label: "7 Days", isOn: model.period == .lastWeek) { model.setPeriod(.lastWeek) }
+                DSTextKey(label: Self.daysLabel(model.period) ?? "Choose Days…", isOn: Self.daysLabel(model.period) != nil) {
                     let bounds = model.dateBounds
                     if case .days(let from, let to) = model.period { dayRange = (from, to) }
                     else { dayRange = (bounds?.upperBound ?? .now, bounds?.upperBound ?? .now) }
@@ -232,15 +232,15 @@ struct PhotoImportView: View {
                 }
             }
             filterRow("Show") {
-                DSChip(label: "New  \(model.newFrames.count)", isSelected: model.showsOnlyNew) { model.setShowsOnlyNew(true) }
-                DSChip(label: "All  \(model.eligibleFrames.count)", isSelected: !model.showsOnlyNew) { model.setShowsOnlyNew(false) }
+                DSTextKey(label: "New  \(model.newFrames.count)", isOn: model.showsOnlyNew) { model.setShowsOnlyNew(true) }
+                DSTextKey(label: "All  \(model.eligibleFrames.count)", isOn: !model.showsOnlyNew) { model.setShowsOnlyNew(false) }
             }
         }
     }
 
     private func filterRow<Chips: View>(_ title: String, @ViewBuilder chips: () -> Chips) -> some View {
-        DSChipRow {
-            Text(title).dsLabelMono().frame(minWidth: 52, alignment: .leading)
+        DSKeyRow {
+            Text(title).dsMetaMono().frame(minWidth: 52, alignment: .leading)
             chips()
         }
     }
@@ -255,12 +255,12 @@ struct PhotoImportView: View {
     private func dayHeader(_ day: ImportDay) -> some View {
         HStack {
             Text(Self.heading(for: day.day))
-                .dsLabelMono()
+                .dsMetaMono()
                 .accessibilityAddTraits(.isHeader)
             Spacer()
             Button(model.isSelected(day) ? "Deselect Day" : "Select Day  \(day.frames.count)") { model.toggle(day) }
-                .font(DSFont.footnote.weight(.semibold))
-                .foregroundStyle(DSColor.accentText)
+                .font(DSFont.subhead.weight(.semibold))
+                .foregroundStyle(DSColor.signalText)
                 .frame(minHeight: DSSize.touchTarget)
                 .disabled(model.isImporting)
         }
@@ -312,20 +312,20 @@ struct PhotoImportView: View {
 
     private var locationCard: some View {
         VStack(alignment: .leading, spacing: DSSpacing.s) {
-            DSStatusCard(systemImage: "location", title: "Location", meta: locationMeta, iconTint: .accent) {
+            DSDevicePanel(title: "Location", meta: locationMeta) {
                 Toggle("Add Location", isOn: $model.addsLocation)
-                    .labelsHidden()
+                    .toggleStyle(.dsHardwareSwitchOnly)
                     .disabled(model.matcher.isEmpty || model.isImporting)
             }
             if model.addsLocation {
                 HStack(spacing: DSSpacing.s) {
                     Button { editingClock = true } label: {
-                        DSHintPill(text: "Camera Clock  \(CameraClockOffset.label(model.clockOffset))", systemImage: "clock")
+                        DSTag(text: "Camera Clock  \(CameraClockOffset.label(model.clockOffset))", systemImage: "clock")
                     }
                     .buttonStyle(DSPlainPressStyle())
                     .disabled(model.isImporting)
                     if !model.framesFromTheFuture().isEmpty {
-                        DSHintPill(text: "Clock Ahead?", systemImage: "exclamationmark.triangle")
+                        DSTag(text: "Clock Ahead?", systemImage: "exclamationmark.triangle")
                     }
                 }
             }
@@ -371,11 +371,11 @@ struct PhotoImportView: View {
     // MARK: Action bar
 
     private var actionBar: some View {
-        DSActionBar {
+        DSFloatingActionBar {
             if case .importing(let done, let total) = model.phase {
                 ProgressView(value: Double(done), total: Double(max(total, 1)))
                 HStack {
-                    Text("Importing   \(done) of \(total)").dsLabelMono()
+                    Text("Importing   \(done) of \(total)").dsMetaMono()
                     Spacer()
                 }
                 Button("Cancel") { model.cancelImport() }.buttonStyle(.dsSecondary)
@@ -393,7 +393,7 @@ struct PhotoImportView: View {
 
     private var destinationRow: some View {
         HStack {
-            Text("Destination").dsLabelMono()
+            Text("Destination").dsMetaMono()
             Spacer()
             Menu {
                 Button { model.destination = .photoLibrary } label: {

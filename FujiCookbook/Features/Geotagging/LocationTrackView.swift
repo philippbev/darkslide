@@ -17,26 +17,26 @@ struct LocationTrackView: View {
             VStack(alignment: .leading, spacing: DSSpacing.xl) {
                 recordingCard
                 if let error = recorder.lastError {
-                    DSHintPill(text: "Location unavailable", systemImage: "exclamationmark.triangle")
-                    Text(error).font(DSFont.footnote).foregroundStyle(DSColor.textSecondary)
+                    DSTag(text: "Location unavailable", systemImage: "exclamationmark.triangle")
+                    Text(error).font(DSFont.subhead).foregroundStyle(DSColor.textSecondary)
                 }
                 clockCard
                 trackList
                 Text("Tracks stay on this device. Importing photos from the camera adds the position recorded at the time each one was taken: into JPEG and HEIF files, and as an XMP sidecar beside a RAF. Nothing on the camera's card is changed.")
-                    .font(DSFont.footnote)
+                    .font(DSFont.subhead)
                     .foregroundStyle(DSColor.textSecondary)
             }
             .padding(DSSpacing.screenMargin)
         }
         .background(DSColor.background.ignoresSafeArea())
-        .tint(DSColor.accent)
+        .tint(DSColor.signal)
         .navigationTitle("Location Track")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) { Button("Close") { dismiss() } }
         }
         .safeAreaInset(edge: .bottom) {
-            DSActionBar {
+            DSFloatingActionBar {
                 if recorder.isRecording {
                     Button("Stop Recording") { recorder.stop(); reload() }.buttonStyle(.dsSecondary)
                 } else {
@@ -54,11 +54,9 @@ struct LocationTrackView: View {
 
     private var recordingCard: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
-            DSStatusCard(systemImage: recorder.isRecording ? "location.fill" : "location",
-                         title: recorder.isRecording ? "Recording" : "Not Recording",
-                         meta: recordingMeta(now: context.date),
-                         iconTint: recorder.isRecording ? .accent : .neutral) {
-                if recorder.isRecording { DSStatusDot(label: "Recording") }
+            DSDevicePanel(title: recorder.isRecording ? "Recording" : "Not Recording",
+                          meta: recordingMeta(now: context.date)) {
+                if recorder.isRecording { DSLEDIndicator(label: "Rec", isOn: true, color: .signal) }
             }
         }
     }
@@ -71,7 +69,7 @@ struct LocationTrackView: View {
 
     private var clockCard: some View {
         Button { editingClock = true } label: {
-            DSStatusCard(systemImage: "clock", title: "Camera Clock", meta: CameraClockOffset.label(clockOffset)) {
+            DSDevicePanel(title: "Camera Clock", meta: CameraClockOffset.label(clockOffset)) {
                 Image(systemName: "chevron.right").foregroundStyle(DSColor.textSecondary)
             }
         }
@@ -81,13 +79,13 @@ struct LocationTrackView: View {
     @ViewBuilder
     private var trackList: some View {
         VStack(alignment: .leading, spacing: DSSpacing.s) {
-            Text("Tracks").dsLabelMono().padding(.horizontal, DSSpacing.xs).accessibilityAddTraits(.isHeader)
+            Text("Tracks").dsMetaMono().padding(.horizontal, DSSpacing.xs).accessibilityAddTraits(.isHeader)
             VStack(spacing: 0) {
                 if tracks.isEmpty {
                     Text("No tracks yet.")
                         .font(DSFont.subhead)
                         .foregroundStyle(DSColor.textSecondary)
-                        .frame(maxWidth: .infinity, minHeight: DSSize.settingsRowHeight, alignment: .leading)
+                        .frame(maxWidth: .infinity, minHeight: DSSize.touchTarget, alignment: .leading)
                         .padding(.horizontal, DSSpacing.l)
                 }
                 ForEach(Array(tracks.enumerated()), id: \.element.id) { index, track in
@@ -101,11 +99,11 @@ struct LocationTrackView: View {
                         reload()
                     }
                     .font(DSFont.subhead)
-                    .frame(maxWidth: .infinity, minHeight: DSSize.settingsRowHeight, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: DSSize.touchTarget, alignment: .leading)
                     .padding(.horizontal, DSSpacing.l)
                 }
             }
-            .dsCard()
+            .dsArchiveFrame()
         }
     }
 
@@ -115,7 +113,7 @@ struct LocationTrackView: View {
                 Text(track.startedAt.formatted(date: .abbreviated, time: .shortened))
                     .font(DSFont.subhead)
                     .foregroundStyle(DSColor.textPrimary)
-                Text("\(Self.duration(track.duration))   \(track.points.count) Points").dsLabelMono()
+                Text("\(Self.duration(track.duration))   \(track.points.count) Points").dsMetaMono()
             }
             Spacer()
             if track.endedAt != nil {
@@ -130,7 +128,7 @@ struct LocationTrackView: View {
         }
         .padding(.leading, DSSpacing.l)
         .padding(.trailing, DSSpacing.xs)
-        .frame(minHeight: DSSize.settingsRowHeight + DSSpacing.m)
+        .frame(minHeight: DSSize.touchTarget + DSSpacing.m)
     }
 
     /// The track being recorded is shown in the card above, live; the list holds the finished ones.

@@ -1,51 +1,48 @@
 # Fuji Cookbook Fork – Roadmap
 
-Stand: 13.11.2026 · Basis: [zgrimz/fuji-cookbook](https://github.com/zgrimz/fuji-cookbook) @ `923d86e` (6.11.2026) · Kamera: Fujifilm X100VI
+Stand: 14.11.2026 · Basis: [zgrimz/fuji-cookbook](https://github.com/zgrimz/fuji-cookbook) @ `923d86e` · Kamera: Fujifilm X100VI
 
 ## Ziel
-Ein persönlicher Fork, der Fuji Cookbook zur All-in-One-App für den Fuji-Workflow ausbaut: Rezepte (schon sehr gut), plus Import, Geotagging, macOS, Teilen und KI-Anbindung – mit eigenem Design-System.
+Ein persönlicher Fork, der Fuji Cookbook zur All-in-One-App für den Fuji-Workflow ausbaut: Rezepte, Import, Geotagging, Teilen und KI-Anbindung – mit eigenem Design-System.
+
+## Leitlinie: Mobile first
+**iPhone (und iPad) haben Vorrang.** Der Mac ist vorerst **on hold**: Die bestehende Catalyst-Basis bleibt im Code und darf nicht kaputtgehen, wird aber nicht weiterentwickelt (keine Mac-spezifischen Anpassungen, keine Mac-only-Features). Neue Features werden auf dem iPhone gebaut und getestet.
 
 ## Zusammenarbeit
-- **Code, Builds, Tests, Git:** lokale Claude-Code-Session in der Claude-Desktop-App (Umgebung = Mac, Ordner = Fork). Keine Cloud-Umgebung – dort gibt es kein Xcode.
-- **Planung, Konzepte, Design-System, Entscheidungen:** claude.ai-Projekt „fuji-cookbook fork“. Ergebnisse landen als Docs dort.
-- **Philipp:** Entscheidungen, Gerätetests mit der X100VI, Signing/Capabilities in Xcode.
+- **Code, Builds, Tests, Git:** lokale Claude-Code-Session in der Claude-Desktop-App (Ordner = Fork).
+- **Planung, Konzepte, Design-System, Entscheidungen:** claude.ai-Projekt „fuji-cookbook fork“. Spezifikationen landen zusätzlich in `docs/fork/` und werden dort sofort committet.
+- **Philipp:** Entscheidungen, Gerätetests mit iPhone und X100VI.
 
-## Phasen
+## Status
 
-| # | Phase | Aufwand | Kernpunkte |
+| # | Phase | Status | Notizen |
 |---|---|---|---|
-| 0 | Fork & Setup | klein | Fork, `Local.xcconfig`, `CLAUDE.md`, Build + Tests grün, Rebranding-Liste aus `docs/rebranding-a-fork.md` |
-| 1 | Design-Tokens (Fundament) | mittel | Zentrale Farben, Typografie, Abstände, Radien, Komponenten. Heute keine Token-Schicht – Farben/Fonts in ~50 Dateien direkt gesetzt; nur `CardPalette` für Share Cards |
-| 2 | Chapter-Export & Share | klein | `PortableChapter` existiert bereits (nur im Full Backup). Einzelnes Chapter + Rezepte als `.fujirecipe`, Share-Sheet, Import stellt das Chapter wieder her |
-| 3 | USB-Import + Geotagging Stufe A | groß | Siehe unten |
-| 4 | macOS | mittel | Mac Catalyst zuerst (33 Dateien importieren UIKit; ImageCaptureCore läuft auch auf dem Mac). Danach Sidebar, Menüs, Drag & Drop |
-| 5 | Neues Design ausrollen | mittel–groß | Views schrittweise auf Tokens umstellen |
-| 6 | MCP & App Intents | mittel | Lokaler MCP-Server in der Mac-App (Rezepte suchen/anlegen, Chapters, ggf. Push). Parallel App Intents für Kurzbefehle/Siri und Apples MCP-Integration |
+| 0 | Fork & Setup | ✅ erledigt | `CLAUDE.md`, Roadmap, Rebranding-Checkliste (`docs/fork/rebranding.md`), Signing fürs eigene iPhone |
+| 1 | Design-System | 🟡 v2.1 gebaut, nicht gemergt | Tokens + Komponenten + Galerie auf `feature/design-system-v2` (Klein-Blau, Instrument + Archiv). v1 liegt noch in main und wird ersetzt |
+| 2 | Chapter-Export & Share | ✅ erledigt | Einzelnes Chapter als `.fujirecipe` teilen |
+| 3 | USB-Import + Geotagging Stufe A | 🟡 gebaut, Gerätetest offen | Import von der Speicherkarte über PTP (neueste zuerst), Track-Aufzeichnung, Standort per Zeitstempel. Mit X100VI und iPhone durchtesten |
+| 4 | macOS | ⏸ on hold | Catalyst-Basis vorhanden (`feature/macos` gemergt). Ruht bis nach Phase 5 |
+| 5 | Design v2.1 ausrollen | ⏭ als Nächstes | Screen für Screen: Rezepte → Rezept-Detail → Kamera → Import → AccentColor/Altlasten entfernen. Objektnummer fortlaufend nach `createdAt`, fest gespeichert |
+| 6 | KI-Anbindung | offen | **Mobile first:** App Intents auf iOS (Kurzbefehle, Siri, Apples MCP-Integration). Lokaler MCP-Server der Mac-App ruht mit Phase 4 |
 | 7 | Live-Standort per Bluetooth (Stufe B) | experimentell | Siehe Risiken |
 
-## Phase 3 im Detail – USB-Import
-- Grundlage vorhanden: PTP über ImageCaptureCore, Objekt-Enumeration (`ObjectEnumerationTests`). Kein Download von Fotos bisher.
-- **Offene Frage zuerst klären:** Rezept-Funktionen brauchen den Modus *USB RAW CONV./BACKUP RESTORE*; Import vermutlich *USB-Kartenleser*/PTP. App soll den nötigen Modus erkennen und anleiten.
-- Funktionen: Thumbnails, „nur neue“, Auswahl nach Datum/Session, JPEG/HEIF/RAF.
-- Ziele: Fotos-Mediathek, Ordner in Dateien, am Mac frei wählbarer Ordner (z. B. T7).
-- Bonus: Rezept aus den MakerNotes lesen (`FujiMakerNote`, `PhotoRecipeReader` vorhanden) und Fotos dem passenden Rezept zuordnen.
+## Nächste Schritte
+1. `feature/design-system-v2` prüfen (Galerie: Einstellungen ▸ Diagnostics ▸ Design System) und in main mergen.
+2. Phase 3 auf dem iPhone mit der X100VI testen: Import-Modus der Kamera, Geschwindigkeit, Zuordnung der Standorte, RAF-Sidecars.
+3. Phase 5 starten, ein Screen pro Branch, nach jedem Screen Freigabe.
 
-## Phase 3 im Detail – Geotagging Stufe A
-- App zeichnet während einer Fototour den Standort auf (Track).
-- Beim Import GPS per Zeitstempel-Abgleich schreiben: JPEG/HEIF direkt, RAF per XMP-Sidecar (RAW nicht verändern).
-- Voraussetzung: Kamerazeit stimmt – App gleicht sie ab / warnt bei Abweichung.
+## Phase 3 – Details und offene Prüfpunkte
+- Rezept-Funktionen brauchen *USB RAW CONV./BACKUP RESTORE*, Import den Kartenmodus. App erkennt den Modus und leitet an.
+- Ziele: Fotos-Mediathek und Dateien (Mac-Ordner ruht).
+- Geotagging: JPEG/HEIF direkt, RAF per XMP-Sidecar; Kamerazeit abgleichen bzw. warnen.
+- Bonus offen: Rezept aus den MakerNotes lesen und Fotos dem Rezept zuordnen.
 
-## Risiken & offene Punkte
-- **Garantie:** Fujifilm sagt, nicht lizenzierte Software an der Kamera hebt die Garantie auf (siehe README des Originals).
-- **Bluetooth (Stufe B):** Protokoll ist durch Open-Source-Projekte (z. B. furble) bekannt; Firmware 1.30 der X100VI hat Pairing und Sicherheit geändert – Machbarkeit mit aktueller Firmware muss am Gerät getestet werden. Kamera ist evtl. nur mit einer App koppelbar (ersetzt dann die XApp).
-- **MCP bei Apple:** Integration in App Intents ist angekündigt/in Arbeit; lokaler MCP-Server am Mac ist davon unabhängig.
-- **Lizenz/Marke:** Code Apache 2.0; Name, Artwork und Beispielfotos laut `TRADEMARKS.md` separat – bei Verteilung umbenennen.
-
-## Entscheidungen
-- Erst Prototyp im Simulator, ohne Apple Team ID. `APP_IDENTIFIER_BASE = cloud.bevier.fujicookbook` als Platzhalter.
-- Für Gerätetests später: kostenlose Apple ID als Personal Team reicht; iCloud-Sync in Dev-Builds dann abschalten.
+## Risiken
+- **Garantie:** Fujifilm sagt, nicht lizenzierte Software an der Kamera hebt die Garantie auf.
+- **Bluetooth (Stufe B):** Protokoll durch Open-Source-Projekte (z. B. furble) bekannt; Firmware 1.30 der X100VI hat Pairing und Sicherheit geändert – Machbarkeit am Gerät testen. Kamera evtl. nur mit einer App koppelbar.
+- **MCP bei Apple:** Integration in App Intents ist angekündigt; Umfang auf iOS noch unklar.
+- **Lizenz/Marke:** Code Apache 2.0; Name, Artwork und Beispielfotos laut `TRADEMARKS.md` separat.
 
 ## Offen
-- GitHub-Account für den Fork
-- Name des Forks / Branding
-- Design-Richtung (Bezug zur Marke „Philipp Bevier“?)
+- Name des Forks / Branding (Checkliste vorhanden)
+- Tab-Reihenfolge im neuen Design (vorerst bleiben die fünf Tabs)
