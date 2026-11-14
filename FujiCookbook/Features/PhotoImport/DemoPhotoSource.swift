@@ -69,16 +69,18 @@ final class DemoPhotoSource: PhotoSource {
     private static func jpeg(index: Int, date: Date) -> Data {
         let simulations: [FilmSimulation] = [.classicChrome, .velvia, .astia, .classicNeg, .eterna,
                                              .realaAce, .nostalgicNeg, .provia, .acros]
-        let patches = TestStripPalette.hexValues(for: simulations[index % simulations.count])
+        // The simulation's color as the sky, a darker ground under it and a pale sun, so the frames
+        // differ at a glance.
+        let fill = simulations[index % simulations.count].dsStyle.fill.light
         let size = CGSize(width: 1200, height: 800)
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
         let image = UIGraphicsImageRenderer(size: size, format: format).image { context in
-            UIColor(dsHex: patches[3]).setFill()
+            UIColor(dsHex: fill).setFill()
             context.fill(CGRect(origin: .zero, size: size))
-            UIColor(dsHex: patches[1]).setFill()
+            UIColor(dsHex: fill, alpha: 1).withBrightness(0.55).setFill()
             context.fill(CGRect(x: 0, y: size.height * 0.62, width: size.width, height: size.height * 0.38))
-            UIColor(dsHex: patches[4]).setFill()
+            UIColor(dsHex: 0xF7F7F4).setFill()
             context.cgContext.fillEllipse(in: CGRect(x: 140 + CGFloat(index) * 90, y: 150, width: 180, height: 180))
         }
         guard let cgImage = image.cgImage else { return Data() }
@@ -97,5 +99,14 @@ final class DemoPhotoSource: PhotoSource {
         CGImageDestinationAddImage(destination, cgImage, properties as CFDictionary)
         CGImageDestinationFinalize(destination)
         return data as Data
+    }
+}
+
+private extension UIColor {
+    /// The same hue at a share of its brightness.
+    func withBrightness(_ factor: CGFloat) -> UIColor {
+        var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
+        getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+        return UIColor(hue: hue, saturation: saturation, brightness: brightness * factor, alpha: alpha)
     }
 }

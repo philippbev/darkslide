@@ -39,10 +39,14 @@ Persönlicher Fork von zgrimz/fuji-cookbook für Philipp (Fujifilm X100VI). Nati
 - Jede Verhaltensänderung braucht einen Test.
 
 ## Design-System
-- Spezifikation: `docs/fork/design-system.md` (Richtung, Tokens, Komponenten, Referenz-Screens). Vor jeder UI-Arbeit lesen.
-- Code: `FujiCookbook/DesignSystem/` – Tokens `DSColor`, `DSFont`, `DSSpacing`, `DSRadius`, Komponenten unter `Components/` (Präfix `DS`). Vorschau: Settings ▸ Diagnostics ▸ Show Diagnostic Tools ▸ Design System.
+- Spezifikation: `docs/fork/design-system.md` (v2.1: Hardware-Instrument + technisches Archiv, Signalfarbe Klein-Blau). Vor jeder UI-Arbeit lesen. Referenz-PNGs folgen in `docs/fork/design/`.
+- Code: `FujiCookbook/DesignSystem/` – alles mit Präfix `DS`:
+  - Tokens: `DSColor` (`DSColors.swift`), Simulationsfarben als Extension `FilmSimulation.dsStyle`/`dsCode`/`dsFill`/`dsText` (`DSSimulationColors.swift`), `DSFont` + Modifier `dsObjectNumber`/`dsFieldLabel`/`dsMetaMono`/`dsKeyLabel` (feste Größen skalieren über `@ScaledMetric`), `DSSpacing`, `DSRadius`, `DSLine`, `DSSize` (`DSMetrics.swift`).
+  - Komponenten unter `Components/`: `DSHardwareKeyStyle` (`.dsPrimary`, `.dsSecondary`, `DSIconKey`, `DSTextKey`), `DSLED`, `DSSlotKey`, `DSKnob`, `DSHardwareSwitchStyle` (`.dsHardware`, `.dsHardwareSwitchOnly`), `DSDevicePanel`, `DSArchiveCard` + Teile, `DSDataFieldRow`, `DSRecipeRow`/`DSArchiveList`, `DSBarcode`, `DSContactSheetTile`/`DSContactSheetGrid`, `DSTag`, `DSFloatingActionBar`. Komponenten bekommen Daten nur als Parameter.
+  - Vorschau: Settings ▸ Diagnostics ▸ Show Diagnostic Tools ▸ Design System, plus `#Preview` in jeder Komponenten-Datei.
 - Neue UI nur über diese Tokens und Komponenten – keine hartkodierten `Color(...)`/Font-Werte mehr in Views.
-- Bestehende Views nutzen noch `Theme` (`Shared/Support/Theme.swift`). Sie werden erst in Phase 5 schrittweise migriert, nicht in einem Rutsch; bis dahin beide Schichten nicht mischen.
+- Bestehende Views nutzen noch `Theme` (`Shared/Support/Theme.swift`). Sie werden erst in Phase 5 schrittweise migriert, nicht in einem Rutsch; bis dahin beide Schichten nicht mischen. Ausnahme: `PhotoImportView` und `LocationTrackView` laufen schon auf DS.
+- `AccentColor` und die globale Navigationsleisten-Schrift (Serif aus `Theme`) bleiben bis Phase 5; deshalb zeigt auch die Galerie noch einen Serif-Titel.
 
 ## Git
 - Ein Branch pro Feature (`feature/chapter-share`, `feature/usb-import`, …), PR gegen `main` des Forks.
