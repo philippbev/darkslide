@@ -23,6 +23,10 @@ protocol PhotoSource: AnyObject {
     /// A small picture of the file, or nil when the source has none.
     func thumbnail(for file: ImportFile) async -> CGImage?
 
+    /// The film simulation the file was taken with, read from the camera's own preview of it; nil
+    /// when the preview carries no Fujifilm MakerNote or the source has none. Only reads.
+    func filmSimulation(for file: ImportFile) async -> FilmSimulation?
+
     /// Copy the file into `directory` under its own name and return where it landed.
     func download(_ file: ImportFile, to directory: URL) async throws -> URL
 
@@ -33,6 +37,16 @@ extension PhotoSource {
     /// A source that lists the whole card at once has nothing more to read.
     var canLoadMore: Bool { false }
     func loadMore(progress: @escaping @MainActor (CatalogProgress) -> Void) async throws -> [ImportFile] { [] }
+    func filmSimulation(for file: ImportFile) async -> FilmSimulation? { nil }
+}
+
+/// The film simulation in a preview's Fujifilm MakerNote, if the preview carries one.
+enum PreviewSimulation {
+    static func read(_ preview: Data, name: String) -> FilmSimulation? {
+        guard let reading = try? PhotoRecipeReader.read(preview, filename: name),
+              reading.recipeStatus == .found else { return nil }
+        return reading.settings.filmSimulation
+    }
 }
 
 /// How far a card's listing has got: a full card takes a while over USB.

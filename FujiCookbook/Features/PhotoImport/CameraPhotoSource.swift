@@ -19,6 +19,8 @@ final class CameraPhotoSource: NSObject, PhotoSource {
     private let discovery: @MainActor () -> CameraDiscovery
     private var device: ICCameraDevice?
     private var filesByID: [String: ICCameraFile] = [:]
+    /// Thumbnails already fetched, by file, so the tile and its simulation code share one read.
+    private var previews: [String: Data] = [:]
     /// Set when the camera goes away or the screen closes, to end a listing in progress.
     private var isEnded = false
     /// Set by `deviceDidBecomeReady(withCompleteContentCatalog:)`, the one signal that the card has
@@ -237,14 +239,29 @@ final class CameraPhotoSource: NSObject, PhotoSource {
     }
 
     func thumbnail(for file: ImportFile) async -> CGImage? {
+        guard let data = await previewData(for: file),
+              let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+        return CGImageSourceCreateImageAtIndex(source, 0, nil)
+    }
+
+    /// From the thumbnail ImageCaptureCore already handed over. It may be re-encoded without the
+    /// MakerNote, in which case this is nil; the diagnostic log says which.
+    func filmSimulation(for file: ImportFile) async -> FilmSimulation? {
+        guard let data = await previewData(for: file) else { return nil }
+        return PreviewSimulation.read(data, name: file.name)
+    }
+
+    /// The thumbnail's bytes, asked for once.
+    private func previewData(for file: ImportFile) async -> Data? {
+        if let cached = previews[file.id] { return cached }
         guard let item = filesByID[file.id] else { return nil }
         let data: Data? = await withCheckedContinuation { continuation in
             item.requestThumbnailData(options: [.imageSourceThumbnailMaxPixelSize: 360]) { data, _ in
                 continuation.resume(returning: data)
             }
         }
-        guard let data, let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
-        return CGImageSourceCreateImageAtIndex(source, 0, nil)
+        if let data { previews[file.id] = data }
+        return data
     }
 
     func download(_ file: ImportFile, to directory: URL) async throws -> URL {
@@ -271,6 +288,7 @@ final class CameraPhotoSource: NSObject, PhotoSource {
     func close() async {
         isEnded = true
         filesByID = [:]
+        previews = [:]
         guard let device else { return }
         self.device = nil
         // The session stays open while the camera is attached: closing it throws away the card's

@@ -47,6 +47,15 @@ final class DemoPhotoSource: PhotoSource {
         return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
     }
 
+    /// The demo's JPEGs carry no MakerNote, so the demo names a simulation by frame: enough to
+    /// see the tiles' codes and the diagnostic log without a camera.
+    func filmSimulation(for file: ImportFile) async -> FilmSimulation? {
+        guard pictures[file.id] != nil else { return nil }
+        let stems = [FilmSimulation.classicChrome, .acros, .velvia, .classicNeg, .eterna, .provia]
+        let number = Int(file.name.filter(\.isNumber)) ?? 0
+        return stems[number % stems.count]
+    }
+
     func download(_ file: ImportFile, to directory: URL) async throws -> URL {
         guard let data = pictures[file.id] else {
             throw PhotoImportError.downloadFailed(file: file.name, detail: "The demo card no longer lists it.")

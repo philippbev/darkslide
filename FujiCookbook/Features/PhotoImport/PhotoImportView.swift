@@ -354,6 +354,7 @@ struct PhotoImportView: View {
         Button { model.toggle(frame) } label: {
             DSContactSheetTile(image: model.thumbnails[frame.id].map { Image(decorative: $0, scale: 1) },
                                frameNumber: frame.frameNumber,
+                               simulation: model.simulations[frame.id],
                                format: frame.formatLabel,
                                isSelected: model.selection.contains(frame.id))
         }
