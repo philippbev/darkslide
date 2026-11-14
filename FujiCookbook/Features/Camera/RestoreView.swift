@@ -78,7 +78,7 @@ struct RestoreView: View {
                 }
                 .padding(18)
             }
-            .background(Theme.paper.ignoresSafeArea())
+            .background(DSColor.background.ignoresSafeArea())
             .navigationTitle("Restore C\(slot)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -98,10 +98,10 @@ struct RestoreView: View {
 
     private var summaryCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(sourceHeadline).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
-            Text(sourceExplanation).font(.caption).foregroundStyle(Theme.ink2)
+            Text(sourceHeadline).font(.subheadline.weight(.semibold)).foregroundStyle(DSColor.textPrimary)
+            Text(sourceExplanation).font(.caption).foregroundStyle(DSColor.textSecondary)
             Text("This writes to C\(slot) the same way pushing a recipe does. It's the same sequence and the same risk — the difference is that these are the camera's own values.")
-                .font(.caption).foregroundStyle(Theme.ink2)
+                .font(.caption).foregroundStyle(DSColor.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
@@ -129,22 +129,22 @@ struct RestoreView: View {
     private func fidelityCard(_ fidelity: FujiPresetCodec.RestoreFidelity) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Restore verification notes", systemImage: "exclamationmark.triangle.fill")
-                .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+                .font(.subheadline.weight(.semibold)).foregroundStyle(DSColor.textPrimary)
             if !fidelity.reEncoded.isEmpty {
                 Text("\(fidelity.reEncoded.joined(separator: ", ")): this body has no verified sequence for restoring the saved bytes, so Fuji Cookbook restores the visible setting. Remembered values may differ; the final comparison reports that as a partial restoration.")
-                    .font(.caption).foregroundStyle(Theme.ink2)
+                    .font(.caption).foregroundStyle(DSColor.textSecondary)
             }
             if !fidelity.notWritable.isEmpty {
                 Text("\(fidelity.notWritable.joined(separator: ", ")): saved in a form this app doesn't recognise, so it won't be written at all rather than guessed at. C\(slot) keeps whatever it currently has for those.")
-                    .font(.caption).foregroundStyle(Theme.ink2)
+                    .font(.caption).foregroundStyle(DSColor.textSecondary)
             }
             if !fidelity.withheldWhilePriorityActive.isEmpty {
                 Text("\(fidelity.withheldWhilePriorityActive.joined(separator: ", ")): these stored values are inactive while D-Range Priority is on. The app will not temporarily turn it off to change them. The final check will report any difference from your original settings.")
-                    .font(.caption).foregroundStyle(Theme.ink2)
+                    .font(.caption).foregroundStyle(DSColor.textSecondary)
             }
             if !fidelity.restoredWhileActive.isEmpty {
                 Text("\(fidelity.restoredWhileActive.joined(separator: ", ")): the original settings hide these values, but C\(slot) currently exposes them and the camera accepts the write. Fuji Cookbook puts them back first, then restores the setting that hides them, so the slot's stored values match the original.")
-                    .font(.caption).foregroundStyle(Theme.ink2)
+                    .font(.caption).foregroundStyle(DSColor.textSecondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -156,11 +156,11 @@ struct RestoreView: View {
         let current = camera.slotReader.slots.first { $0.index == slot }?.rawProperties ?? [:]
         let changing = writes.filter { current[$0.code] != $0.bytes }
         return VStack(alignment: .leading, spacing: 8) {
-            Theme.SectionLabel("What changes").padding(.horizontal, 4)
+            DSSectionLabel("What changes").padding(.horizontal, 4)
             VStack(alignment: .leading, spacing: 6) {
                 if changing.isEmpty {
                     Text("Nothing — C\(slot) already matches this copy.")
-                        .font(.caption).foregroundStyle(Theme.ink2)
+                        .font(.caption).foregroundStyle(DSColor.textSecondary)
                 } else {
                     ForEach(changing.indices, id: \.self) { index in
                         let write = changing[index]
@@ -170,12 +170,12 @@ struct RestoreView: View {
                                 .font(.caption)
                             Spacer(minLength: 8)
                             Text("\(PTPHex.bytes(current[write.code] ?? Data())) → \(PTPHex.bytes(write.bytes))")
-                                .font(.caption2.monospaced()).foregroundStyle(Theme.ink3)
+                                .font(.caption2.monospaced()).foregroundStyle(DSColor.textSecondary)
                         }
                     }
                 }
                 Text("\(writes.count) setting write\(writes.count == 1 ? "" : "s") will be sent; \(slotName.isEmpty ? "the slot's name is cleared first, since the original had none" : "the name “\(slotName)” goes first"), as X RAW Studio writes it.")
-                    .font(.caption2).foregroundStyle(Theme.ink3).padding(.top, 4)
+                    .font(.caption2).foregroundStyle(DSColor.textSecondary).padding(.top, 4)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)
@@ -233,10 +233,10 @@ struct RestoreView: View {
         } label: {
             Label(isWriting ? "Restoring…" : "Restore C\(slot)", systemImage: "arrow.uturn.backward")
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(DSColor.onSignal)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.accent))
+                .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(DSColor.signal))
         }
         .buttonStyle(.plain)
         .disabled(isWriting || !GuidedTestRunner.gate(camera).isReady || !camera.slotWriter.canPush || plan == nil || canRestore?() == false)

@@ -21,8 +21,8 @@ enum CardPalette {
     static let line = Color(cardHex: 0xE7DFCF)
 
     /// The brand mark: green on paper and beside ink type, mint beside light type over a
-    /// photograph. Both are the brand kit's values rather than `Theme` tokens: the kit fixes them,
-    /// and its mint is not the dark value of `Theme.accent`.
+    /// photograph. Both are the brand kit's values rather than design-system tokens: the kit fixes
+    /// them, and a shared card keeps its look whatever the app's palette is.
     static let mark = Color(cardHex: 0x2E6B4A)
     static let markOnDark = Color(cardHex: 0x86D5AC)
 
@@ -409,7 +409,7 @@ struct PlainCornerPicker: View {
             HStack(spacing: 2) { cell(.bottomLeading); cell(.bottomTrailing) }
         }
         .padding(3)
-        .background(Theme.paper2, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .background(DSColor.panel, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Text position")
     }
@@ -422,10 +422,10 @@ struct PlainCornerPicker: View {
                 Capsule().frame(width: 13, height: 2)
                 Capsule().frame(width: 8, height: 2)
             }
-            .foregroundStyle(selection == corner ? Theme.accent : Theme.ink3)
+            .foregroundStyle(selection == corner ? DSColor.signalText : DSColor.textSecondary)
             .frame(width: 17, height: 12, alignment: corner.alignment)
             .padding(4)
-            .background(selection == corner ? Theme.accentSoft : Color.clear,
+            .background(selection == corner ? DSColor.panel : Color.clear,
                         in: RoundedRectangle(cornerRadius: 6, style: .continuous))
             .contentShape(Rectangle())
         }

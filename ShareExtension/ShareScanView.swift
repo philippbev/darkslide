@@ -15,13 +15,13 @@ struct ShareScanView: View {
                     .padding(.horizontal, 18)
                     .padding(.vertical, 16)
             }
-            .background(Theme.paper)
+            .background(DSColor.background)
             .scrollBounceBehavior(.basedOnSize)
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbar }
         }
-        .tint(Theme.accent)
+        .tint(DSColor.signal)
         .task { await model.start() }
     }
 
@@ -107,22 +107,22 @@ struct ShareScanView: View {
                 .scaledToFit()
                 .frame(maxHeight: 260)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.line, lineWidth: 0.5))
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(DSColor.separator, lineWidth: 0.5))
             HStack(spacing: 10) {
                 ProgressView()
                 Text("Sending to \(model.scanProviderName)…")
                     .font(.subheadline)
-                    .foregroundStyle(Theme.ink2)
+                    .foregroundStyle(DSColor.textSecondary)
             }
             Text("This screenshot is read by \(model.scanProviderName) using your API key. Fuji Cookbook never receives it.")
                 .font(.footnote)
-                .foregroundStyle(Theme.ink3)
+                .foregroundStyle(DSColor.textSecondary)
                 .multilineTextAlignment(.center)
             // Stopping saves to the inbox rather than discarding the screenshot: the user asked to
             // import it and only declined to wait. The toolbar's Cancel is the discard.
             Button("Stop and Save for Later") { model.cancelScan() }
                 .font(.subheadline)
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 24)
@@ -151,8 +151,8 @@ struct ShareScanView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                 }
-                .foregroundStyle(Theme.accent)
-                .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 14))
+                .foregroundStyle(DSColor.signalText)
+                .background(DSColor.panel, in: RoundedRectangle(cornerRadius: 14))
                 .buttonStyle(.plain)
             }
         }
@@ -166,7 +166,7 @@ struct ShareScanView: View {
                 .foregroundStyle(Theme.warning)
             Text("Already in your library as “\(match.existing.name)”.")
                 .font(.footnote)
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
             Picker("Duplicate", selection: resolution) {
                 ForEach(DuplicateResolution.allCases) { Text($0.displayName).tag($0) }
             }
@@ -191,7 +191,7 @@ struct ShareScanView: View {
                 .foregroundStyle(Theme.warning)
             Text(text)
                 .font(.subheadline)
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
                 .multilineTextAlignment(.center)
             VStack(spacing: 10) {
                 primaryButton("Try Again", systemImage: "arrow.clockwise") {
@@ -199,7 +199,7 @@ struct ShareScanView: View {
                 }
                 Button("Save for Later") { model.queueForLater() }
                     .font(.subheadline)
-                    .foregroundStyle(Theme.ink2)
+                    .foregroundStyle(DSColor.textSecondary)
             }
         }
         .frame(maxWidth: .infinity)
@@ -213,14 +213,14 @@ struct ShareScanView: View {
         VStack(spacing: 14) {
             Image(systemName: systemImage)
                 .font(.system(size: 34))
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(DSColor.signalText)
             Text(title)
-                .font(Theme.serif(24))
-                .foregroundStyle(Theme.ink)
+                .font(DSFont.title)
+                .foregroundStyle(DSColor.textPrimary)
                 .multilineTextAlignment(.center)
             Text(text)
                 .font(.subheadline)
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
                 .multilineTextAlignment(.center)
             actions()
                 .padding(.top, 6)
@@ -240,10 +240,10 @@ struct ShareScanView: View {
                 }
             }
             .font(.headline)
-            .foregroundStyle(.white)
+            .foregroundStyle(DSColor.onSignal)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
-            .background(Theme.accent, in: RoundedRectangle(cornerRadius: 14))
+            .background(DSColor.signal, in: RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
     }

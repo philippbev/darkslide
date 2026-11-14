@@ -85,7 +85,7 @@ struct ComparisonPane: View {
         } else {
             Image(systemName: "photo")
                 .font(.largeTitle)
-                .foregroundStyle(Theme.ink3)
+                .foregroundStyle(DSColor.textSecondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }

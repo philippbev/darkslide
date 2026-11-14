@@ -304,7 +304,7 @@ struct SettingsView: View {
             }
             .disabled(diagnosticsCleared || camera.session.status.isBusy)
             if let recoveryExportStatus {
-                Text(recoveryExportStatus).font(.caption).foregroundStyle(Theme.ink2)
+                Text(recoveryExportStatus).font(.caption).foregroundStyle(DSColor.textSecondary)
             }
         } footer: {
             Text(clearDiagnosticsFooter)

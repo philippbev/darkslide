@@ -136,13 +136,13 @@ struct PushResultsView: View {
     private func statusRow(_ result: SlotWriteResult) -> some View {
         switch result.outcome {
         case .applied:
-            Label("Written and verified", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+            Label("Written and verified", systemImage: "checkmark.circle.fill").foregroundStyle(DSColor.ledOK)
         case .partiallyApplied:
             Label("Partly written", systemImage: "exclamationmark.circle.fill").foregroundStyle(Theme.warning)
         case .unknown:
             Label("Could not verify", systemImage: "questionmark.circle.fill").foregroundStyle(Theme.warning)
         case .notWritten:
-            Label("Not written", systemImage: "xmark.circle.fill").foregroundStyle(.red)
+            Label("Not written", systemImage: "xmark.circle.fill").foregroundStyle(Theme.warning)
         }
     }
 

@@ -17,12 +17,12 @@ struct GuidedStepLayout<Content: View, Actions: View>: View {
                 VStack(alignment: .leading, spacing: 16) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(title)
-                            .font(Theme.serif(26))
-                            .foregroundStyle(Theme.ink)
+                            .font(DSFont.title)
+                            .foregroundStyle(DSColor.textPrimary)
                         if let subtitle {
                             Text(subtitle)
                                 .font(.subheadline)
-                                .foregroundStyle(Theme.ink2)
+                                .foregroundStyle(DSColor.textSecondary)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -34,9 +34,9 @@ struct GuidedStepLayout<Content: View, Actions: View>: View {
                 .padding(.horizontal, 18)
                 .padding(.top, 12)
                 .padding(.bottom, 8)
-                .background(Theme.paper)
+                .background(DSColor.background)
         }
-        .background(Theme.paper.ignoresSafeArea())
+        .background(DSColor.background.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
     }
 }
@@ -45,7 +45,7 @@ struct GuidedStepLayout<Content: View, Actions: View>: View {
 struct GuidedNoticeCard: View {
     let title: String
     var systemImage: String?
-    var tint: Color = Theme.accent
+    var tint: Color = DSColor.signal
     let message: String
 
     var body: some View {
@@ -53,16 +53,16 @@ struct GuidedNoticeCard: View {
             if let systemImage {
                 Label(title, systemImage: systemImage)
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(DSColor.textPrimary)
                     .labelStyle(TintedLabelStyle(tint: tint))
             } else {
                 Text(title)
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(DSColor.textPrimary)
             }
             Text(message)
                 .font(.caption)
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -99,10 +99,10 @@ struct GuidedPrimaryButton: View {
                 if let systemImage, !busy { Image(systemName: systemImage) }
                 Text(title).font(.headline)
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(DSColor.onSignal)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 15)
-            .background(Theme.accent, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .background(DSColor.signal, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(.plain)
         .disabled(!enabled || busy)
@@ -120,7 +120,7 @@ struct GuidedSecondaryButton: View {
         Button(action: action) {
             Text(title)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(DSColor.signalText)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
         }
@@ -145,7 +145,7 @@ struct GuidedAnswerPicker: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(question)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(DSColor.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
             GuidedChoiceRow(choices: [.init(value: .yes, label: yesLabel),
                                       .init(value: .no, label: noLabel),
@@ -184,10 +184,10 @@ struct GuidedChoiceRow<Value: Hashable>: View {
         Button { selection = value } label: {
             Text(label)
                 .font(.footnote.weight(selection == value ? .semibold : .medium))
-                .foregroundStyle(selection == value ? Color.white : Theme.ink2)
+                .foregroundStyle(selection == value ? DSColor.onSignal : DSColor.textSecondary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
-                .background(selection == value ? AnyShapeStyle(Theme.accent) : AnyShapeStyle(Theme.paper2),
+                .background(selection == value ? AnyShapeStyle(DSColor.signal) : AnyShapeStyle(DSColor.panel),
                             in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -206,14 +206,14 @@ struct GuidedTextField: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
             TextField(placeholder, text: $text, axis: axis)
                 .font(.subheadline)
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(DSColor.textPrimary)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .padding(10)
-                .background(Theme.paper2, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .background(DSColor.panel, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
     }
 }
@@ -268,7 +268,7 @@ struct CameraGateCard: View {
         Label("The camera is unplugged for this check. Your answers are saved.",
               systemImage: "checkmark.circle")
             .font(.caption)
-            .foregroundStyle(Theme.ink3)
+            .foregroundStyle(DSColor.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)
             .themedCard(cornerRadius: 16)
@@ -279,7 +279,7 @@ struct CameraGateCard: View {
             ProgressView()
             Text(message)
                 .font(.subheadline)
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
@@ -290,31 +290,31 @@ struct CameraGateCard: View {
         VStack(alignment: .leading, spacing: 12) {
             Label(title, systemImage: "cable.connector.slash")
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(DSColor.textPrimary)
             Text(message)
                 .font(.caption)
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             Text("Your answers are saved as you go.")
                 .font(.caption)
-                .foregroundStyle(Theme.ink3)
+                .foregroundStyle(DSColor.textSecondary)
             HStack(spacing: 12) {
                 Button(action: onReconnect) {
                     Text(isDemo ? "Reconnect Demo Camera" : "Reconnect")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(DSColor.onSignal)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 11)
-                        .background(Theme.accent, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .background(DSColor.signal, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
                 .buttonStyle(.plain)
                 Button(action: onHelp) {
                     Text("Help")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(DSColor.signalText)
                         .padding(.vertical, 11)
                         .padding(.horizontal, 16)
-                        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Theme.line))
+                        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(DSColor.separator))
                 }
                 .buttonStyle(.plain)
             }
@@ -385,7 +385,7 @@ struct GuidedPlanChoices: View {
                     })) {
                         VStack(alignment: .leading, spacing: 3) {
                             Text(check.title).font(.subheadline)
-                            Text(check.purpose).font(.caption).foregroundStyle(Theme.ink2)
+                            Text(check.purpose).font(.caption).foregroundStyle(DSColor.textSecondary)
                         }
                     }
                 }
@@ -430,10 +430,10 @@ enum CameraTestSummary {
         }
         var tint: Color {
             switch self {
-            case .passed: return Theme.accent
+            case .passed: return DSColor.signal
             case .issueFound, .commandWarning, .needsAttention, .couldNotVerify: return Theme.warning
-            case .recorded, .observed, .keptByChoice: return Theme.ink2
-            default: return Theme.ink3
+            case .recorded, .observed, .keptByChoice: return DSColor.textSecondary
+            default: return DSColor.textSecondary
             }
         }
     }
@@ -747,7 +747,7 @@ struct CameraTestSummaryView: View {
                     }.padding(.top, 10)
                 }
                 .font(.subheadline)
-                .foregroundStyle(Theme.ink3)
+                .foregroundStyle(DSColor.textSecondary)
             }
         }.padding(14).frame(maxWidth: .infinity, alignment: .leading).themedCard(cornerRadius: 16)
     }
@@ -758,7 +758,7 @@ struct CameraTestSummaryView: View {
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
                 Text("\(row.title) · \(row.state)").font(.subheadline.weight(.medium))
-                if !row.detail.isEmpty { Text(row.detail).font(.caption).foregroundStyle(Theme.ink2) }
+                if !row.detail.isEmpty { Text(row.detail).font(.caption).foregroundStyle(DSColor.textSecondary) }
             }
         }
     }

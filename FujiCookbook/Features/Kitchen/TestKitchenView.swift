@@ -157,11 +157,11 @@ struct TestKitchenView: View {
                     ChosenRecipeRow(name: recipe.name, filmSimulation: recipe.settings.filmSimulation,
                                     badge: "Camera Test")
                     Text(GuidedTestRecipes.observationGuidance(for: recipe.settings))
-                        .font(.caption).foregroundStyle(Theme.ink2)
+                        .font(.caption).foregroundStyle(DSColor.textSecondary)
                 }
             } else if recipeChoices.isEmpty {
                 Text("No recipes in your Library and no programmed camera slots yet.")
-                    .foregroundStyle(Theme.ink2)
+                    .foregroundStyle(DSColor.textSecondary)
             } else {
                 ForEach(selectedRefs, id: \.self) { ref in
                     if let resolved = ref.resolve(recipes: recipes, camera: camera) {

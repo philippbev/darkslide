@@ -48,7 +48,7 @@ struct FujiCookbookApp: App {
         // flush otherwise leaves none, and the next launch has nothing to preserve. One small
         // synchronous write — the file was rolled away a moment ago.
         AppLog.flushNow()
-        Theme.applyAppearance()
+        DSAppearance.apply()
         PickedRAFStore.purge()
         AISettings.purgeRetiredProviderData()
         let dropped = ScreenshotInbox.purgeStale()
@@ -77,7 +77,7 @@ struct FujiCookbookApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
-                .tint(Theme.accent)
+                .tint(DSColor.signal)
                 // On the windows rather than through `.preferredColorScheme`: going back to System
                 // through that modifier leaves an open sheet — Settings itself — in the old style.
                 .onChange(of: appearance, initial: true) { _, choice in

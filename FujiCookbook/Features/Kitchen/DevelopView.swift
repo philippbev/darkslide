@@ -146,10 +146,10 @@ struct DevelopView: View {
                 ChosenRecipeRow(name: supplied.name, filmSimulation: supplied.settings.filmSimulation,
                                 badge: "Camera Test")
                 Text(GuidedTestRecipes.observationGuidance(for: supplied.settings))
-                    .font(.caption).foregroundStyle(Theme.ink2)
+                    .font(.caption).foregroundStyle(DSColor.textSecondary)
             } else if recipeChoices.isEmpty {
                 Text("No recipes in your Library and no programmed camera slots yet.")
-                    .foregroundStyle(Theme.ink2)
+                    .foregroundStyle(DSColor.textSecondary)
             } else {
                 if let resolved = resolvedRecipe {
                     ChosenRecipeRow(name: resolved.displayName,
@@ -160,7 +160,7 @@ struct DevelopView: View {
                     // resetting to "nothing chosen" and leaving the Develop button dead.
                     Text("That recipe is no longer available. Choose another.")
                         .font(.subheadline)
-                        .foregroundStyle(Theme.ink2)
+                        .foregroundStyle(DSColor.textSecondary)
                 }
                 Button { showRecipePicker = true } label: {
                     Label(resolvedRecipe == nil ? "Choose Recipe…" : "Change Recipe…",
@@ -168,7 +168,7 @@ struct DevelopView: View {
                 }
             }
         } header: {
-            Theme.StepHeader(number: 2, title: "Recipe")
+            DSStepHeader(number: 2, title: "Recipe")
                 .textCase(nil)
         }
     }
@@ -181,7 +181,7 @@ struct DevelopView: View {
                        action: cook)
             if diagnosticMode { probeRow }
         } header: {
-            Theme.StepHeader(number: 3, title: "Develop")
+            DSStepHeader(number: 3, title: "Develop")
                 .textCase(nil)
         } footer: {
             Text(guided == nil
@@ -267,7 +267,7 @@ struct DevelopView: View {
             if presentation == .cameraTest {
                 Text("View the photo, then tap Continue Camera Test to record your observation.")
                     .font(.caption)
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
             }
             if pendingCompletion != nil, !completionSaved, guided != nil {
                 Button("Retry saving test result", action: saveCompletion)

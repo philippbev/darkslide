@@ -25,18 +25,18 @@ struct ExtractedRecipeCard: View {
                     .foregroundStyle(Theme.warning)
             }
             if !rows.isEmpty {
-                Divider().background(Theme.line)
+                Divider().background(DSColor.separator)
                 settingsTable
             } else {
                 Text("No settings could be read from this screenshot.")
                     .font(.footnote)
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
             }
             if let notes = recipe.notes, !notes.isEmpty {
-                Divider().background(Theme.line)
+                Divider().background(DSColor.separator)
                 Text(notes)
                     .font(.footnote)
-                    .foregroundStyle(Theme.ink2)
+                    .foregroundStyle(DSColor.textSecondary)
             }
         }
         .padding(14)
@@ -60,14 +60,14 @@ struct ExtractedRecipeCard: View {
                 HStack(spacing: 8) {
                     FilmSwatch(simulation: recipe.settings.filmSimulation)
                     Text(recipe.name)
-                        .font(Theme.serif(20))
-                        .foregroundStyle(Theme.ink)
+                        .font(DSFont.headline)
+                        .foregroundStyle(DSColor.textPrimary)
                         .lineLimit(2)
                 }
                 if let credit = recipe.credit, !credit.isEmpty {
                     Text("Recipe by \(credit)")
                         .font(.caption)
-                        .foregroundStyle(Theme.ink2)
+                        .foregroundStyle(DSColor.textSecondary)
                 }
                 let chips = RecipeSettingsFormatter.chips(for: recipe.settings)
                 if !chips.isEmpty {
@@ -84,17 +84,17 @@ struct ExtractedRecipeCard: View {
         VStack(spacing: 0) {
             ForEach(Array(rows.enumerated()), id: \.element.field) { index, row in
                 if index > 0 {
-                    Rectangle().fill(Theme.line).frame(height: 0.5)
+                    Rectangle().fill(DSColor.separator).frame(height: 0.5)
                 }
                 HStack {
                     Text(row.field.displayName)
                         .font(.subheadline)
-                        .foregroundStyle(Theme.ink2)
+                        .foregroundStyle(DSColor.textSecondary)
                     Spacer(minLength: 12)
                     Text(row.value)
                         .font(.subheadline.weight(.medium))
                         .monospacedDigit()
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(DSColor.textPrimary)
                         .multilineTextAlignment(.trailing)
                 }
                 .padding(.vertical, 7)

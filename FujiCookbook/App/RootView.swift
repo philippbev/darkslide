@@ -82,10 +82,10 @@ struct RootView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Label("The last session ended unexpectedly", systemImage: "exclamationmark.triangle.fill")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(DSColor.textPrimary)
                 Text("Fuji Cookbook closed on its own while you were using it. Its log was kept, and a report is the only way this gets fixed.")
                     .font(.caption)
-                    .foregroundStyle(Theme.ink2)
+                    .foregroundStyle(DSColor.textSecondary)
                 HStack(spacing: 16) {
                     Button("Report a Problem") {
                         showingUnexpectedExitReport = true
@@ -98,12 +98,12 @@ struct RootView: View {
                         SessionTermination.acknowledge()
                     }
                     .font(.subheadline)
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)
-            .background(Theme.paper)
+            .background(DSColor.background)
             .themedCard(cornerRadius: 16)
             .padding(.horizontal, 12)
             .padding(.bottom, 8)

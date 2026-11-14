@@ -53,7 +53,7 @@ struct ExtractedRecipeEditor: View {
                 if dRangePriorityIsOn {
                     Text("The camera sets Dynamic Range while D-Range Priority is on — and Highlight Tone and Shadow Tone with it.")
                         .font(.caption)
-                        .foregroundStyle(Theme.ink3)
+                        .foregroundStyle(DSColor.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.top, 8)
                 }
@@ -198,7 +198,7 @@ struct ExtractedRecipeEditor: View {
     private func group<Content: View>(_ title: String,
                                       @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Theme.SectionLabel(title)
+            DSSectionLabel(title)
             VStack(spacing: 0) { content() }
                 .padding(14)
                 .themedCard(cornerRadius: 16)
@@ -206,18 +206,18 @@ struct ExtractedRecipeEditor: View {
     }
 
     private var divider: some View {
-        Rectangle().fill(Theme.line).frame(height: 0.5)
+        Rectangle().fill(DSColor.separator).frame(height: 0.5)
     }
 
     private func textField(_ label: String, text: Binding<String>) -> some View {
         HStack(spacing: 12) {
             Text(label)
                 .font(.subheadline)
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
                 .frame(width: 64, alignment: .leading)
             TextField(label, text: text)
                 .font(.subheadline)
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(DSColor.textPrimary)
         }
         .padding(.vertical, 8)
     }
@@ -241,7 +241,7 @@ private struct OptionRow<T: RecipeOption>: View where T.AllCases: RandomAccessCo
         HStack {
             Text(title)
                 .font(.subheadline)
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
             Spacer(minLength: 12)
             Menu {
                 ForEach(Array(T.allCases), id: \.self) { option in
@@ -255,10 +255,10 @@ private struct OptionRow<T: RecipeOption>: View where T.AllCases: RandomAccessCo
                 HStack(spacing: 4) {
                     Text(shown?.displayName ?? "Not set")
                         .font(.subheadline.weight(shown == nil ? .regular : .medium))
-                        .foregroundStyle(shown == nil ? Theme.ink3 : Theme.accent)
+                        .foregroundStyle(shown == nil ? DSColor.textSecondary : DSColor.signalText)
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.caption2)
-                        .foregroundStyle(Theme.ink3)
+                        .foregroundStyle(DSColor.textSecondary)
                 }
             }
         }
@@ -279,18 +279,18 @@ private struct NumberRow: View {
         if let current = value {
             VStack(spacing: 8) {
                 HStack {
-                    Text(title).font(.subheadline).foregroundStyle(Theme.ink2)
+                    Text(title).font(.subheadline).foregroundStyle(DSColor.textSecondary)
                     Spacer(minLength: 12)
                     Text(format(current))
                         .font(.subheadline.weight(.semibold))
                         .monospacedDigit()
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(DSColor.signalText)
                     Button {
                         value = nil
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.footnote)
-                            .foregroundStyle(Theme.ink3)
+                            .foregroundStyle(DSColor.textSecondary)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Clear \(title)")
@@ -302,12 +302,12 @@ private struct NumberRow: View {
             .padding(.vertical, 6)
         } else {
             HStack {
-                Text(title).font(.subheadline).foregroundStyle(Theme.ink2)
+                Text(title).font(.subheadline).foregroundStyle(DSColor.textSecondary)
                 Spacer()
-                Text("Not set").font(.subheadline).foregroundStyle(Theme.ink3)
+                Text("Not set").font(.subheadline).foregroundStyle(DSColor.textSecondary)
                 Button("Set") { value = defaultValue }
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(DSColor.signalText)
                     .padding(.leading, 8)
             }
             .padding(.vertical, 8)
@@ -341,12 +341,12 @@ private struct SliderRowAlways: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack {
-                Text(title).font(.subheadline).foregroundStyle(Theme.ink2)
+                Text(title).font(.subheadline).foregroundStyle(DSColor.textSecondary)
                 Spacer(minLength: 12)
                 Text(RecipeSettingsFormatter.signed(Int(value)))
                     .font(.subheadline.weight(.semibold))
                     .monospacedDigit()
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(DSColor.signalText)
             }
             Slider(value: $value, in: range.min...range.max, step: range.step == 0 ? 1 : range.step)
         }

@@ -16,7 +16,7 @@ private struct SliderRow: View {
                 Text(format(value))
                     .font(.subheadline.weight(.semibold))
                     .monospacedDigit()
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(DSColor.signalText)
             }
             Slider(value: $value,
                    in: range.min...range.max,
@@ -63,7 +63,7 @@ private struct OptionalSliderRow: View {
                     Text(format(current))
                         .font(.subheadline.weight(.semibold))
                         .monospacedDigit()
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(DSColor.signalText)
                     Button { value = nil } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.footnote)

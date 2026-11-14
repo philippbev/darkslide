@@ -160,13 +160,13 @@ struct GuidedStillBankConfirmation: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Use a still-photography bank").font(.headline)
                 Text("On the camera, check IQ → CUSTOM MODE SETTING and make sure C\(slot) is assigned to STILL. Unplug to use the camera's menus if needed, then reconnect. The Film Simulation dial's C position is a separate setting.")
-                    .font(.subheadline).foregroundStyle(Theme.ink2)
+                    .font(.subheadline).foregroundStyle(DSColor.textSecondary)
                 Toggle("I checked that C\(slot) is assigned to STILL", isOn: Binding(
                     get: { session.hasConfirmedStillBank(slot) },
                     set: { session.setStillBankConfirmation(slot, confirmed: $0) }))
                     .font(.subheadline).disabled(isRunning)
                 Text("The report records your confirmation; the app cannot detect this setting.")
-                    .font(.caption).foregroundStyle(Theme.ink3)
+                    .font(.caption).foregroundStyle(DSColor.textSecondary)
             }
             .padding(14).frame(maxWidth: .infinity, alignment: .leading).themedCard(cornerRadius: 16)
         }
@@ -189,15 +189,15 @@ struct GuidedSlotPreparation: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Prepare C\(slot) for the test").font(.headline)
             Text("Unplug the camera. In EDIT/SAVE CUSTOM SETTING → EDIT/CHECK → C\(slot), set ISO to 800 or higher (1600 is a safe choice) and make sure the image format is JPEG, not HEIF. Then plug the camera back in.")
-                .font(.subheadline).foregroundStyle(Theme.ink2)
+                .font(.subheadline).foregroundStyle(DSColor.textSecondary)
             Text("The camera refuses Dynamic Range and D-Range Priority below an ISO threshold, and Clarity on a HEIF bank. Preparing the slot lets the test write them. The app doesn't restore ISO or image format afterwards.")
-                .font(.caption).foregroundStyle(Theme.ink3)
+                .font(.caption).foregroundStyle(DSColor.textSecondary)
             GuidedChoiceRow<GuidedTestSession.SlotPreparation>(
                 choices: [.init(value: .setForTest, label: "I've set it"),
                           .init(value: .leftUnchanged, label: "I left it as it was")],
                 selection: Binding(get: { session.writePass?.trial?.preparation }, set: { record($0) }))
             Text("The report records your answer; the app cannot read these settings.")
-                .font(.caption).foregroundStyle(Theme.ink3)
+                .font(.caption).foregroundStyle(DSColor.textSecondary)
         }
         .padding(14).frame(maxWidth: .infinity, alignment: .leading).themedCard(cornerRadius: 16)
     }
@@ -236,20 +236,20 @@ struct GuidedChooseRecipeStep: View {
                         HStack(alignment: .top, spacing: 12) {
                             Image(systemName: chosen == recipe.id ? "largecircle.fill.circle" : "circle")
                                 .font(.title3)
-                                .foregroundStyle(chosen == recipe.id ? Theme.accent : Theme.ink3.opacity(0.6))
+                                .foregroundStyle(chosen == recipe.id ? DSColor.signalText : DSColor.textSecondary.opacity(0.6))
                             VStack(alignment: .leading, spacing: 4) {
                                 HStack(spacing: 8) {
                                     FilmSwatch(simulation: recipe.settings.filmSimulation, size: 12)
                                     Text(recipe.name)
                                         .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(Theme.ink)
+                                        .foregroundStyle(DSColor.textPrimary)
                                     if alreadyPushed(recipe.id) {
                                         BadgeTag(text: "pushed")
                                     }
                                 }
                                 Text(recipe.purpose)
                                     .font(.caption)
-                                    .foregroundStyle(Theme.ink2)
+                                    .foregroundStyle(DSColor.textSecondary)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             Spacer(minLength: 0)
@@ -259,7 +259,7 @@ struct GuidedChooseRecipeStep: View {
                     }
                     .buttonStyle(.plain)
                     if index < recipes.count - 1 {
-                        Rectangle().fill(Theme.line).frame(height: 1).padding(.leading, 46)
+                        Rectangle().fill(DSColor.separator).frame(height: 1).padding(.leading, 46)
                     }
                 }
             }
@@ -268,7 +268,7 @@ struct GuidedChooseRecipeStep: View {
             if let recipe = recipes.first(where: { $0.id == chosen }), let model = session.cameraModel {
                 Text("What gets written")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
                     .padding(.horizontal, 4)
                 SettingsTable(rows: RecipeSettingsFormatter.rows(for: recipe.settings, model: model))
             }
@@ -322,7 +322,7 @@ struct GuidedChooseSlotStep: View {
             GuidedGate(session: $session, unplugExpected: chosen != nil)
             if displayedSlots.isEmpty {
                 Text("Reconnect the test camera to read the available slots. Your earlier answers and original settings remain saved.")
-                    .font(.subheadline).foregroundStyle(Theme.ink2)
+                    .font(.subheadline).foregroundStyle(DSColor.textSecondary)
             }
             VStack(spacing: 0) {
                 ForEach(displayedSlots) { slot in
@@ -330,11 +330,11 @@ struct GuidedChooseSlotStep: View {
                         HStack(spacing: 12) {
                             Image(systemName: chosen == slot.index ? "largecircle.fill.circle" : "circle")
                                 .font(.title3)
-                                .foregroundStyle(chosen == slot.index ? Theme.accent : Theme.ink3.opacity(0.6))
+                                .foregroundStyle(chosen == slot.index ? DSColor.signalText : DSColor.textSecondary.opacity(0.6))
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(slot.label)
                                     .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(Theme.ink)
+                                    .foregroundStyle(DSColor.textPrimary)
                                 // A bank nobody has named is very often a bank nobody has used —
                                 // and on a body where no slot ever reads as empty, telling the
                                 // tester it "holds PROVIA" in orange is a warning about nothing.
@@ -345,7 +345,7 @@ struct GuidedChooseSlotStep: View {
                                      : "Empty")
                                     .font(.caption)
                                     .foregroundStyle(slot.isOccupied && slot.resolvedName != nil
-                                                     ? Theme.warning : Theme.ink3)
+                                                     ? Theme.warning : DSColor.textSecondary)
                             }
                             Spacer(minLength: 0)
                         }
@@ -355,7 +355,7 @@ struct GuidedChooseSlotStep: View {
                     }
                     .buttonStyle(.plain)
                     if slot.index != displayedSlots.last?.index {
-                        Rectangle().fill(Theme.line).frame(height: 1).padding(.leading, 46)
+                        Rectangle().fill(DSColor.separator).frame(height: 1).padding(.leading, 46)
                     }
                 }
             }
@@ -459,7 +459,7 @@ struct GuidedPushStep: View {
                 GuidedNoticeCard(
                     title: outcomeTitle(outcome),
                     systemImage: outcome == .applied ? "checkmark.circle.fill" : "exclamationmark.circle.fill",
-                    tint: outcome == .applied ? Theme.accent : Theme.warning,
+                    tint: outcome == .applied ? DSColor.signal : Theme.warning,
                     message: "The report records the camera's response for each setting. The remaining checks show what was saved and how it looks on the camera.")
             } else {
                 GuidedNoticeCard(
@@ -581,7 +581,7 @@ struct GuidedPowerCycleStep: View {
         let state = persistence.evidenceState
         return GuidedNoticeCard(title: state == .passed ? "Settings stayed saved" : state == .issueFound ? "A setting or name changed" : "Couldn't verify the saved settings",
             systemImage: state == .passed ? "checkmark.circle" : "exclamationmark.circle",
-            tint: state == .passed ? Theme.accent : Theme.warning,
+            tint: state == .passed ? DSColor.signal : Theme.warning,
             message: "Settings: \(verificationLabel(persistence.settingsState)). Name: \(verificationLabel(persistence.nameState)). "
                 + (persistence.differences.isEmpty ? "" : "Differences: \(persistence.differences.map(\.field).joined(separator: ", ")). ")
                 + "The report keeps the write result and this fresh read separately.")
@@ -665,7 +665,7 @@ struct GuidedRecheckStep: View {
                 GuidedNoticeCard(
                     title: comparison.verdict == "matches" ? "It matched" : "Comparison needs review",
                     systemImage: comparison.verdict == "matches" ? "checkmark.circle.fill" : "exclamationmark.circle.fill",
-                    tint: comparison.verdict == "matches" ? Theme.accent : Theme.warning,
+                    tint: comparison.verdict == "matches" ? DSColor.signal : Theme.warning,
                     message: comparison.verdict == "differs"
                         ? "\(comparison.rows.filter(\.differs).count) setting(s) differ from what the camera shows. That's in the report."
                         : comparison.verdict == "matches" ? "What the app read agrees with the camera's own menu." : "Some settings could not be read. Your camera-menu observations are retained separately.")
@@ -700,10 +700,10 @@ struct GuidedRecheckStep: View {
                                 set: { recordAutoUpdate($0) })
         return VStack(alignment: .leading, spacing: 10) {
             Text("While you're there: what is AUTO UPDATE CUSTOM SETTING set to?")
-                .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+                .font(.subheadline.weight(.semibold)).foregroundStyle(DSColor.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
             Text("It's in the same EDIT/SAVE CUSTOM SETTING menu. It decides whether changes made on the camera save to the bank automatically, and every restart result is read against it.")
-                .font(.caption).foregroundStyle(Theme.ink2)
+                .font(.caption).foregroundStyle(DSColor.textSecondary)
             GuidedChoiceRow<GuidedTestSession.AutoUpdateAnswer>(
                 choices: [.init(value: .enable, label: "Enable"), .init(value: .disable, label: "Disable")],
                 selection: selection)
@@ -899,14 +899,14 @@ struct GuidedRestoreStep: View {
             Text("C\(slot) · \(disposition == .restored ? "Restored and verified" : disposition?.isKeptByChoice == true ? "Kept by choice" : "Needs attention")").font(.headline)
             if (session.writePass?.trials ?? []).contains(where: { $0.slot == slot && $0.preparation == .setForTest }) {
                 Text("You set this slot's ISO and image format for the test. The app doesn't restore them; put them back in the camera's menu.")
-                    .font(.caption).foregroundStyle(Theme.ink3)
+                    .font(.caption).foregroundStyle(DSColor.textSecondary)
             }
             if original?.occupied == false {
                 Text("This slot was empty. \(CameraBackup.slotCannotBeEmptied)").font(.caption)
                 Button("Keep the test recipe in C\(slot)") { record(slot, outcome: .emptyKept) }
             } else {
                 Text(original.map { "Original: \($0.name.flatMap { $0.isEmpty ? nil : $0 } ?? "no name (CUSTOM \(slot))")" } ?? "Original settings unavailable")
-                    .font(.caption).foregroundStyle(Theme.ink2)
+                    .font(.caption).foregroundStyle(DSColor.textSecondary)
                 Button("Restore original C\(slot)") { openRestore(slot) }
                     .disabled(!sameBody || recovery?.backup.properties(forSlot: slot) == nil || isRunning)
                 Button("Keep current settings in C\(slot)") { record(slot, outcome: .kept) }
