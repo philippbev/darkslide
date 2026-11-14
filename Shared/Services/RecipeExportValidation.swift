@@ -43,12 +43,14 @@ struct RecipeExportSnapshot {
         RecipeExportSnapshot(shape: .many, entries: recipes.map { entry($0, includePhotos: includePhotos) })
     }
 
-    /// Every recipe with its stable `uuid`, so chapters can re-link to them on restore, plus every
-    /// chapter.
+    /// Every recipe with its stable `uuid`, so chapters can re-link to them on restore, and its
+    /// archive number, so a restore keeps it, plus every chapter.
     static func backup(recipes: [Recipe], chapters: [Chapter], includePhotos: Bool) -> RecipeExportSnapshot {
         RecipeExportSnapshot(
             shape: .many,
-            entries: recipes.map { entry($0, includePhotos: includePhotos, includeIdentity: true) },
+            entries: recipes.map {
+                entry($0, includePhotos: includePhotos, includeIdentity: true, includeArchiveNumber: true)
+            },
             chapters: chapters.isEmpty ? nil : chapters.map(RecipePortability.portableChapter(from:)))
     }
 
@@ -71,8 +73,10 @@ struct RecipeExportSnapshot {
                                     chapters: [PortableChapter(name: chapter.name, recipeUUIDs: slots)])
     }
 
-    private static func entry(_ recipe: Recipe, includePhotos: Bool, includeIdentity: Bool = false) -> Entry {
-        Entry(recipe: RecipePortability.portable(from: recipe, includeIdentity: includeIdentity),
+    private static func entry(_ recipe: Recipe, includePhotos: Bool, includeIdentity: Bool = false,
+                              includeArchiveNumber: Bool = false) -> Entry {
+        Entry(recipe: RecipePortability.portable(from: recipe, includeIdentity: includeIdentity,
+                                                 includeArchiveNumber: includeArchiveNumber),
               photos: includePhotos ? recipe.sortedPhotos.map(\.imageData) : [])
     }
 }

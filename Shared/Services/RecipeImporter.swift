@@ -34,6 +34,7 @@ enum RecipeImporter {
                 // this same batch must not turn the user's "keep both" into an overwrite.
                 let matches = recipes.map { DuplicateResolver.match(for: $0, in: existing) }
                 var usedNames = Set(existing.map { nameKey($0.name) })
+                var usedNumbers = Set(existing.map(\.archiveNumber).filter { $0 > 0 })
                 var idMap: [UUID: UUID] = [:]
                 for (index, recipe) in recipes.enumerated() {
                     let match = matches[index]
@@ -44,6 +45,9 @@ enum RecipeImporter {
                     let result = apply(recipe, resolution: resolution, match: match, into: context,
                                        usedNameKeys: &usedNames, photoReplacement: replacement)
                     if let original = recipe.uuid, let imported = result.recipe { idMap[original] = imported.uuid }
+                    if result.outcome == .added, let imported = result.recipe {
+                        keepArchiveNumber(of: recipe, on: imported, usedNumbers: &usedNumbers)
+                    }
                 }
                 for chapter in chapters {
                     let mapped = chapter.recipeUUIDs.compactMap { idMap[$0] }
@@ -59,6 +63,16 @@ enum RecipeImporter {
             context.rollback()
             throw error
         }
+    }
+
+    /// A backup's archive number carried over to the recipe it restores, unless the library already
+    /// has that number; such a recipe is left at 0 and `RecipeArchiveNumbering` gives it the next
+    /// free one. A recipe that overwrote a library recipe keeps the library's number, and a shared
+    /// file carries none, so both are left alone here.
+    static func keepArchiveNumber(of portable: PortableRecipe, on recipe: Recipe, usedNumbers: inout Set<Int>) {
+        guard let number = portable.archiveNumber, number > 0, !usedNumbers.contains(number) else { return }
+        recipe.archiveNumber = number
+        usedNumbers.insert(number)
     }
 
     /// A recipe name normalized for duplicate detection and disambiguation: trimmed and lowercased.

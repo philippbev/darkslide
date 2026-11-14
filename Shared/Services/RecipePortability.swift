@@ -121,7 +121,11 @@ enum RecipePortability {
     /// Pass `includeIdentity: true` to embed the recipe's stable `uuid` — only needed for full
     /// backups, where chapters reference recipes by uuid. Recipe-only exports (single/combined)
     /// omit it so shared files stay clean; the importer mints a fresh id on import either way.
-    static func portable(from recipe: Recipe, includePhotos: Bool = false, includeIdentity: Bool = false) -> PortableRecipe {
+    ///
+    /// `includeArchiveNumber` likewise only for full backups: a restore keeps the number, and a
+    /// shared file leaves it to the library it lands in.
+    static func portable(from recipe: Recipe, includePhotos: Bool = false, includeIdentity: Bool = false,
+                         includeArchiveNumber: Bool = false) -> PortableRecipe {
         let photos: [PortablePhoto]? = includePhotos && !recipe.sortedPhotos.isEmpty
             ? recipe.sortedPhotos.map { PortablePhoto(data: $0.imageData.base64EncodedString()) }
             : nil
@@ -138,7 +142,8 @@ enum RecipePortability {
             tags: recipe.tags.isEmpty ? nil : recipe.tags,
             settings: recipe.settings,
             unsupportedFields: recipe.unsupportedFields.isEmpty ? nil : recipe.unsupportedFields,
-            photos: photos
+            photos: photos,
+            archiveNumber: includeArchiveNumber && recipe.archiveNumber > 0 ? recipe.archiveNumber : nil
         )
     }
 

@@ -30,17 +30,26 @@ enum RecipeArchiveNumbering {
         let highWater: Int
     }
 
-    /// The numbers to give the recipes that have none. Pure, for the tests.
+    /// The numbers to give: to the recipes that have none, and to every recipe but one that shares
+    /// a number with another. Pure, for the tests.
+    ///
+    /// A shared number comes from two devices numbering before they synced. The recipe created
+    /// first keeps it; the others are numbered again like new ones.
     ///
     /// Counts on from the larger of the stored high-water mark and the highest number in the
     /// library, so numbers that arrive by sync from another device aren't handed out again here.
     /// Ties in `createdAt` fall back to the uuid, so the order is the same on every run.
     static func plan<ID: Hashable>(for entries: [Entry<ID>], highWater storedHighWater: Int) -> Plan<ID> {
+        func earlier(_ a: Entry<ID>, _ b: Entry<ID>) -> Bool {
+            (a.createdAt, a.uuid.uuidString) < (b.createdAt, b.uuid.uuidString)
+        }
         var next = max(storedHighWater, entries.map(\.number).max() ?? 0)
         var assignments: [ID: Int] = [:]
-        let unnumbered = entries
-            .filter { $0.number <= 0 }
-            .sorted { ($0.createdAt, $0.uuid.uuidString) < ($1.createdAt, $1.uuid.uuidString) }
+        let sharingANumber = Dictionary(grouping: entries.filter { $0.number > 0 }, by: \.number)
+            .values
+            .filter { $0.count > 1 }
+            .flatMap { $0.sorted(by: earlier).dropFirst() }
+        let unnumbered = (entries.filter { $0.number <= 0 } + sharingANumber).sorted(by: earlier)
         for entry in unnumbered {
             next += 1
             assignments[entry.id] = next
@@ -72,4 +81,21 @@ enum RecipeArchiveNumbering {
         try context.save()
         return plan.assignments.count
     }
+}
+
+/// The library as the numbering sees it, compared on every change to decide whether to run.
+struct ArchiveNumberingState: Equatable {
+    let unnumbered: Int
+    let sharedNumbers: Int
+    let highest: Int
+
+    init(numbers: [Int]) {
+        let numbered = numbers.filter { $0 > 0 }
+        unnumbered = numbers.count - numbered.count
+        sharedNumbers = numbered.count - Set(numbered).count
+        highest = numbered.max() ?? 0
+    }
+
+    /// Run when anything needs a number, or when there is a highest number for the mark to follow.
+    var needsWork: Bool { unnumbered > 0 || sharedNumbers > 0 || highest > 0 }
 }
