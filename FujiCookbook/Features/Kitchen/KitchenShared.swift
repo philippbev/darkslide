@@ -247,7 +247,7 @@ struct CookStatusSection: View {
         case .failed(let message):
             Section {
                 Label { Text(message) } icon: {
-                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Theme.warning)
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(DSColor.caution)
                 }
                 if let onShowGuide {
                     Button("Connection Help") { onShowGuide() }
@@ -263,7 +263,7 @@ struct CookStatusSection: View {
                                 .font(.subheadline).foregroundStyle(.secondary)
                         }
                     } icon: {
-                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Theme.warning)
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(DSColor.caution)
                     }
                     ConnectInCameraTabButton()
                 }
@@ -271,7 +271,7 @@ struct CookStatusSection: View {
                 Section {
                     Label("RAW conversion isn't enabled for \(camera.session.connected?.model?.displayName ?? camera.session.connected?.productName ?? "this camera").",
                           systemImage: "lock.fill")
-                        .foregroundStyle(Theme.warning)
+                        .foregroundStyle(DSColor.caution)
                 } footer: {
                     Text("The Kitchen can't develop RAW files with this camera yet. Camera Test can collect information to help us add support. You can still use the app's other available features.")
                 }

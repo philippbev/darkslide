@@ -4,8 +4,7 @@ import SwiftUI
 /// color besides the signal blue. Filter variants share their base's, so the filter is a value in
 /// the data sheet rather than a color of its own.
 ///
-/// On the existing `FilmSimulation` so there is one list of simulations. `swatchColor` in `Theme`
-/// stays for the old screens until phase 5.
+/// On the existing `FilmSimulation` so there is one list of simulations.
 struct DSSimulationStyle: Equatable {
     /// "PRV", "CC", "ACR".
     let code: String

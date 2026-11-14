@@ -177,7 +177,7 @@ struct RecommendationResultView: View {
                 Label {
                     Text(gap)
                 } icon: {
-                    Image(systemName: "exclamationmark.triangle").foregroundStyle(Theme.warning)
+                    Image(systemName: "exclamationmark.triangle").foregroundStyle(DSColor.caution)
                 }
             }
         } header: {

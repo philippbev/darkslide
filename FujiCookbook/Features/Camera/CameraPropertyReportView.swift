@@ -168,7 +168,7 @@ struct CameraPropertyReportView: View {
                     .foregroundStyle(DSColor.textSecondary)
                 Text(probe.valueSummary)
                     .font(.caption.monospaced())
-                    .foregroundStyle(probe.currentValueIsOutOfSet ? Theme.warning : DSColor.textSecondary)
+                    .foregroundStyle(probe.currentValueIsOutOfSet ? DSColor.caution : DSColor.textSecondary)
             }
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("accepts")
@@ -187,7 +187,7 @@ struct CameraPropertyReportView: View {
             if probe.currentValueIsOutOfSet {
                 Text("The value it holds isn’t in the set it says it accepts — our encoding for this field is likely wrong.")
                     .font(.caption2)
-                    .foregroundStyle(Theme.warning)
+                    .foregroundStyle(DSColor.caution)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

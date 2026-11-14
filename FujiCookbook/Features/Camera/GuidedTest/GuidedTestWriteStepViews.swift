@@ -345,7 +345,7 @@ struct GuidedChooseSlotStep: View {
                                      : "Empty")
                                     .font(.caption)
                                     .foregroundStyle(slot.isOccupied && slot.resolvedName != nil
-                                                     ? Theme.warning : DSColor.textSecondary)
+                                                     ? DSColor.caution : DSColor.textSecondary)
                             }
                             Spacer(minLength: 0)
                         }
@@ -459,7 +459,7 @@ struct GuidedPushStep: View {
                 GuidedNoticeCard(
                     title: outcomeTitle(outcome),
                     systemImage: outcome == .applied ? "checkmark.circle.fill" : "exclamationmark.circle.fill",
-                    tint: outcome == .applied ? DSColor.signal : Theme.warning,
+                    tint: outcome == .applied ? DSColor.signal : DSColor.caution,
                     message: "The report records the camera's response for each setting. The remaining checks show what was saved and how it looks on the camera.")
             } else {
                 GuidedNoticeCard(
@@ -475,7 +475,7 @@ struct GuidedPushStep: View {
             } else {
                 let blockReason = GuidedTestRunner.mutationBlockReason(camera, session: session, slot: trial?.slot ?? 0, kind: .recipeWrite)
                 if let blockReason {
-                    Text(blockReason).font(.caption).foregroundStyle(Theme.warning)
+                    Text(blockReason).font(.caption).foregroundStyle(DSColor.caution)
                 }
                 GuidedPrimaryButton(title: "Write to C\(trial?.slot ?? 0)", systemImage: "square.and.arrow.up",
                                     enabled: blockReason == nil,
@@ -581,7 +581,7 @@ struct GuidedPowerCycleStep: View {
         let state = persistence.evidenceState
         return GuidedNoticeCard(title: state == .passed ? "Settings stayed saved" : state == .issueFound ? "A setting or name changed" : "Couldn't verify the saved settings",
             systemImage: state == .passed ? "checkmark.circle" : "exclamationmark.circle",
-            tint: state == .passed ? DSColor.signal : Theme.warning,
+            tint: state == .passed ? DSColor.signal : DSColor.caution,
             message: "Settings: \(verificationLabel(persistence.settingsState)). Name: \(verificationLabel(persistence.nameState)). "
                 + (persistence.differences.isEmpty ? "" : "Differences: \(persistence.differences.map(\.field).joined(separator: ", ")). ")
                 + "The report keeps the write result and this fresh read separately.")
@@ -665,7 +665,7 @@ struct GuidedRecheckStep: View {
                 GuidedNoticeCard(
                     title: comparison.verdict == "matches" ? "It matched" : "Comparison needs review",
                     systemImage: comparison.verdict == "matches" ? "checkmark.circle.fill" : "exclamationmark.circle.fill",
-                    tint: comparison.verdict == "matches" ? DSColor.signal : Theme.warning,
+                    tint: comparison.verdict == "matches" ? DSColor.signal : DSColor.caution,
                     message: comparison.verdict == "differs"
                         ? "\(comparison.rows.filter(\.differs).count) setting(s) differ from what the camera shows. That's in the report."
                         : comparison.verdict == "matches" ? "What the app read agrees with the camera's own menu." : "Some settings could not be read. Your camera-menu observations are retained separately.")
@@ -869,13 +869,13 @@ struct GuidedRestoreStep: View {
                 GuidedNoticeCard(title: "No slots to restore", systemImage: "checkmark.circle",
                     message: "No test recipe was written. Continue to review the results.")
             }
-            if let error { Text(error).foregroundStyle(Theme.warning) }
+            if let error { Text(error).foregroundStyle(DSColor.caution) }
             ForEach(touchedSlots, id: \.self) { slot in
                 slotCard(slot)
             }
             if recovery == nil && !touchedSlots.isEmpty {
                 GuidedNoticeCard(title: "Original recovery copy unavailable", systemImage: "exclamationmark.circle",
-                    tint: Theme.warning, message: "This test has no saved original settings on this phone. If you exported a backup, use Restore a Slot on the Camera screen to put those settings back.")
+                    tint: DSColor.caution, message: "This test has no saved original settings on this phone. If you exported a backup, use Restore a Slot on the Camera screen to put those settings back.")
             }
         } actions: {
             GuidedPrimaryButton(title: "Review results", systemImage: "arrow.right", enabled: !isRunning, action: onAdvance)

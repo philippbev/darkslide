@@ -42,8 +42,6 @@ struct DSColorToken: Identifiable, Equatable {
 }
 
 /// The semantic palette. Views name a role, never a hex value.
-///
-/// Separate from `Theme`, which the existing screens keep until they move over in phase 5.
 enum DSColor {
     enum Tokens {
         static let background = DSColorToken(name: "background", light: 0xE8E7E3, dark: 0x0F0F0F)
@@ -65,6 +63,12 @@ enum DSColor {
         /// The system red (`UIColor.systemRed`) as iOS 26 draws it, for the gallery's readout.
         /// `DSColor.danger` is the system color itself, so it follows any later retuning.
         static let danger = DSColorToken(name: "danger", light: 0xFF383C, dark: 0xFF4245)
+        /// Caution: what the app couldn't read, write, verify or finish. Dark enough in light mode
+        /// to hold 4.5:1 as text on the ground and on surfaces.
+        static let caution = DSColorToken(name: "caution", light: 0x9A5200, dark: 0xE08C34)
+        /// The fill behind a caution notice or badge.
+        static let cautionSoft = DSColorToken(name: "cautionSoft", light: 0x9A5200, dark: 0xE08C34,
+                                              lightOpacity: 0.12, darkOpacity: 0.16)
         /// The ground at 88 % over a material, for floating bars before iOS 26.
         static let chromeGlass = DSColorToken(name: "chromeGlass", light: 0xE8E7E3, dark: 0x0F0F0F,
                                               lightOpacity: 0.88, darkOpacity: 0.88)
@@ -80,7 +84,7 @@ enum DSColor {
         static let filmEdgeText = DSColorToken(name: "filmEdgeText", both: 0xFFFFFF)
 
         static let all = [background, surface, panel, key, keyShadow, separator, textPrimary, textSecondary,
-                          signal, onSignal, signalText, knob, knobMark, ledOff, ledOK, danger, chromeGlass,
+                          signal, onSignal, signalText, knob, knobMark, ledOff, ledOK, danger, caution, cautionSoft, chromeGlass,
                           keyInset, panelEdge, filmEdge, filmEdgeText]
     }
 
@@ -117,6 +121,10 @@ enum DSColor {
     /// Destructive actions only, through `role: .destructive`, never as decoration. The system red,
     /// so a delete reads the same as in the system's own lists and dialogs.
     static let danger = Color(uiColor: .systemRed)
+    /// What the app couldn't read, write, verify or finish: a notice, never a key, so it never
+    /// competes with the signal blue or with `danger`.
+    static let caution = Tokens.caution.color
+    static let cautionSoft = Tokens.cautionSoft.color
     /// Tint over a material for floating bars before iOS 26, which has no Liquid Glass.
     static let chromeGlass = Tokens.chromeGlass.color
     static let keyInset = Tokens.keyInset.color

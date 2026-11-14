@@ -1,26 +1,8 @@
 import SwiftUI
 import UIKit
 
-/// What is left of the first design: the warning orange. Every other color, the type and the
-/// navigation bar come from the design system (`DSColor`, `DSFont`, `DSAppearance`).
-///
-/// The design system has the signal blue and, for destructive keys only, `danger`; it has no
-/// color yet for a caution — what the app couldn't read, write, verify or finish. Until it does,
-/// those keep this one orange, the same in both modes, so a caution never reads as a key.
-enum Theme {
-    static let warning = Color(UIColor(rgb: 0xE08C34))
-    /// The fill behind a warning card or badge.
-    static let warningSoft = warning.opacity(0.12)
-}
-
-private extension UIColor {
-    convenience init(rgb: UInt32) {
-        self.init(red: CGFloat((rgb >> 16) & 0xFF) / 255,
-                  green: CGFloat((rgb >> 8) & 0xFF) / 255,
-                  blue: CGFloat(rgb & 0xFF) / 255,
-                  alpha: 1)
-    }
-}
+/// Small views shared by the app and the Share Extension that predate the design system's own
+/// components. They draw with its tokens (`DSColor`, `DSFont`); new UI uses the `DS` components.
 
 // MARK: - Components
 

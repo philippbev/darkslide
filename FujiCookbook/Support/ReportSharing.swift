@@ -331,7 +331,7 @@ struct ShareReportButton: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             if let preparationError {
-                Text(preparationError).font(.caption).foregroundStyle(Theme.warning)
+                Text(preparationError).font(.caption).foregroundStyle(DSColor.caution)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }

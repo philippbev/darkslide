@@ -70,7 +70,7 @@ struct SettingsView: View {
         if !cloudStoreState.isCloudKit {
             return ("Local only", "icloud.slash", .secondary)
         } else if !signedInToICloud {
-            return ("Not signed in to iCloud", "exclamationmark.icloud", Theme.warning)
+            return ("Not signed in to iCloud", "exclamationmark.icloud", DSColor.caution)
         } else {
             return ("Syncing via iCloud", "checkmark.icloud", .green)
         }
@@ -148,7 +148,7 @@ struct SettingsView: View {
                     case .failed(let message):
                         Label(message, systemImage: "exclamationmark.triangle")
                             .font(.footnote)
-                            .foregroundStyle(Theme.warning)
+                            .foregroundStyle(DSColor.caution)
                     case .loaded(let count):
                         Text("\(count) model\(count == 1 ? "" : "s") available with this key.")
                             .font(.footnote)
@@ -158,7 +158,7 @@ struct SettingsView: View {
                     }
                 } else {
                     Label("Enter your API key to continue.", systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(Theme.warning)
+                        .foregroundStyle(DSColor.caution)
                 }
             } header: {
                 Text("Provider")
@@ -171,7 +171,7 @@ struct SettingsView: View {
                               selection: $settings.modelID)
                 if settings.hasAPIKey, !settings.hasScanningModel {
                     Label("Choose a model to start scanning.", systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(Theme.warning)
+                        .foregroundStyle(DSColor.caution)
                 }
             } header: {
                 Text("Recipe Scanning")
@@ -185,7 +185,7 @@ struct SettingsView: View {
                                   selection: $settings.recommenderModelID)
                     if settings.hasAPIKey, !settings.hasRecommenderModel {
                         Label("Choose a model to get recommendations.", systemImage: "exclamationmark.triangle")
-                            .foregroundStyle(Theme.warning)
+                            .foregroundStyle(DSColor.caution)
                     }
                 } header: {
                     Text("Recipe Ideas")
@@ -234,7 +234,7 @@ struct SettingsView: View {
             if iCloudSyncEnabled != cloudStoreState.isCloudKit {
                 Label("Restart the app to apply this change.", systemImage: "arrow.clockwise")
                     .font(.footnote)
-                    .foregroundStyle(Theme.warning)
+                    .foregroundStyle(DSColor.caution)
             }
             syncDiagnostics
         } header: {

@@ -144,7 +144,7 @@ struct RecipeEditorView: View {
             Text("Camera")
         } footer: {
             if let slotNameRejection {
-                Text(slotNameRejection).foregroundStyle(Theme.warning)
+                Text(slotNameRejection).foregroundStyle(DSColor.caution)
             } else {
                 Text("The name your camera shows for this slot. Leave it blank to use “\(draft.generatedSlotName)”, taken from the recipe name. Cameras store up to \(CameraSlotName.maxLength) characters, letters, numbers and punctuation only.")
             }
@@ -170,7 +170,7 @@ struct RecipeEditorView: View {
                 if let model = draft.model, !profileChanges.isEmpty {
                     Text("Saving with \(model.displayName) changes this recipe: "
                          + profileChanges.map(\.sentence).joined(separator: "; ") + ".")
-                        .foregroundStyle(Theme.warning)
+                        .foregroundStyle(DSColor.caution)
                 }
             }
         }
@@ -204,7 +204,7 @@ struct RecipeEditorView: View {
             // the same way so the two screens don't tell different stories.
             if let sim = draft.filmSim, let model = draft.model, !model.supports(filmSimulation: sim) {
                 Text("“\(sim.displayName)” doesn't exist on \(model.displayName). The camera will keep its current film simulation for this slot.")
-                    .foregroundStyle(Theme.warning)
+                    .foregroundStyle(DSColor.caution)
             }
         }
     }
@@ -346,7 +346,7 @@ struct RecipeEditorView: View {
             // push's own words, as the film simulation footer does.
             if let mode = draft.unsupportedWhiteBalanceMode, let model = draft.model {
                 Text(RecipeCompatibility.whiteBalanceModeMessage(mode, on: model))
-                    .foregroundStyle(Theme.warning)
+                    .foregroundStyle(DSColor.caution)
             }
         }
     }

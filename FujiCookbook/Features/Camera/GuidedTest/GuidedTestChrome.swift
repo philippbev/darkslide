@@ -431,7 +431,7 @@ enum CameraTestSummary {
         var tint: Color {
             switch self {
             case .passed: return DSColor.signal
-            case .issueFound, .commandWarning, .needsAttention, .couldNotVerify: return Theme.warning
+            case .issueFound, .commandWarning, .needsAttention, .couldNotVerify: return DSColor.caution
             case .recorded, .observed, .keptByChoice: return DSColor.textSecondary
             default: return DSColor.textSecondary
             }
