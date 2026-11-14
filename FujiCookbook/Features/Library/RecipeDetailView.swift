@@ -2,8 +2,8 @@ import SwiftUI
 import SwiftData
 import UIKit
 
-/// Read-only view of a saved recipe — the parameters it sets, its notes, which cameras run it and
-/// its slot name — with its actions.
+/// Read-only view of a saved recipe as an archive card — its number, the parameters it sets, its
+/// slot name, which cameras run it — with its actions in a floating bar.
 struct RecipeDetailView: View {
     @Bindable var recipe: Recipe
     @Environment(\.modelContext) private var modelContext
@@ -20,80 +20,50 @@ struct RecipeDetailView: View {
     @State private var viewerIndex: Int?
     @State private var showingExportOptions = false
     @State private var showingCompare = false
-    @State private var heroIndex = 0
 
-    private var listRows: [(field: RecipeField, value: String)] {
-        RecipeSettingsFormatter.rows(for: recipe.settings)
-    }
+    @Environment(OwnedCameras.self) private var ownedCameras
+    /// By name, like the Library's chapter keys.
+    @Query(sort: \Chapter.name) private var allChapters: [Chapter]
+    /// The camera's slots as last read, for the SLOT field (`CameraSlotSnapshot`).
+    @AppStorage(CameraSlotSnapshot.storageKey) private var slotSnapshotsJSON = ""
+    @AppStorage(RememberedCamera.displayNameKey) private var rememberedCameraName = ""
+
+    private var chapters: [Chapter] { allChapters.filter { $0.recipeUUIDs.contains(recipe.uuid) } }
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                heroPhotos
-                titleBlock
-
-                if !listRows.isEmpty {
-                    Theme.SectionLabel("Recipe Parameters")
-                        .padding(.top, 18)
-                        .padding(.bottom, 8)
-                        .padding(.horizontal, 4)
-                    parameterCard
-                }
-
-                Theme.SectionLabel("Works With")
-                    .padding(.top, 18)
-                    .padding(.bottom, 8)
-                    .padding(.horizontal, 4)
-                RecipeWorksWithCard(settings: recipe.settings,
-                                    hasPreservedFields: recipe.hasPreservedUnsupportedFields)
-
+            VStack(alignment: .leading, spacing: DSSpacing.block) {
+                archiveCard
+                tags
+                photos
                 if !recipe.notes.isEmpty {
-                    Theme.SectionLabel("Notes")
-                        .padding(.top, 18)
-                        .padding(.bottom, 8)
-                        .padding(.horizontal, 4)
-                    Text(recipe.notes)
-                        .font(.subheadline)
-                        .foregroundStyle(Theme.ink)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(14)
-                        .themedCard(cornerRadius: 16)
-                }
-
-                if !recipe.tags.isEmpty {
-                    ChipFlow(spacing: 6) {
-                        ForEach(recipe.tags, id: \.self) { ParamChip(text: "#\($0)") }
+                    DSArchiveSection(title: "Notes") {
+                        Text(recipe.notes)
+                            .font(DSFont.body)
+                            .foregroundStyle(DSColor.textPrimary)
+                            .textSelection(.enabled)
                     }
-                    .padding(.top, 14)
                 }
-
+                DSArchiveSection(title: "Works With") {
+                    RecipeWorksWithCard(settings: recipe.settings,
+                                        hasPreservedFields: recipe.hasPreservedUnsupportedFields)
+                }
                 if recipe.hasPreservedUnsupportedFields {
-                    preservedFieldsCard
-                        .padding(.top, 18)
+                    preservedFields
                 }
-
-                Theme.SectionLabel("Camera")
-                    .padding(.top, 18)
-                    .padding(.bottom, 8)
-                    .padding(.horizontal, 4)
-                cameraSlotCard
-
-                pushBar
-                    .padding(.top, 18)
             }
-            .padding(.horizontal, 18)
-            .padding(.bottom, 24)
+            .padding(DSSpacing.screenMargin)
         }
-        .background(Theme.paper.ignoresSafeArea())
-        // The big serif name lives in the content; keep the bar title empty so it
-        // doesn't appear twice.
+        .background(DSColor.background.ignoresSafeArea())
+        .safeAreaInset(edge: .bottom) { actionBar }
+        // The name lives in the archive card; keep the bar title empty so it doesn't appear twice.
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { recipe.isFavorite.toggle(); recipe.touch() } label: {
                     Image(systemName: recipe.isFavorite ? "star.fill" : "star")
-                        .foregroundStyle(recipe.isFavorite ? Theme.star : .secondary)
+                        .foregroundStyle(recipe.isFavorite ? DSColor.textPrimary : DSColor.textSecondary)
                 }
                 .accessibilityLabel(recipe.isFavorite ? "Unfavorite" : "Favorite")
             }
@@ -155,167 +125,155 @@ struct RecipeDetailView: View {
         .exportProgress(exportRunner)
     }
 
-    // MARK: Building blocks
+    // MARK: Archive card
 
-    /// Paged hero of sample photos; tap opens the full viewer.
-    ///
-    /// Draws from `imageData`, not `thumbnailData`: the hero is full-width, so on a 3x phone it needs
-    /// ~1200 device pixels across; the 240px thumbnail blown up 5× looks visibly grainy next to the
-    /// crisp full-screen viewer.
+    /// The recipe as an archive object: number and side fields, name and credit, the simulation's
+    /// band, the settings, the slot name on a line of its own, and the barcode with the verdict for
+    /// the user's camera.
+    private var archiveCard: some View {
+        let slotName = RecipeDetailArchive.slotNameField(name: recipe.effectiveCameraName,
+                                                         isCustom: recipe.hasCustomCameraName)
+        return DSArchiveCard {
+            DSArchiveHeader(objectNumber: RecipeRow.objectNumber(recipe.archiveNumber),
+                            fields: RecipeDetailArchive.sideFields(slot: lastReadSlot,
+                                                                   chapterNames: chapters.map(\.name),
+                                                                   createdAt: recipe.createdAt))
+            DSRule()
+            DSArchiveTitle(title: recipe.name, description: recipe.displayCredit.map { "Recipe by \($0)" })
+            DSSimulationBand(simulation: recipe.settings.filmSimulation)
+            DSDataSheet(fields: RecipeDetailArchive.dataSheetFields(for: recipe.settings))
+            // Full width: a slot name runs up to 25 characters.
+            DSSeparator()
+            DSDataFieldCell(field: slotName)
+                .padding(.horizontal, DSSpacing.m)
+                .padding(.vertical, DSSpacing.s)
+            DSRule()
+            DSArchiveFooter(barcodeSeed: recipe.uuid.uuidString, text: footer)
+        }
+    }
+
+    /// The slot the camera held this recipe in when last read; nil when it wasn't there, or the
+    /// camera was never read.
+    private var lastReadSlot: String? {
+        CameraSlotSnapshot.all(from: slotSnapshotsJSON)[rememberedCameraName]?
+            .slotLabels(for: [recipe])[recipe.uuid]
+    }
+
+    /// The verdict for the user's first camera, else the body the recipe was written for.
+    private var footer: String {
+        guard let model = ownedCameras.models.first ?? recipe.authoredForModel else { return "" }
+        return RecipeDetailArchive.footer(cameraID: model.id, verdict: RecipeCameraFit(recipe.settings, on: model).verdict)
+    }
+
+    /// The chapters the recipe is in, then its own tags.
     @ViewBuilder
-    private var heroPhotos: some View {
+    private var tags: some View {
+        if !chapters.isEmpty || !recipe.tags.isEmpty {
+            DSFlowLayout {
+                ForEach(chapters) { DSTag(text: $0.name, systemImage: "books.vertical") }
+                ForEach(recipe.tags, id: \.self) { DSTag(text: "#\($0)") }
+            }
+        }
+    }
+
+    /// The sample photos as a strip of frames; a tap opens the full viewer.
+    @ViewBuilder
+    private var photos: some View {
         let photos = recipe.sortedPhotos
         if !photos.isEmpty {
-            TabView(selection: $heroIndex) {
-                ForEach(Array(photos.enumerated()), id: \.element.uuid) { index, photo in
-                    if let image = UIImage(data: photo.imageData) {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 190)
-                            .clipped()
-                            .contentShape(Rectangle())
-                            .onTapGesture { viewerIndex = index }
+            VStack(alignment: .leading, spacing: DSSpacing.s) {
+                Text("Photos   \(photos.count)").dsMetaMono(DSColor.textPrimary).accessibilityAddTraits(.isHeader)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: DSSize.contactSheetSpacing) {
+                        ForEach(Array(photos.enumerated()), id: \.element.uuid) { index, photo in
+                            Button { viewerIndex = index } label: {
+                                DSColor.panel
+                                    .frame(width: 132, height: 88)
+                                    .overlay {
+                                        // Cached by uuid so the decode doesn't repeat on every body pass.
+                                        if let image = ThumbnailCache.thumbnail(uuid: photo.uuid, data: photo.thumbnailData) {
+                                            Image(uiImage: image).resizable().scaledToFill()
+                                        }
+                                    }
+                                    .clipped()
+                            }
+                            .buttonStyle(DSPlainPressStyle())
                             .accessibilityLabel("Sample photo \(index + 1)")
-                            .accessibilityAddTraits(.isButton)
-                            .tag(index)
+                        }
                     }
+                    .padding(DSSize.contactSheetSpacing)
+                    .background(DSColor.textPrimary)
                 }
-            }
-            .tabViewStyle(.page(indexDisplayMode: photos.count > 1 ? .automatic : .never))
-            .frame(height: 190)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .padding(.bottom, 14)
-        }
-    }
-
-    private var titleBlock: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(recipe.name)
-                .font(Theme.serif(28))
-                .foregroundStyle(Theme.ink)
-            // Film Simulation reads from the parameters list below, so this row is free for
-            // attribution — the thing you look at right after the name to see whose recipe this is.
-            // The camera profile is not here: it is the editor's field filter, not a verdict, and
-            // the Works With card says which bodies run the recipe.
-            if let credit = recipe.displayCredit {
-                Text("Recipe by \(credit)")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink2)
+                .overlay(Rectangle().strokeBorder(DSColor.rule, lineWidth: DSLine.rule))
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var parameterCard: some View {
-        SettingsTable(rows: listRows)
-    }
-
-    /// What the camera will actually show for this recipe, immediately above the button that sends
-    /// it. Grey when the name is the generated default, ink when the user set it themselves — the
-    /// same distinction the editor draws with a placeholder.
-    private var cameraSlotCard: some View {
-        let name = recipe.effectiveCameraName
-        let isCustom = recipe.hasCustomCameraName
-        return VStack(spacing: 0) {
-            HStack {
-                Text("Slot Name")
-                    .font(.subheadline)
-                    .foregroundStyle(Theme.ink2)
-                Spacer()
-                Text(name)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(isCustom ? Theme.ink : Theme.ink3)
-                    .multilineTextAlignment(.trailing)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel(isCustom ? "Camera slot name, \(name)"
-                                         : "Camera slot name, \(name), from the recipe name")
-        }
-        .themedCard(cornerRadius: 16)
-    }
-
-    private var preservedFieldsCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Label("Preserved Fields", systemImage: "exclamationmark.triangle.fill")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Theme.warning)
+    private var preservedFields: some View {
+        DSArchiveSection(title: "Preserved Fields") {
             ForEach(recipe.unsupportedFields.sorted(by: { $0.key < $1.key }), id: \.key) { key, value in
-                HStack {
-                    Text(key).font(.subheadline).foregroundStyle(Theme.ink2)
+                HStack(alignment: .firstTextBaseline) {
+                    Text(key).font(DSFont.subhead).foregroundStyle(DSColor.textSecondary)
                     Spacer()
-                    Text(value.displayString).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+                    Text(value.displayString).font(DSFont.valueMono).foregroundStyle(DSColor.textPrimary)
                 }
             }
-            Text("These came from another camera or app version, or from a camera that reported a value Fuji Cookbook doesn't recognize. Either way they're kept intact and re-exported unchanged, so nothing is silently lost — but they can't be shown properly or pushed back to a camera.")
-                .font(.caption)
-                .foregroundStyle(Theme.ink3)
+            Label("These came from another camera or app version, or from a camera that reported a value Fuji Cookbook doesn't recognize. Either way they're kept intact and re-exported unchanged, so nothing is silently lost — but they can't be shown properly or pushed back to a camera.",
+                  systemImage: "exclamationmark.triangle")
+                .font(DSFont.subhead)
+                .foregroundStyle(DSColor.textSecondary)
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .themedCard(cornerRadius: 16)
     }
+
+    // MARK: Action bar
 
     /// Push needs a connected body that we're allowed to write to, whose slot walk didn't fail — the
     /// same gate the Camera tab's Push tile uses, so the two screens never disagree about whether a
     /// push can happen.
     private var canPush: Bool { camera.slotWriter.canPush }
 
-    /// The screen's primary action, always shown rather than kept in a list row. Dimmed and inert
-    /// while a push can't happen, with a line underneath saying why, so a tap on a dead button is
-    /// never the way the user finds out.
-    private var pushBar: some View {
-        VStack(spacing: 8) {
-            Button { showingPush = true } label: {
-                Label("Push to Camera", systemImage: canPush ? "arrow.up.to.line" : "cable.connector.slash")
-                    .font(.headline)
-                    .foregroundStyle(canPush ? .white : Theme.ink3)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
-                    .background(canPush ? Theme.accent : Theme.paper2,
-                                in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .overlay {
-                        if !canPush {
-                            RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Theme.line)
-                        }
-                    }
+    /// The screen's primary action, always shown. Dimmed and inert while a push can't happen, with
+    /// the status line and a line underneath saying why, so a tap on a dead key is never the way the
+    /// user finds out.
+    private var actionBar: some View {
+        DSFloatingActionBar(status: pushStatus) {
+            HStack(spacing: DSSpacing.m) {
+                // An icon key, so the primary key keeps its whole label at every text size.
+                DSIconKey(systemImage: "square.and.arrow.up", label: "Share") { initiateShare() }
+                Button { showingPush = true } label: {
+                    Label("Load onto Camera", systemImage: "arrow.up.to.line")
+                }
+                .buttonStyle(.dsPrimary)
+                .disabled(!canPush)
             }
-            .buttonStyle(.plain)
-            .disabled(!canPush)
             pushHint
         }
     }
 
-    /// Why the button is dim, and — when it's just a missing connection — the way to fix it.
+    /// "X100VI   Write  Read back  Verify": what a push does, and to which camera.
+    private var pushStatus: String {
+        guard camera.session.isConnected else { return "No camera connected" }
+        let name = camera.session.model?.displayName ?? "Camera"
+        return canPush ? "\(name)   Write  Read back  Verify" : "\(name)   Read only"
+    }
+
+    /// Why the key is dim, and — when it's just a missing connection — the way to fix it.
     @ViewBuilder
     private var pushHint: some View {
         if !camera.session.isConnected {
-            Button {
-                router.selectedTab = .camera
-            } label: {
-                HStack(spacing: 5) {
-                    Image(systemName: "cable.connector")
-                    Text("No camera connected.")
-                    Text("Connect in the Camera tab")
-                        .fontWeight(.semibold)
-                        .foregroundStyle(Theme.accent)
-                }
-                .font(.footnote)
-                .foregroundStyle(Theme.ink3)
-                .frame(maxWidth: .infinity)
-                .contentShape(Rectangle())
+            Button { router.selectedTab = .camera } label: {
+                Text("Connect in the Camera tab")
+                    .font(DSFont.subhead.weight(.semibold))
+                    .foregroundStyle(DSColor.signalText)
+                    .frame(maxWidth: .infinity, minHeight: DSSize.touchTarget)
+                    .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("No camera connected. Connect in the Camera tab.")
+            .buttonStyle(DSPlainPressStyle())
         } else if !canPush {
             Text(camera.slotWriter.pushBlockReason ?? "Push isn't available for \(camera.session.model?.displayName ?? "this camera").")
-                .font(.footnote)
-                .foregroundStyle(Theme.ink3)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
+                .font(DSFont.subhead)
+                .foregroundStyle(DSColor.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
