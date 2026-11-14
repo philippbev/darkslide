@@ -81,6 +81,12 @@ final class Recipe {
     var createdAt: Date = Date()
     var updatedAt: Date = Date()
 
+    /// The recipe's number in the archive ("034"), handed out in order of ``createdAt`` and kept for
+    /// good: `RecipeArchiveNumbering` gives a new recipe the next free number and never hands a
+    /// deleted recipe's number out again. 0 means not numbered yet, which is what lightweight
+    /// migration gives every recipe saved before the column existed.
+    var archiveNumber: Int = 0
+
     init(uuid: UUID = UUID(),
          name: String,
          cameraName: String? = nil,
