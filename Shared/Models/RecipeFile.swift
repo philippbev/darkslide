@@ -46,6 +46,10 @@ struct PortableRecipe: Codable, Equatable {
     /// Optional embedded sample photos. Additive and backward-compatible: older app versions simply
     /// ignore this key, and recipe-only exports leave it `nil`.
     var photos: [PortablePhoto]?
+    /// The recipe's archive number ("034"). Written by a full backup only, so a restore keeps it;
+    /// a shared recipe or chapter leaves it out and the importing library numbers the recipe itself.
+    /// Additive and backward-compatible: absent in older files, ignored by older app versions.
+    var archiveNumber: Int?
 }
 
 extension PortableRecipe {

@@ -4,6 +4,10 @@ import SwiftUI
 struct DSDataField: Identifiable, Equatable {
     let label: String
     let value: String
+    /// An LED before the value, lit or dark; nil for none.
+    var led: Bool?
+    /// A short mono note after the value, such as "As of 14.11.".
+    var note: String?
     var id: String { label }
 }
 
@@ -15,11 +19,20 @@ struct DSDataFieldCell: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(field.label).dsFieldLabel()
-            Text(field.value)
-                .font(DSFont.valueMono)
-                .foregroundStyle(valueColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+            HStack(alignment: .firstTextBaseline, spacing: DSSpacing.s) {
+                if let led = field.led {
+                    DSLED(isOn: led, size: 7, glows: led)
+                        .alignmentGuide(.firstTextBaseline) { $0[.bottom] }
+                }
+                Text(field.value)
+                    .font(DSFont.valueMono)
+                    .foregroundStyle(valueColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                if let note = field.note {
+                    Text(note).dsFieldLabel().lineLimit(1)
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)

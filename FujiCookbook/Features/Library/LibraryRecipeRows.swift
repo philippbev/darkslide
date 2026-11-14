@@ -15,7 +15,8 @@ struct LibraryRecipeRows<Row: View>: View {
     let recipes: [Recipe]
     @Binding var searchText: String
     @Binding var filter: RecipeFilter
-    @ViewBuilder let row: (Recipe) -> Row
+    /// A recipe and whether it is the last row shown, which closes the archive frame.
+    @ViewBuilder let row: (Recipe, _ isLast: Bool) -> Row
 
     var body: some View {
         MatchingRows(ordered: filter.ordered(recipes), searchText: $searchText, row: row)
@@ -26,13 +27,14 @@ struct LibraryRecipeRows<Row: View>: View {
 private struct MatchingRows<Row: View>: View {
     let ordered: [Recipe]
     @Binding var searchText: String
-    @ViewBuilder let row: (Recipe) -> Row
+    @ViewBuilder let row: (Recipe, Bool) -> Row
 
     var body: some View {
         let visible = RecipeFilter.rows(ordered, matching: searchText)
         let query = searchText.trimmingCharacters(in: .whitespaces)
         if !visible.isEmpty {
-            ForEach(visible) { recipe in row(recipe) }
+            let last = visible.last?.persistentModelID
+            ForEach(visible) { recipe in row(recipe, recipe.persistentModelID == last) }
         } else if query.isEmpty {
             // Facets alone emptied the list; there is no query to quote.
             ContentUnavailableView.search

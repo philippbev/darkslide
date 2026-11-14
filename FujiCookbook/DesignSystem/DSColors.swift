@@ -62,6 +62,9 @@ enum DSColor {
         static let knobMark = DSColorToken(name: "knobMark", light: 0x7D93FF, dark: 0x1F3BD6)
         static let ledOff = DSColorToken(name: "ledOff", light: 0xBDBCB6, dark: 0x4A4A47)
         static let ledOK = DSColorToken(name: "ledOK", both: 0x3FD07A)
+        /// The system red (`UIColor.systemRed`) as iOS 26 draws it, for the gallery's readout.
+        /// `DSColor.danger` is the system color itself, so it follows any later retuning.
+        static let danger = DSColorToken(name: "danger", light: 0xFF383C, dark: 0xFF4245)
         /// The ground at 88 % over a material, for floating bars before iOS 26.
         static let chromeGlass = DSColorToken(name: "chromeGlass", light: 0xE8E7E3, dark: 0x0F0F0F,
                                               lightOpacity: 0.88, darkOpacity: 0.88)
@@ -77,7 +80,7 @@ enum DSColor {
         static let filmEdgeText = DSColorToken(name: "filmEdgeText", both: 0xFFFFFF)
 
         static let all = [background, surface, panel, key, keyShadow, separator, textPrimary, textSecondary,
-                          signal, onSignal, signalText, knob, knobMark, ledOff, ledOK, chromeGlass,
+                          signal, onSignal, signalText, knob, knobMark, ledOff, ledOK, danger, chromeGlass,
                           keyInset, panelEdge, filmEdge, filmEdgeText]
     }
 
@@ -111,6 +114,9 @@ enum DSColor {
     static let ledOff = Tokens.ledOff.color
     /// A connection that is up.
     static let ledOK = Tokens.ledOK.color
+    /// Destructive actions only, through `role: .destructive`, never as decoration. The system red,
+    /// so a delete reads the same as in the system's own lists and dialogs.
+    static let danger = Color(uiColor: .systemRed)
     /// Tint over a material for floating bars before iOS 26, which has no Liquid Glass.
     static let chromeGlass = Tokens.chromeGlass.color
     static let keyInset = Tokens.keyInset.color

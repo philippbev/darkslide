@@ -79,6 +79,26 @@ final class DesignSystemTests: XCTestCase {
         XCTAssertEqual(Tokens.chromeGlass.lightOpacity, 0.88)
     }
 
+    /// `danger` is the system red itself, which iOS may retune between versions, so this reads the
+    /// red the system gives now. On a key the label is bold 17 pt, large text, so 3:1 applies.
+    func testDangerIsTheSystemRedAndReadsOnAKey() {
+        for (style, scheme) in [(UIUserInterfaceStyle.light, ColorScheme.light), (.dark, .dark)] {
+            let traits = UITraitCollection(userInterfaceStyle: style)
+            let resolved = UIColor(DSColor.danger).resolvedColor(with: traits)
+            let system = UIColor.systemRed.resolvedColor(with: traits)
+            XCTAssertEqual(hex(of: resolved), hex(of: system), "\(scheme)")
+            let ratio = DSContrast.ratio(hex(of: system), Tokens.key.hex(for: scheme))
+            XCTAssertGreaterThanOrEqual(ratio, 3, "danger on key in \(scheme)")
+        }
+    }
+
+    private func hex(of color: UIColor) -> UInt32 {
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        func byte(_ value: CGFloat) -> UInt32 { UInt32((min(max(value, 0), 1) * 255).rounded()) }
+        return byte(red) << 16 | byte(green) << 8 | byte(blue)
+    }
+
     func testTokenNamesAreUnique() {
         XCTAssertEqual(Set(Tokens.all.map(\.name)).count, Tokens.all.count)
     }

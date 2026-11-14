@@ -184,6 +184,7 @@ struct DesignSystemGallery: View {
             VStack(spacing: DSSpacing.m) {
                 Button("Load onto Camera") {}.buttonStyle(.dsPrimary)
                 Button("Share") {}.buttonStyle(.dsSecondary)
+                Button("Delete", role: .destructive) {}.buttonStyle(.dsSecondary)
             }
             .padding(.horizontal, DSSpacing.screenMargin)
         }

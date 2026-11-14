@@ -27,6 +27,13 @@ protocol RecipeFilterable {
     /// What the camera facet judges. Nil for a row with nothing to judge — a camera slot the
     /// reader couldn't decode — which the facet then leaves alone.
     var filterSettings: RecipeSettings? { get }
+    /// The library recipe behind the row, for the chapter facet. Nil for a row that isn't one, such
+    /// as a camera slot, which the chapter facet hides.
+    var filterRecipeUUID: UUID? { get }
+}
+
+extension RecipeFilterable {
+    var filterRecipeUUID: UUID? { nil }
 }
 
 extension Recipe: RecipeFilterable {
@@ -38,6 +45,25 @@ extension Recipe: RecipeFilterable {
     var filterFilmSimulation: FilmSimulation? { settings.filmSimulation }
     var filterUpdatedAt: Date { updatedAt }
     var filterSettings: RecipeSettings? { settings }
+    var filterRecipeUUID: UUID? { uuid }
+}
+
+/// A chapter as a filter: its recipes, held as a value so the filter needs no store. The Library
+/// refreshes it when the chapter changes (`LibraryFilterKeys`).
+struct RecipeChapterFacet: Hashable, Identifiable {
+    let id: UUID
+    let name: String
+    let recipeUUIDs: Set<UUID>
+
+    init(id: UUID, name: String, recipeUUIDs: Set<UUID>) {
+        self.id = id
+        self.name = name
+        self.recipeUUIDs = recipeUUIDs
+    }
+
+    init(_ chapter: Chapter) {
+        self.init(id: chapter.uuid, name: chapter.name, recipeUUIDs: Set(chapter.recipeUUIDs))
+    }
 }
 
 /// Facets and sort order for one recipe list: what the chip row and the menu set.
@@ -51,16 +77,19 @@ struct RecipeFilter: Equatable {
     /// Only recipes this body can run. A `CameraModel` rather than its id: it is Hashable by id, so
     /// the filter stays a value with no registry lookup inside it.
     var camera: CameraModel?
+    /// Only the recipes in this chapter.
+    var chapter: RecipeChapterFacet?
     var sort: RecipeSortField = .name
 
     /// True when a facet is narrowing the list. Search text deliberately doesn't count — the search
     /// field shows its own state, so folding it in here would light up the filter icon twice.
-    var isActive: Bool { favoritesOnly || filmSimulation != nil || camera != nil }
+    var isActive: Bool { favoritesOnly || filmSimulation != nil || camera != nil || chapter != nil }
 
     mutating func clearFacets() {
         favoritesOnly = false
         filmSimulation = nil
         camera = nil
+        chapter = nil
     }
 
     /// The rows that pass every facet and contain `searchText`, in the sort order. Blank search text
@@ -99,6 +128,9 @@ struct RecipeFilter: Equatable {
         var result = items
         if favoritesOnly { result = result.filter(\.filterIsFavorite) }
         if let filmSimulation { result = result.filter { $0.filterFilmSimulation == filmSimulation } }
+        if let chapter {
+            result = result.filter { item in item.filterRecipeUUID.map(chapter.recipeUUIDs.contains) ?? false }
+        }
         // A body that can't run the recipe's film simulation hides it. One that needs a change
         // keeps it — the Works With card says what the change is — and so does a row the filter
         // can't judge.
@@ -193,7 +225,7 @@ struct RecipeFilterChipRow: View {
         switch chip.kind {
         case .all: return "All · \(totalCount)"
         case .favorites: return "★ Favorites"
-        case .camera, .filmSimulation: return chip.label
+        case .camera, .filmSimulation, .chapter: return chip.label
         }
     }
 }
@@ -204,19 +236,32 @@ struct RecipeFilterChip: Identifiable {
         case all, favorites
         case camera(CameraModel)
         case filmSimulation(FilmSimulation)
+        case chapter(RecipeChapterFacet)
     }
 
     let kind: Kind
     let label: String
     let isSelected: Bool
+    /// The first chip of a new group (the chapters), which a row sets apart with a divider.
+    var startsGroup = false
 
-    var id: Kind { kind }
+    /// A chapter's chip keeps its identity when the chapter's recipes change.
+    var id: String {
+        switch kind {
+        case .all: return "all"
+        case .favorites: return "favorites"
+        case .camera(let model): return "camera:\(model.id)"
+        case .filmSimulation(let sim): return "sim:\(sim.rawValue)"
+        case .chapter(let chapter): return "chapter:\(chapter.id)"
+        }
+    }
 }
 
 extension RecipeFilter {
-    /// The chips a filter row shows, in order: All, Favorites, the user's cameras, then one per film
-    /// simulation present.
-    func chips(availableFilmSimulations: [FilmSimulation], cameras: RecipeFilterCameras) -> [RecipeFilterChip] {
+    /// The chips a filter row shows, in order: All, Favorites, the user's cameras, one per film
+    /// simulation present, then the chapters, the first of which starts a group.
+    func chips(availableFilmSimulations: [FilmSimulation], cameras: RecipeFilterCameras,
+               chapters: [RecipeChapterFacet] = []) -> [RecipeFilterChip] {
         [RecipeFilterChip(kind: .all, label: "All", isSelected: !isActive),
          RecipeFilterChip(kind: .favorites, label: "Favorites", isSelected: favoritesOnly)]
             + cameras.chips(active: camera).map {
@@ -225,17 +270,42 @@ extension RecipeFilter {
             + availableFilmSimulations.map {
                 RecipeFilterChip(kind: .filmSimulation($0), label: $0.displayName, isSelected: filmSimulation == $0)
             }
+            + chapters.enumerated().map { index, facet in
+                RecipeFilterChip(kind: .chapter(facet), label: facet.name, isSelected: chapter?.id == facet.id,
+                                 startsGroup: index == 0)
+            }
     }
 
-    /// A tap on a chip: All clears every facet; any other chip turns its facet on, or off again when
-    /// it is already the one in use.
+    /// A tap on a chip. The row works like a set of radio keys, one lit at a time: a chip sets its
+    /// facet alone, clearing the others; a tap on the lit chip, or on All, clears them all.
+    ///
+    /// The filter menu can still combine facets (favorites of one simulation, say); the row then
+    /// lights each of them.
     mutating func toggle(_ kind: RecipeFilterChip.Kind) {
+        let wasOnlyThis: Bool
         switch kind {
-        case .all: clearFacets()
-        case .favorites: favoritesOnly.toggle()
-        case .camera(let model): camera = (camera == model) ? nil : model
-        case .filmSimulation(let sim): filmSimulation = (filmSimulation == sim) ? nil : sim
+        case .all: wasOnlyThis = false
+        case .favorites: wasOnlyThis = favoritesOnly && filmSimulation == nil && camera == nil && chapter == nil
+        case .camera(let model): wasOnlyThis = camera == model && !favoritesOnly && filmSimulation == nil && chapter == nil
+        case .filmSimulation(let sim): wasOnlyThis = filmSimulation == sim && !favoritesOnly && camera == nil && chapter == nil
+        case .chapter(let facet): wasOnlyThis = chapter?.id == facet.id && !favoritesOnly && camera == nil && filmSimulation == nil
         }
+        clearFacets()
+        guard !wasOnlyThis else { return }
+        switch kind {
+        case .all: break
+        case .favorites: favoritesOnly = true
+        case .camera(let model): camera = model
+        case .filmSimulation(let sim): filmSimulation = sim
+        case .chapter(let facet): chapter = facet
+        }
+    }
+
+    /// Keeps the chapter facet in step with the chapters as they are now: a chapter whose recipes
+    /// or name changed is refreshed, a deleted one is dropped, which leaves the list on All.
+    mutating func refreshChapter(from chapters: [RecipeChapterFacet]) {
+        guard let current = chapter else { return }
+        chapter = chapters.first { $0.id == current.id }
     }
 }
 

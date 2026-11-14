@@ -17,6 +17,10 @@ struct LibraryView: View {
     @Environment(ImportCoordinator.self) private var importCoordinator
     @Environment(AISettings.self) private var aiSettings
     @Environment(OwnedCameras.self) private var ownedCameras
+    @Environment(CameraServices.self) private var camera
+    /// The camera's slots as last read, and which camera that was (`CameraSlotSnapshot`).
+    @AppStorage(CameraSlotSnapshot.storageKey) private var slotSnapshotsJSON = ""
+    @AppStorage(RememberedCamera.displayNameKey) private var rememberedCameraName = ""
     @Query(Recipe.listFetch(sortBy: [SortDescriptor(\Recipe.updatedAt, order: .reverse)]))
     private var recipes: [Recipe]
 
@@ -75,6 +79,7 @@ struct LibraryView: View {
                 detailColumn
             }
             .navigationSplitViewStyle(.balanced)
+            .tint(DSColor.signal)
         } else {
             NavigationStack(path: $path) {
                 libraryColumn
@@ -85,6 +90,8 @@ struct LibraryView: View {
             .onChange(of: path.count) { _, depth in
                 if depth > 0 { searchFocused = false }
             }
+            // On the container, so the toolbar and the swipe actions pick it up.
+            .tint(DSColor.signal)
         }
     }
 
@@ -98,7 +105,7 @@ struct LibraryView: View {
             } description: {
                 Text("Pick a recipe on the left to read it here.")
             }
-            .background(Theme.paper.ignoresSafeArea())
+            .background(DSColor.background.ignoresSafeArea())
         }
     }
 
@@ -110,8 +117,12 @@ struct LibraryView: View {
                 recipeList
             }
         }
-        .background(Theme.paper.ignoresSafeArea())
+        .background(DSColor.background.ignoresSafeArea())
         .navigationTitle("Recipes")
+        // The title is drawn in the list in the design system's heavy cut (see `header`): the
+        // navigation bar's own font is still `Theme`'s serif for every screen until phase 5. The
+        // navigation title stays for the back button and VoiceOver.
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }
         .settingsToolbarItem(isPresented: $showingSettings)
         .environment(\.editMode, $editMode)
@@ -152,6 +163,15 @@ struct LibraryView: View {
         .onChange(of: starterCopyCount, initial: true) { _, count in
             if count > 1 { collapseStarterCopies() }
         }
+        // Every way a recipe arrives (new, import, scan, camera, sync) shows up here as an
+        // unnumbered row; a recipe in the new-recipe editor waits until the sheet closes, so a
+        // cancel doesn't use up a number.
+        .onChange(of: numberingState, initial: true) { _, state in
+            if state.needsWork { numberRecipes() }
+        }
+        .onChange(of: editTarget?.value.uuid) { _, open in
+            if open == nil { numberRecipes() }
+        }
         .photosPicker(isPresented: $showingScanPicker, selection: $scanPickerItem, matching: .images)
         .onChange(of: scanPickerItem) { _, item in
             guard let item else { return }
@@ -173,6 +193,13 @@ struct LibraryView: View {
 
     private var starterCopyCount: Int { recipes.count { $0.uuid == StarterRecipe.uuid } }
 
+    /// What the numbering watches: recipes without a number, numbers held twice (two devices that
+    /// numbered before syncing), and the highest number, which the high-water mark has to follow
+    /// even when nothing needs a number, so a restored recipe's number isn't freed by deleting it.
+    private var numberingState: ArchiveNumberingState {
+        ArchiveNumberingState(numbers: recipes.map(\.archiveNumber))
+    }
+
     /// The user's cameras for the chips, and every body for the menu.
     private var filterCameras: RecipeFilterCameras {
         RecipeFilterCameras(owned: ownedCameras.models, all: ownedCameras.selectable)
@@ -182,16 +209,28 @@ struct LibraryView: View {
 
     private var recipeList: some View {
         List(selection: $selection) {
-            filterChipRow
+            header
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets(top: 2, leading: 0, bottom: 6, trailing: 0))
+                .listRowInsets(EdgeInsets(top: DSSpacing.s, leading: DSSpacing.screenMargin,
+                                          bottom: DSSpacing.m, trailing: DSSpacing.screenMargin))
+                .selectionDisabled()
 
-            LibraryRecipeRows(recipes: recipes, searchText: $searchText, filter: $filter) { recipe in
-                recipeCard(for: recipe)
+            filterKeyRow
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: DSSpacing.l, trailing: 0))
+                .selectionDisabled()
+
+            let slots = slotSnapshot?.slotLabels(for: recipes) ?? [:]
+            let slotsAreLive = cameraField.isLive
+            LibraryRecipeRows(recipes: recipes, searchText: $searchText, filter: $filter) { recipe, isLast in
+                recipeCard(for: recipe, slot: slots[recipe.uuid], slotIsLive: slotsAreLive)
+                    .dsArchiveListRow(isLast: isLast)
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    .listRowInsets(EdgeInsets(top: 0, leading: DSSpacing.screenMargin,
+                                              bottom: 0, trailing: DSSpacing.screenMargin))
                     .tag(recipe.persistentModelID)
                     .swipeActions(edge: .trailing) {
                         Button(role: .destructive) { delete(recipe) } label: {
@@ -199,66 +238,86 @@ struct LibraryView: View {
                         }.tint(.red)
                         Button { toggleFavorite(recipe) } label: {
                             Label("Favorite", systemImage: recipe.isFavorite ? "star.slash" : "star")
-                        }.tint(Theme.star)
+                        }.tint(DSColor.signal)
                     }
             }
         }
         .listStyle(.plain)
-        .paperBackground()
+        .environment(\.defaultMinListRowHeight, 0)
+        .scrollContentBackground(.hidden)
+        .background(DSColor.background)
         .scrollDismissesKeyboard(.interactively)
         .navigationDestination(for: Recipe.self) { RecipeDetailView(recipe: $0) }
         .safeAreaInset(edge: .bottom) { bottomAccessory }
     }
 
-    /// One recipe card row. In a stack, a transparent NavigationLink keeps navigation without the
-    /// system chevron breaking the card silhouette; in the split layout tapping drives the detail
-    /// pane and the chosen card gets an accent ring.
+    /// One recipe row. In a stack, a transparent NavigationLink keeps navigation without the system
+    /// chevron, which the archive row doesn't have; in the split layout tapping drives the detail
+    /// pane and the chosen row sits on `panel`.
     @ViewBuilder
-    private func recipeCard(for recipe: Recipe) -> some View {
+    private func recipeCard(for recipe: Recipe, slot: String?, slotIsLive: Bool) -> some View {
         if isSplit {
+            let isChosen = splitSelection == recipe.persistentModelID
             Button { splitSelection = recipe.persistentModelID } label: {
-                RecipeRow(recipe: recipe)
+                RecipeRow(recipe: recipe, slot: slot, slotIsLive: slotIsLive)
+                    .background(isChosen ? DSColor.panel : DSColor.surface)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .overlay {
-                if splitSelection == recipe.persistentModelID {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(Theme.accent, lineWidth: 2)
-                }
-            }
+            .accessibilityAddTraits(isChosen ? .isSelected : [])
         } else {
-            RecipeRow(recipe: recipe)
+            RecipeRow(recipe: recipe, slot: slot, slotIsLive: slotIsLive)
                 .overlay {
                     NavigationLink(value: recipe) { EmptyView() }.opacity(0)
                 }
         }
     }
 
-    /// The filter chips at the top of the list, the same row the recipe picker sheet shows. On the
-    /// phone the search field sits at the bottom instead (`LibrarySearchBar`).
-    private var filterChipRow: some View {
-        RecipeFilterChipRow(filter: $filter,
-                            availableFilmSimulations: recipes.availableFilmSimulations,
-                            cameras: filterCameras,
-                            totalCount: recipes.count)
+    /// The title in the design system's heavy cut and the archive's two fields under it.
+    private var header: some View {
+        VStack(alignment: .leading, spacing: DSSpacing.m) {
+            Text("Recipes")
+                .dsLargeTitle()
+                .accessibilityAddTraits(.isHeader)
+            DSDataFieldRow(fields: LibraryHeaderFields.fields(recipeCount: recipes.count, camera: cameraField))
+        }
+    }
+
+    /// The last read of the camera the app last pushed to; nil when it was never read.
+    private var slotSnapshot: CameraSlotSnapshot? {
+        CameraSlotSnapshot.all(from: slotSnapshotsJSON)[rememberedCameraName]
+    }
+
+    private var cameraField: LibraryCameraField {
+        LibraryCameraField(snapshot: slotSnapshot,
+                           connectedCameraName: camera.session.isConnected ? camera.session.model?.displayName : nil)
+    }
+
+    /// The filters as keys with an LED at the top of the list, the same chips the recipe picker
+    /// sheet shows. On the phone the search field sits at the bottom instead (`LibrarySearchBar`).
+    private var filterKeyRow: some View {
+        LibraryFilterKeys(filter: $filter,
+                          availableFilmSimulations: recipes.availableFilmSimulations,
+                          cameras: filterCameras)
     }
 
     private var selectionBar: some View {
-        HStack {
-            Button {
-                exportSelected()
-            } label: {
-                Label("Export \(selection.count)", systemImage: "square.and.arrow.up")
-            }
-            Spacer()
-            Button(role: .destructive) {
-                deleteSelected()
-            } label: {
-                Label("Delete \(selection.count)", systemImage: "trash")
+        DSFloatingActionBar(status: "\(selection.count) selected") {
+            HStack(spacing: DSSpacing.m) {
+                Button(role: .destructive) {
+                    deleteSelected()
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+                .buttonStyle(.dsSecondary)
+                Button {
+                    exportSelected()
+                } label: {
+                    Label("Export", systemImage: "square.and.arrow.up")
+                }
+                .buttonStyle(.dsPrimary)
             }
         }
-        .padding()
-        .background(.bar)
     }
 
     /// The bottom safe-area slot has one occupant: the selection bar while editing with something
@@ -299,11 +358,16 @@ struct LibraryView: View {
         } description: {
             Text("Create a recipe, import a .fujirecipe file, or read recipes from your camera. Or add \(StarterRecipe.name), a recipe by the app's creator.")
         } actions: {
-            Button("New Recipe") { createRecipe() }
-                .buttonStyle(.borderedProminent)
-            Button("Import from File") { showingImporter = true }
-            Button("Add \(StarterRecipe.name)") { addStarterRecipe() }
-                .disabled(isAddingStarter)
+            VStack(spacing: DSSpacing.m) {
+                Button("New Recipe") { createRecipe() }
+                    .buttonStyle(.dsPrimary)
+                Button("Import from File") { showingImporter = true }
+                    .buttonStyle(.dsSecondary)
+                Button("Add \(StarterRecipe.name)") { addStarterRecipe() }
+                    .buttonStyle(.dsSecondary)
+                    .disabled(isAddingStarter)
+            }
+            .frame(maxWidth: 320)
         }
     }
 
@@ -331,6 +395,14 @@ struct LibraryView: View {
             } label: {
                 Image(systemName: "plus")
             }
+            // The header's one primary action, filled in the signal color.
+            .buttonStyle(.borderedProminent)
+            .accessibilityLabel("New Recipe")
+        }
+        // The title lives in the list (see `libraryColumn`); an empty principal item keeps the
+        // bar from repeating it inline in `Theme`'s serif.
+        ToolbarItem(placement: .principal) {
+            Color.clear.frame(width: 1, height: 1).accessibilityHidden(true)
         }
     }
 
@@ -394,6 +466,17 @@ struct LibraryView: View {
             editTarget = Identified(value: recipe)   // present editor for review (cancel discards)
         } catch {
             scanError = error.localizedDescription
+        }
+    }
+
+    /// Silent on failure, like the starter collapse: the rows show a dash, and the next change to
+    /// the library tries again.
+    private func numberRecipes() {
+        do {
+            try RecipeArchiveNumbering.assignMissing(in: modelContext,
+                                                     excluding: editTarget.map { [$0.value.uuid] } ?? [])
+        } catch {
+            AppLog.error(.data, "Numbering recipes failed — \(AppLog.bounded(error))")
         }
     }
 

@@ -297,6 +297,10 @@ final class SlotReader {
         guard case .finished(let count) = walk, let model = session.model,
               session.connected?.isWritable == true, session.connected?.isDemo == false else { return }
         RememberedCamera(displayName: model.displayName, slotCount: count)?.save(to: rememberedCameraDefaults)
+        // What the walk read, for the Library's CAMERA field and slot badges with no camera
+        // plugged in. Kept in the app's defaults only; nothing is written to the camera.
+        CameraSlotSnapshot(cameraName: model.displayName, slotCount: count, reading: slots)
+            .save(to: rememberedCameraDefaults)
     }
 
     /// Whether the walk may select slots on this body at all: not on a `.blocked` entry, whose

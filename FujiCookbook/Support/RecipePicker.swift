@@ -58,6 +58,10 @@ extension RecipeChoice: RecipeFilterable {
     var filterFilmSimulation: FilmSimulation? { filmSimulation }
     var filterUpdatedAt: Date { updatedAt }
     var filterSettings: RecipeSettings? { settings }
+    var filterRecipeUUID: UUID? {
+        if case .library(let uuid) = ref { return uuid }
+        return nil
+    }
 }
 
 extension RecipeChoice {

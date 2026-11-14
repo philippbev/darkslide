@@ -22,6 +22,7 @@ struct DSHardwareKeyStyle: ButtonStyle {
         DSHardwareKeyBody(variant: variant,
                           isLit: isActive || variant == .primary,
                           isPressed: configuration.isPressed,
+                          isDestructive: configuration.role == .destructive,
                           label: configuration.label)
     }
 }
@@ -30,8 +31,15 @@ private struct DSHardwareKeyBody<Label: View>: View {
     let variant: DSHardwareKeyStyle.Variant
     let isLit: Bool
     let isPressed: Bool
+    /// A `role: .destructive` button: its label in `danger` on an unlit key.
+    let isDestructive: Bool
     let label: Label
     @Environment(\.isEnabled) private var isEnabled
+
+    private var foreground: Color {
+        if isLit { return DSColor.onSignal }
+        return isDestructive ? DSColor.danger : DSColor.textPrimary
+    }
 
     private var shape: RoundedRectangle { RoundedRectangle(cornerRadius: DSRadius.key, style: .continuous) }
     /// A lit key sits down in its well; so does any key while a finger holds it.
@@ -39,7 +47,7 @@ private struct DSHardwareKeyBody<Label: View>: View {
 
     var body: some View {
         sized
-            .foregroundStyle(isLit ? DSColor.onSignal : DSColor.textPrimary)
+            .foregroundStyle(foreground)
             .background(shape.fill(isLit ? DSColor.signal : DSColor.key))
             .overlay {
                 if isDown {
@@ -178,6 +186,7 @@ private struct DSPlainPressBody<Label: View>: View {
         }
         Button("Load Recipe into C3") {}.buttonStyle(.dsPrimary)
         Button("Undo") {}.buttonStyle(.dsSecondary)
+        Button("Delete", role: .destructive) {}.buttonStyle(.dsSecondary)
         Button("Disabled") {}.buttonStyle(.dsSecondary).disabled(true)
     }
     .padding()
