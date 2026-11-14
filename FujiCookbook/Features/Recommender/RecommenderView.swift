@@ -82,7 +82,7 @@ struct RecommenderView: View {
             Label {
                 Text(setupPrompt)
             } icon: {
-                Image(systemName: "sparkles").foregroundStyle(Theme.ink3)
+                Image(systemName: "sparkles").foregroundStyle(DSColor.textSecondary)
             }
             Button { showingSettings = true } label: {
                 Label("Set Up in Settings", systemImage: "gearshape")
@@ -106,7 +106,7 @@ struct RecommenderView: View {
             Label {
                 Text("Ideas recommends recipes from your own library, and it's empty. Add or import some recipes in the Recipes tab first.")
             } icon: {
-                Image(systemName: "tray").foregroundStyle(Theme.ink3)
+                Image(systemName: "tray").foregroundStyle(DSColor.textSecondary)
             }
         }
     }
@@ -116,7 +116,7 @@ struct RecommenderView: View {
             Label {
                 Text("Filling out “\(sourceChapter?.name ?? "")”. Its recipes are pinned below, and the result can be written straight back to it.")
             } icon: {
-                Image(systemName: "books.vertical").foregroundStyle(Theme.accent)
+                Image(systemName: "books.vertical").foregroundStyle(DSColor.signalText)
             }
             Button("Start Fresh Instead", role: .destructive) { resetComposer() }
         }
@@ -155,7 +155,7 @@ struct RecommenderView: View {
                                 .foregroundStyle(.secondary)
                         }
                     } else {
-                        Text("Missing recipe").foregroundStyle(.red)
+                        Text("Missing recipe").foregroundStyle(Theme.warning)
                     }
                 }
                 .onDelete { offsets in

@@ -20,7 +20,7 @@ struct ConnectionLogView: View {
                 if entries.isEmpty {
                     Text("Nothing logged yet. Try Connect, or reproduce the issue, then come back here.")
                         .font(.subheadline)
-                        .foregroundStyle(Theme.ink2)
+                        .foregroundStyle(DSColor.textSecondary)
                         .padding(14)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .themedCard(cornerRadius: 16)
@@ -31,7 +31,7 @@ struct ConnectionLogView: View {
             }
             .padding(18)
         }
-        .background(Theme.paper.ignoresSafeArea())
+        .background(DSColor.background.ignoresSafeArea())
         .navigationTitle("Connection Log")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -48,7 +48,7 @@ struct ConnectionLogView: View {
     private var header: some View {
         Text("Every connect, disconnect, keepalive, and recovery event since the app launched — newest last. Copy or share this when reporting a connection problem.")
             .font(.subheadline)
-            .foregroundStyle(Theme.ink2)
+            .foregroundStyle(DSColor.textSecondary)
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .themedCard(cornerRadius: 16)
@@ -58,7 +58,7 @@ struct ConnectionLogView: View {
         VStack(spacing: 0) {
             ForEach(entries) { entry in
                 if entry.id != entries.first?.id {
-                    Rectangle().fill(Theme.line).frame(height: 1)
+                    Rectangle().fill(DSColor.separator).frame(height: 1)
                 }
                 row(entry)
             }
@@ -70,10 +70,10 @@ struct ConnectionLogView: View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Text(Self.timeFormatter.string(from: entry.timestamp))
                 .font(.caption2.monospaced())
-                .foregroundStyle(Theme.ink3)
+                .foregroundStyle(DSColor.textSecondary)
             Text(entry.message)
                 .font(.caption.monospaced())
-                .foregroundStyle(entry.isError ? Theme.warning : Theme.ink)
+                .foregroundStyle(entry.isError ? Theme.warning : DSColor.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

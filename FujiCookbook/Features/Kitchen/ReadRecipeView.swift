@@ -111,21 +111,21 @@ struct ReadRecipeView: View {
                 } label: {
                     Label("Choose a Photo", systemImage: "photo")
                         .font(.headline)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(DSColor.onSignal)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 15)
-                        .background(Theme.accent, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .background(DSColor.signal, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
                 .buttonStyle(.plain)
 
                 Button("Browse Files…") { showFilePicker = true }
                     .buttonStyle(.plain)
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(DSColor.signalText)
                     .font(.subheadline.weight(.medium))
 
                 Text("The photo has to be the original off the camera — apps that re-save a photo throw the recipe away.")
                     .font(.footnote)
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
                     .multilineTextAlignment(.center)
             }
             .padding(.horizontal, 24)
@@ -139,7 +139,7 @@ struct ReadRecipeView: View {
             Spacer()
             VStack(spacing: 10) {
                 ProgressView()
-                Text("Reading…").font(.subheadline).foregroundStyle(Theme.ink2)
+                Text("Reading…").font(.subheadline).foregroundStyle(DSColor.textSecondary)
             }
             Spacer()
         }
@@ -157,7 +157,7 @@ struct ReadRecipeView: View {
             VStack(spacing: 6) {
                 Text(failureMessage(error, source: source))
                 if let extra = failureExtraMessage(error, source: source) {
-                    Text(extra).foregroundStyle(Theme.ink3)
+                    Text(extra).foregroundStyle(DSColor.textSecondary)
                 }
             }
         } actions: {
@@ -245,10 +245,10 @@ struct ReadRecipeView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(noRecipeTitle(reading.recipeStatus))
                         .font(.headline)
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(DSColor.textPrimary)
                     Text(noRecipeMessage(reading.recipeStatus))
                         .font(.subheadline)
-                        .foregroundStyle(Theme.ink2)
+                        .foregroundStyle(DSColor.textSecondary)
                 }
             }
             .padding(14)
@@ -297,29 +297,29 @@ struct ReadRecipeView: View {
                             HStack(spacing: 6) {
                                 FilmSwatch(simulation: reading.settings.filmSimulation, size: 12)
                                 Text(reading.settings.filmSimulation?.displayName ?? "Film Simulation Unknown")
-                                    .font(Theme.serif(19))
-                                    .foregroundStyle(Theme.ink)
+                                    .font(DSFont.headline)
+                                    .foregroundStyle(DSColor.textPrimary)
                             }
                         } else {
                             // No recipe to headline with — the camera/model is the identifying
                             // fact about this photo instead, matching what's actually in `camera`.
                             Text([reading.camera.make, reading.camera.model].compactMap { $0 }.joined(separator: " ").isEmpty
                                  ? "Recipe Unavailable" : [reading.camera.make, reading.camera.model].compactMap { $0 }.joined(separator: " "))
-                                .font(Theme.serif(19))
-                                .foregroundStyle(Theme.ink)
+                                .font(DSFont.headline)
+                                .foregroundStyle(DSColor.textPrimary)
                         }
                         HStack(spacing: 6) {
                             if reading.recipeStatus == .found, let model = reading.camera.model { BadgeTag(text: model) }
                             if let date = reading.camera.captureDate {
                                 Text(date, style: .date)
                                     .font(.caption)
-                                    .foregroundStyle(Theme.ink3)
+                                    .foregroundStyle(DSColor.textSecondary)
                             }
                         }
                         if let filename = reading.filename {
                             Text(filename)
                                 .font(.caption)
-                                .foregroundStyle(Theme.ink3)
+                                .foregroundStyle(DSColor.textSecondary)
                                 .lineLimit(1)
                                 .truncationMode(.middle)
                         }
@@ -362,7 +362,7 @@ struct ReadRecipeView: View {
                 }
             }
         } header: {
-            Theme.SectionLabel("Match")
+            DSSectionLabel("Match")
         }
     }
 
@@ -376,7 +376,7 @@ struct ReadRecipeView: View {
             if !match.simulationNearMisses.isEmpty { simulationNearMissLine(match) }
         }
         .font(.subheadline)
-        .foregroundStyle(Theme.ink2)
+        .foregroundStyle(DSColor.textSecondary)
     }
 
     private func matchCard(_ match: RecipeMatchResult, best: RecipeMatch) -> some View {
@@ -386,17 +386,17 @@ struct ReadRecipeView: View {
                 Image(systemName: icon).foregroundStyle(tint)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(tierHeadline(match.tier, name: best.recipe.name))
-                        .font(Theme.serif(19))
-                        .foregroundStyle(Theme.ink)
+                        .font(DSFont.headline)
+                        .foregroundStyle(DSColor.textPrimary)
                     if !match.tiedWithBest.isEmpty {
                         Text("Also matches: " + ([best.recipe] + match.tiedWithBest.map(\.recipe))
                             .dropFirst().map(\.name).joined(separator: ", "))
                             .font(.caption)
-                            .foregroundStyle(Theme.ink3)
+                            .foregroundStyle(DSColor.textSecondary)
                     }
                 }
                 Spacer()
-                Image(systemName: "chevron.right").font(.footnote).foregroundStyle(Theme.ink3)
+                Image(systemName: "chevron.right").font(.footnote).foregroundStyle(DSColor.textSecondary)
             }
             // Invisible NavigationLink overlay, not a wrapping label: a NavigationLink used directly
             // as the label adds iOS's own disclosure chevron alongside the one drawn above — see
@@ -417,7 +417,7 @@ struct ReadRecipeView: View {
             ForEach(match.runnersUp) { runner in
                 Text("Also close: \(runner.recipe.name) — \(runner.differences.count) differ")
                     .font(.caption)
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
             }
 
             if !match.simulationNearMisses.isEmpty { simulationNearMissLine(match) }
@@ -428,11 +428,11 @@ struct ReadRecipeView: View {
 
     private func diffRow(_ row: FieldComparison) -> some View {
         HStack(spacing: 4) {
-            Text(row.label).font(.caption.weight(.medium)).foregroundStyle(Theme.ink2)
-            Text("·").foregroundStyle(Theme.ink3)
-            Text(row.photoValue ?? "—").font(.caption).monospacedDigit().foregroundStyle(Theme.ink)
-            Image(systemName: "arrow.right").font(.caption2).foregroundStyle(Theme.ink3)
-            Text(row.recipeValue ?? "—").font(.caption).monospacedDigit().foregroundStyle(Theme.ink3)
+            Text(row.label).font(.caption.weight(.medium)).foregroundStyle(DSColor.textSecondary)
+            Text("·").foregroundStyle(DSColor.textSecondary)
+            Text(row.photoValue ?? "—").font(.caption).monospacedDigit().foregroundStyle(DSColor.textPrimary)
+            Image(systemName: "arrow.right").font(.caption2).foregroundStyle(DSColor.textSecondary)
+            Text(row.recipeValue ?? "—").font(.caption).monospacedDigit().foregroundStyle(DSColor.textSecondary)
         }
     }
 
@@ -441,14 +441,14 @@ struct ReadRecipeView: View {
         let count = match.simulationNearMisses.count
         return Text("\(count) recipe\(count == 1 ? "" : "s") match everything except the film simulation: \(names).")
             .font(.caption)
-            .foregroundStyle(Theme.ink3)
+            .foregroundStyle(DSColor.textSecondary)
     }
 
     private func tierStyle(_ tier: RecipeMatchResult.Tier) -> (fill: Color, tint: Color, icon: String) {
         switch tier {
-        case .exact: return (Theme.accentSoft, Theme.accent, "checkmark.seal.fill")
+        case .exact: return (DSColor.panel, DSColor.signal, "checkmark.seal.fill")
         case .close: return (Theme.warningSoft, Theme.warning, "checkmark.seal")
-        case .closest, .none: return (Theme.paper2, Theme.ink2, "questionmark.circle")
+        case .closest, .none: return (DSColor.panel, DSColor.textSecondary, "questionmark.circle")
         }
     }
 
@@ -474,7 +474,7 @@ struct ReadRecipeView: View {
                 }
             }
         } header: {
-            Theme.SectionLabel("Recipe Settings")
+            DSSectionLabel("Recipe Settings")
         }
     }
 
@@ -483,14 +483,14 @@ struct ReadRecipeView: View {
     /// table rather than a second, separate diff table — the diff card above is a summary of this
     /// one, not a duplicate of it.
     private func dotColor(for field: RecipeField) -> Color {
-        guard let best = match?.best else { return Theme.ink3.opacity(0.3) }
+        guard let best = match?.best else { return DSColor.textSecondary.opacity(0.3) }
         guard let row = best.rows.first(where: { rowMatches(field: field, rowID: $0.id) }) else {
-            return Theme.ink3.opacity(0.3)
+            return DSColor.textSecondary.opacity(0.3)
         }
         switch row.verdict {
-        case .same: return Theme.accent
+        case .same: return DSColor.signal
         case .different, .missingInRecipe: return Theme.warning
-        case .missingInPhoto, .notCompared: return Theme.ink3.opacity(0.3)
+        case .missingInPhoto, .notCompared: return DSColor.textSecondary.opacity(0.3)
         }
     }
 
@@ -521,7 +521,7 @@ struct ReadRecipeView: View {
                 LabeledContent(extra.label, value: extra.value)
             }
         } header: {
-            Theme.SectionLabel("Camera & Exposure")
+            DSSectionLabel("Camera & Exposure")
         }
         .font(.subheadline)
         .monospacedDigit()
@@ -564,13 +564,13 @@ struct ReadRecipeView: View {
         Section {
             ForEach(Array(reading.rawTags.enumerated()), id: \.offset) { _, tag in
                 HStack {
-                    Text(tag.label).font(.caption.monospaced()).foregroundStyle(Theme.ink3)
+                    Text(tag.label).font(.caption.monospaced()).foregroundStyle(DSColor.textSecondary)
                     Spacer()
-                    Text(tag.value).font(.caption.monospaced()).foregroundStyle(Theme.ink)
+                    Text(tag.value).font(.caption.monospaced()).foregroundStyle(DSColor.textPrimary)
                 }
             }
         } header: {
-            Theme.SectionLabel("Raw MakerNote")
+            DSSectionLabel("Raw MakerNote")
         } footer: {
             Text("Recipe tags and unknown tag identifiers for checking against exiftool. Serial numbers are excluded.")
         }

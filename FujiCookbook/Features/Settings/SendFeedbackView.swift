@@ -35,7 +35,7 @@ struct SendFeedbackView: View {
             }
             .padding(18)
         }
-        .background(Theme.paper.ignoresSafeArea())
+        .background(DSColor.background.ignoresSafeArea())
         .navigationTitle("Send Feedback")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -47,7 +47,7 @@ struct SendFeedbackView: View {
             "Nothing is sent unless you send it.",
         ].joined(separator: "\n\n"))
             .font(.subheadline)
-            .foregroundStyle(Theme.ink2)
+            .foregroundStyle(DSColor.textSecondary)
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .themedCard(cornerRadius: 16)
@@ -57,7 +57,7 @@ struct SendFeedbackView: View {
     private var noteEditor: some View {
         TextEditor(text: $note)
             .font(.subheadline)
-            .foregroundStyle(Theme.ink)
+            .foregroundStyle(DSColor.textPrimary)
             .scrollContentBackground(.hidden)
             .frame(minHeight: 180)
             .padding(10)
@@ -65,7 +65,7 @@ struct SendFeedbackView: View {
                 if note.isEmpty {
                     Text("What's working, what isn't, what you'd change.")
                         .font(.subheadline)
-                        .foregroundStyle(Theme.ink3)
+                        .foregroundStyle(DSColor.textSecondary)
                         .padding(.horizontal, 15)
                         .padding(.vertical, 18)
                         .allowsHitTesting(false)
@@ -81,10 +81,10 @@ struct SendFeedbackView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Sent with your note")
                 .font(.caption)
-                .foregroundStyle(Theme.ink3)
+                .foregroundStyle(DSColor.textSecondary)
             Text(metadataLines.joined(separator: "\n"))
                 .font(.caption.monospaced())
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(DSColor.textPrimary)
                 .textSelection(.enabled)
         }
         .padding(14)

@@ -75,7 +75,7 @@ struct CameraImportView: View {
             Button { toggle(slot.index) } label: {
                 HStack {
                     Image(systemName: selected.contains(slot.index) ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(selected.contains(slot.index) ? Theme.accent : .secondary)
+                        .foregroundStyle(selected.contains(slot.index) ? DSColor.signalText : .secondary)
                     SlotRow(slot: slot)
                 }
             }

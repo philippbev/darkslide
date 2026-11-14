@@ -67,7 +67,7 @@ struct KitchenView: View {
                 .padding(.top, 4)
                 .padding(.bottom, 24)
             }
-            .background(Theme.paper.ignoresSafeArea())
+            .background(DSColor.background.ignoresSafeArea())
             .navigationTitle("Kitchen")
             .settingsToolbarItem()
             .navigationDestination(for: Destination.self) { destination in
@@ -102,7 +102,7 @@ struct KitchenView: View {
     private func zone<Content: View>(_ title: String,
                                      @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Theme.SectionLabel(title).padding(.horizontal, 4)
+            DSSectionLabel(title).padding(.horizontal, 4)
             content()
         }
     }
@@ -116,8 +116,8 @@ struct KitchenView: View {
         VStack(spacing: 0) {
             NavigationLink(value: Destination.develop) {
                 PathwayRow(icon: "wand.and.stars",
-                           tint: Theme.amber,
-                           tintSoft: Theme.amberSoft,
+                           tint: DSColor.signal,
+                           tintSoft: DSColor.panel,
                            title: "Develop",
                            subtitle: "RAW files, developed on the camera itself.",
                            status: developStatus)
@@ -128,8 +128,8 @@ struct KitchenView: View {
 
             NavigationLink(value: Destination.testKitchen) {
                 PathwayRow(icon: "square.grid.2x2",
-                           tint: Theme.amber,
-                           tintSoft: Theme.amberSoft,
+                           tint: DSColor.signal,
+                           tintSoft: DSColor.panel,
                            title: "Test Kitchen",
                            subtitle: "Compare up to 3 recipes, side by side.",
                            nested: true)
@@ -142,8 +142,8 @@ struct KitchenView: View {
                 // Shown even with nothing developed, so the one place developed photos are kept can
                 // be found before the first develop.
                 PathwayRow(icon: "photo.stack",
-                           tint: Theme.ink2,
-                           tintSoft: Theme.paper2,
+                           tint: DSColor.textSecondary,
+                           tintSoft: DSColor.panel,
                            title: "Recent Results",
                            subtitle: cookedCount == 0 ? "Photos you develop land here."
                                                      : "Photos you've developed, newest first.",
@@ -158,7 +158,7 @@ struct KitchenView: View {
     /// Indented past the parent row's icon tile, so the nesting is visible in the rule as well as in
     /// the text.
     private var nestedDivider: some View {
-        Divider().overlay(Theme.line).padding(.leading, 50)
+        Divider().overlay(DSColor.separator).padding(.leading, 50)
     }
 
     /// The camera, in one line, in every state — including the states that block a develop.
@@ -166,26 +166,26 @@ struct KitchenView: View {
         switch camera.session.status {
         case .connecting:
             return PathwayStatus(symbol: .icon("antenna.radiowaves.left.and.right"),
-                                 tint: Theme.ink2, text: "Connecting…")
+                                 tint: DSColor.textSecondary, text: "Connecting…")
         case .working:
             return PathwayStatus(symbol: .icon("wand.and.stars"),
-                                 tint: Theme.amber, text: "Developing…")
+                                 tint: DSColor.signal, text: "Developing…")
         case .connected, .failed, .disconnected:
             // A failed connection attempt leaves nothing connected, so it reads as "no camera"
             // rather than as an error the hub can do anything about — the reason and the retry both
             // live on the Develop screen and the Camera tab.
             guard camera.session.isConnected else {
                 return PathwayStatus(symbol: .icon("cable.connector"),
-                                     tint: Theme.ink2, text: "No camera connected")
+                                     tint: DSColor.textSecondary, text: "No camera connected")
             }
             let name = camera.session.connected?.model?.displayName
                 ?? camera.session.connected?.productName ?? "Camera"
             guard camera.session.canConvert else {
                 return PathwayStatus(symbol: .icon("lock.fill"),
-                                     tint: Theme.amber,
+                                     tint: DSColor.signal,
                                      text: "RAW conversion isn't available for \(name)")
             }
-            return PathwayStatus(symbol: .dot, tint: Theme.accent, text: "\(name) · Ready")
+            return PathwayStatus(symbol: .dot, tint: DSColor.signal, text: "\(name) · Ready")
         }
     }
 
@@ -254,11 +254,11 @@ private struct PathwayRow: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(nested ? .subheadline.weight(.semibold) : Theme.serif(19))
-                    .foregroundStyle(Theme.ink)
+                    .font(nested ? .subheadline.weight(.semibold) : DSFont.headline)
+                    .foregroundStyle(DSColor.textPrimary)
                 Text(subtitle)
                     .font(nested ? .caption : .subheadline)
-                    .foregroundStyle(Theme.ink2)
+                    .foregroundStyle(DSColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 if let status { statusLine(status) }
             }
@@ -269,12 +269,12 @@ private struct PathwayRow: View {
                 Text("\(count)")
                     .font(.caption.weight(.semibold))
                     .monospacedDigit()
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
             }
 
             Image(systemName: "chevron.right")
                 .font(.footnote.weight(.semibold))
-                .foregroundStyle(Theme.ink3)
+                .foregroundStyle(DSColor.textSecondary)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, nested ? 12 : 16)
@@ -315,20 +315,20 @@ private struct ToolTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Theme.accentSoft)
+                .fill(DSColor.panel)
                 .frame(width: 36, height: 36)
                 .overlay {
                     Image(systemName: icon)
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(DSColor.signalText)
                 }
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(Theme.serif(17))
-                    .foregroundStyle(Theme.ink)
+                    .font(DSFont.headline)
+                    .foregroundStyle(DSColor.textPrimary)
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundStyle(Theme.ink2)
+                    .foregroundStyle(DSColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }

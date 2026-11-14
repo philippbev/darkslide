@@ -1,119 +1,16 @@
 import SwiftUI
 import UIKit
 
-/// The app-wide design system: warm paper surfaces, a serif for recipe names (the cookbook
-/// metaphor), a deep green accent, and amber for the Kitchen's "cook" actions. Every palette color
-/// but `warning` has its own light and dark value.
+/// What is left of the first design: the warning orange. Every other color, the type and the
+/// navigation bar come from the design system (`DSColor`, `DSFont`, `DSAppearance`).
+///
+/// The design system has the signal blue and, for destructive keys only, `danger`; it has no
+/// color yet for a caution — what the app couldn't read, write, verify or finish. Until it does,
+/// those keep this one orange, the same in both modes, so a caution never reads as a key.
 enum Theme {
-
-    // MARK: Palette
-
-    /// Screen background — warm paper.
-    static let paper = dynamic(light: 0xF4EFE4, dark: 0x1C1914)
-    /// Inset surface (search fields, chip backgrounds, empty slots) — slightly deeper paper.
-    static let paper2 = dynamic(light: 0xEFE8DA, dark: 0x28231B)
-    /// Elevated card surface.
-    static let card = dynamic(light: 0xFFFFFF, dark: 0x2E2921)
-    /// Primary text.
-    static let ink = dynamic(light: 0x201D17, dark: 0xF0EADC)
-    /// Secondary text.
-    static let ink2 = dynamic(light: 0x6E675A, dark: 0xB3AA97)
-    /// Tertiary text / disabled.
-    static let ink3 = dynamic(light: 0xA49C8A, dark: 0x7D7565)
-    /// Hairlines and card borders.
-    static let line = dynamic(light: 0xE7DFCF, dark: 0x3B342A)
-    /// Primary accent — deep cookbook green.
-    static let accent = dynamic(light: 0x2E6B4A, dark: 0x76BC93)
-    /// Soft accent fill (filled slot badges, selected states).
-    static let accentSoft = dynamic(light: 0xE4EFE6, dark: 0x24382C)
-    /// The Kitchen's "cook" amber.
-    static let amber = dynamic(light: 0xB87A33, dark: 0xD2954C)
-    /// Soft amber fill.
-    static let amberSoft = dynamic(light: 0xF3E7D2, dark: 0x3C2F1D)
-    /// Favorite star.
-    static let star = amber
-    /// Caution: what the app couldn't read, write, verify or finish, and a field that doesn't
-    /// match the one it is compared with. The palette's warning orange, one value in both modes.
-    /// Amber stays the Kitchen's cook actions and the star, so a caution never reads as a button.
     static let warning = Color(UIColor(rgb: 0xE08C34))
-    /// The fill behind a warning card or badge, as soft green and soft amber are for theirs.
+    /// The fill behind a warning card or badge.
     static let warningSoft = warning.opacity(0.12)
-
-    // MARK: Type
-
-    /// Serif face for recipe/chapter names and screen titles (the "cookbook" voice).
-    static func serif(_ size: CGFloat, weight: Font.Weight = .semibold) -> Font {
-        .system(size: size, weight: weight, design: .serif)
-    }
-
-    /// Compact all-caps section label, e.g. "ALL PARAMETERS".
-    struct SectionLabel: View {
-        let text: String
-        init(_ text: String) { self.text = text }
-        var body: some View {
-            Text(text.uppercased())
-                .font(.caption.weight(.semibold))
-                .kerning(1.2)
-                .foregroundStyle(Theme.ink3)
-        }
-    }
-
-    /// Numbered step header ("① RAW files") — the Kitchen's develop flow reads as a task of three
-    /// steps, not a settings screen.
-    struct StepHeader: View {
-        let number: Int
-        let title: String
-
-        var body: some View {
-            HStack(spacing: 10) {
-                Text("\(number)")
-                    .font(.caption.weight(.semibold))
-                    .monospacedDigit()
-                    .foregroundStyle(.white)
-                    .frame(width: 24, height: 24)
-                    .background(Circle().fill(Theme.accent))
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink)
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("Step \(number): \(title)")
-        }
-    }
-
-    // MARK: Global appearance
-
-    /// Serif navigation titles, applied once at launch. Weight is baked into the base font so the
-    /// serif design descriptor keeps it.
-    static func applyAppearance() {
-        var serifLarge: UIFont?
-        var serifInline: UIFont?
-        if let large = UIFont.systemFont(ofSize: 34, weight: .semibold).fontDescriptor.withDesign(.serif) {
-            serifLarge = UIFont(descriptor: large, size: 34)
-        }
-        if let inline = UIFont.systemFont(ofSize: 17, weight: .semibold).fontDescriptor.withDesign(.serif) {
-            serifInline = UIFont(descriptor: inline, size: 17)
-        }
-
-        // Blurred bar once content scrolls under it…
-        let standard = UINavigationBarAppearance()
-        standard.configureWithDefaultBackground()
-        // …but transparent at rest so the warm paper runs behind the large title.
-        let scrollEdge = UINavigationBarAppearance()
-        scrollEdge.configureWithTransparentBackground()
-        for appearance in [standard, scrollEdge] {
-            if let serifLarge { appearance.largeTitleTextAttributes = [.font: serifLarge] }
-            if let serifInline { appearance.titleTextAttributes = [.font: serifInline] }
-        }
-        UINavigationBar.appearance().standardAppearance = standard
-        UINavigationBar.appearance().scrollEdgeAppearance = scrollEdge
-    }
-
-    private static func dynamic(light: UInt32, dark: UInt32) -> Color {
-        Color(UIColor { traits in
-            UIColor(rgb: traits.userInterfaceStyle == .dark ? dark : light)
-        })
-    }
 }
 
 private extension UIColor {
@@ -125,42 +22,16 @@ private extension UIColor {
     }
 }
 
-// MARK: - Film simulation swatches
-
-extension FilmSimulation {
-    /// The family swatch color shown next to a recipe's film simulation — one hue per family so a
-    /// library scans by look: golds for Classic Chrome, warm ambers for the Neg films, cool grays
-    /// for monochrome, teal for cinema.
-    var swatchColor: Color {
-        switch self {
-        case .provia: return Color(red: 0.42, green: 0.48, blue: 0.56)
-        case .velvia: return Color(red: 0.69, green: 0.29, blue: 0.27)
-        case .astia: return Color(red: 0.35, green: 0.53, blue: 0.66)
-        case .classicChrome: return Color(red: 0.60, green: 0.48, blue: 0.25)
-        case .proNegHi: return Color(red: 0.72, green: 0.51, blue: 0.44)
-        case .proNegStd: return Color(red: 0.65, green: 0.55, blue: 0.50)
-        case .classicNeg: return Color(red: 0.66, green: 0.42, blue: 0.26)
-        case .nostalgicNeg: return Color(red: 0.78, green: 0.58, blue: 0.33)
-        case .eterna: return Color(red: 0.37, green: 0.48, blue: 0.43)
-        case .eternaBleachBypass: return Color(red: 0.49, green: 0.54, blue: 0.54)
-        case .realaAce: return Color(red: 0.47, green: 0.60, blue: 0.37)
-        case .acros, .acrosYe, .acrosR, .acrosG: return Color(red: 0.28, green: 0.28, blue: 0.30)
-        case .monochrome, .monochromeYe, .monochromeR, .monochromeG: return Color(red: 0.43, green: 0.43, blue: 0.44)
-        case .sepia: return Color(red: 0.66, green: 0.54, blue: 0.42)
-        }
-    }
-}
-
 // MARK: - Components
 
-/// The rounded-square film-sim family swatch.
+/// A small square of the film simulation's color.
 struct FilmSwatch: View {
     let simulation: FilmSimulation?
     var size: CGFloat = 10
 
     var body: some View {
-        RoundedRectangle(cornerRadius: size * 0.36, style: .continuous)
-            .fill(simulation?.swatchColor ?? Theme.ink3.opacity(0.4))
+        Rectangle()
+            .fill(simulation?.dsFill ?? DSNoSimulation.fill)
             .frame(width: size, height: size)
     }
 }
@@ -181,8 +52,8 @@ struct SwatchButton: View {
             Circle()
                 .fill(color)
                 .frame(width: 26, height: 26)
-                .overlay(Circle().strokeBorder(Theme.line))
-                .overlay { if isSelected { Circle().strokeBorder(Theme.accent, lineWidth: 2).padding(-3) } }
+                .overlay(Circle().strokeBorder(DSColor.separator))
+                .overlay { if isSelected { Circle().strokeBorder(DSColor.signal, lineWidth: 2).padding(-3) } }
         }
         .buttonStyle(.plain)
         .accessibilityLabel(name)
@@ -199,10 +70,10 @@ struct ParamChip: View {
         Text(text)
             .font(.caption.weight(.semibold))
             .monospacedDigit()
-            .foregroundStyle(Theme.ink)
+            .foregroundStyle(DSColor.textPrimary)
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
-            .background(prominent ? Theme.accentSoft : Theme.paper2,
+            .background(prominent ? DSColor.panel : DSColor.panel,
                         in: RoundedRectangle(cornerRadius: 7, style: .continuous))
     }
 }
@@ -217,12 +88,12 @@ struct FilterChip: View {
         Button(action: action) {
             Text(label)
                 .font(.footnote.weight(selected ? .semibold : .medium))
-                .foregroundStyle(selected ? Color.white : Theme.ink2)
+                .foregroundStyle(selected ? DSColor.onSignal : DSColor.textPrimary)
                 .padding(.horizontal, 13)
                 .padding(.vertical, 8)
-                .background(selected ? AnyShapeStyle(Theme.accent) : AnyShapeStyle(Theme.card),
+                .background(selected ? AnyShapeStyle(DSColor.signal) : AnyShapeStyle(DSColor.surface),
                             in: Capsule())
-                .overlay { if !selected { Capsule().strokeBorder(Theme.line) } }
+                .overlay { if !selected { Capsule().strokeBorder(DSColor.separator) } }
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(selected ? .isSelected : [])
@@ -236,10 +107,10 @@ struct BadgeTag: View {
     var body: some View {
         Text(text)
             .font(.caption2.weight(.medium))
-            .foregroundStyle(Theme.ink3)
+            .foregroundStyle(DSColor.textSecondary)
             .padding(.horizontal, 6)
             .padding(.vertical, 3)
-            .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(Theme.line))
+            .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(DSColor.separator))
     }
 }
 
@@ -253,13 +124,13 @@ struct OutlineButtonStyle: PrimitiveButtonStyle {
         Button(role: configuration.role, action: configuration.trigger) {
             configuration.label
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(DSColor.signalText)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
                 .background {
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(Theme.card)
-                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Theme.line))
+                        .fill(DSColor.surface)
+                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(DSColor.separator))
                 }
         }
         .buttonStyle(.plain)
@@ -289,12 +160,12 @@ struct SettingsRow: View {
         HStack {
             Text(label)
                 .font(.subheadline)
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
             Spacer(minLength: 12)
             Text(value)
                 .font(.subheadline.weight(.semibold))
                 .monospacedDigit()
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(DSColor.textPrimary)
                 .multilineTextAlignment(.trailing)
         }
         .accessibilityElement(children: .combine)
@@ -309,7 +180,7 @@ struct SettingsTable: View {
     var body: some View {
         VStack(spacing: 0) {
             ForEach(Array(rows.enumerated()), id: \.element.field) { index, row in
-                if index > 0 { Rectangle().fill(Theme.line).frame(height: 1) }
+                if index > 0 { Rectangle().fill(DSColor.separator).frame(height: 1) }
                 SettingsRow(label: row.field.displayName, value: row.value)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 12)
@@ -345,22 +216,21 @@ extension View {
                     ProgressView()
                     Text(label)
                         .font(.callout)
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(DSColor.textPrimary)
                 }
             }
         }
     }
 }
 
-/// Card chrome shared by every surface in the app: `Theme.card` fill, hairline border, soft shadow.
+/// Card chrome shared by the screens the design system's rollout didn't redraw one by one: the
+/// archive's square frame, `surface` inside a 1.5 pt rule. `cornerRadius` is kept for the call
+/// sites; the archive has none.
 struct CardBackground: ViewModifier {
     var cornerRadius: CGFloat = 18
 
     func body(content: Content) -> some View {
-        content
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).strokeBorder(Theme.line))
-            .shadow(color: Color(red: 0.16, green: 0.13, blue: 0.06).opacity(0.04), radius: 2, y: 1)
+        content.dsArchiveFrame()
     }
 }
 
@@ -374,7 +244,7 @@ extension View {
     func paperBackground() -> some View {
         self
             .scrollContentBackground(.hidden)
-            .background(Theme.paper)
+            .background(DSColor.background)
     }
 }
 

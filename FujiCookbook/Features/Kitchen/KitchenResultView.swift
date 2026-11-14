@@ -45,7 +45,7 @@ struct KitchenResultView: View {
             ForEach(successes) { result in
                 Section {
                     if let guidance = resultGuidance[result.id], !guidance.isEmpty {
-                        Text(guidance).font(.subheadline).foregroundStyle(Theme.ink2)
+                        Text(guidance).font(.subheadline).foregroundStyle(DSColor.textSecondary)
                     }
                     if let image = images[result.id] {
                         Image(uiImage: image)
@@ -96,7 +96,7 @@ struct KitchenResultView: View {
                 Section {
                     if onContinueTest != nil {
                         Text("Inspect the photo, then tap Continue Camera Test to record what you saw. Choose Didn't check if you cannot judge it.")
-                            .font(.subheadline).foregroundStyle(Theme.ink2)
+                            .font(.subheadline).foregroundStyle(DSColor.textSecondary)
                     }
                     if let savedBatchID {
                         NavigationLink("View saved results") {
@@ -138,7 +138,7 @@ struct KitchenResultView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.paper.ignoresSafeArea())
+        .background(DSColor.background.ignoresSafeArea())
         .navigationTitle(successes.isEmpty ? "Develop failed" : successes.count > 1 ? "\(successes.count) Developed" : "Developed")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

@@ -296,15 +296,15 @@ struct ShareReportButton: View {
             } label: {
                 HStack(spacing: 8) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Send it to").font(.caption).foregroundStyle(Theme.ink3)
-                        Text(SupportContact.address).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+                        Text("Send it to").font(.caption).foregroundStyle(DSColor.textSecondary)
+                        Text(SupportContact.address).font(.subheadline.weight(.semibold)).foregroundStyle(DSColor.textPrimary)
                     }
                     Spacer()
                     Label(addressCopied ? "Copied" : "Copy", systemImage: addressCopied ? "checkmark" : "doc.on.doc")
-                        .font(.caption.weight(.semibold)).foregroundStyle(Theme.accent)
+                        .font(.caption.weight(.semibold)).foregroundStyle(DSColor.signalText)
                 }
                 .padding(12)
-                .background(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Theme.line))
+                .background(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(DSColor.separator))
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -317,7 +317,7 @@ struct ShareReportButton: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
-                    .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.accent))
+                    .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(DSColor.signal))
             }
             .buttonStyle(.plain)
 
@@ -327,7 +327,7 @@ struct ShareReportButton: View {
                     .frame(maxWidth: .infinity)
             }
             if let outcome {
-                Text(outcome.message).font(.caption).foregroundStyle(Theme.ink2)
+                Text(outcome.message).font(.caption).foregroundStyle(DSColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             if let preparationError {
@@ -416,7 +416,7 @@ struct CopyShareButtons: View {
         case .inline:
             HStack(spacing: 16) { buttons }
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(DSColor.signalText)
                 .buttonStyle(.plain)
         }
     }
@@ -464,15 +464,15 @@ struct ReportProblemRow: View {
         HStack(spacing: 8) {
             Text(prompt)
                 .font(.caption)
-                .foregroundStyle(Theme.ink3)
+                .foregroundStyle(DSColor.textSecondary)
             Spacer(minLength: 0)
             Text(actionTitle)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(DSColor.signalText)
             if chevron {
                 Image(systemName: "chevron.right")
                     .font(.caption2.weight(.semibold))
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(DSColor.signalText)
             }
         }
         .contentShape(Rectangle())

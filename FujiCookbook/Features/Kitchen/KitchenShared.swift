@@ -176,19 +176,19 @@ struct ChosenRecipeRow: View {
             FilmSwatch(simulation: filmSimulation, size: 12)
             VStack(alignment: .leading, spacing: 1) {
                 Text(name)
-                    .font(Theme.serif(16))
-                    .foregroundStyle(Theme.ink)
+                    .font(DSFont.headline)
+                    .foregroundStyle(DSColor.textPrimary)
                     .lineLimit(1)
                 Text(filmSimulation?.displayName ?? "No film simulation set")
                     .font(.caption)
-                    .foregroundStyle(Theme.ink2)
+                    .foregroundStyle(DSColor.textSecondary)
                     .lineLimit(1)
             }
             Spacer(minLength: 6)
             if let badge { BadgeTag(text: badge) }
             if let onRemove {
                 Button(action: onRemove) {
-                    Image(systemName: "minus.circle.fill").foregroundStyle(Theme.ink3)
+                    Image(systemName: "minus.circle.fill").foregroundStyle(DSColor.textSecondary)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Remove \(name)")
@@ -292,10 +292,10 @@ struct CookButton: View {
         Button(action: action) {
             Label(title, systemImage: systemImage)
                 .font(.headline)
-                .foregroundStyle(.white)
+                .foregroundStyle(DSColor.onSignal)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 15)
-                .background(Theme.amber, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .background(DSColor.signal, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
@@ -367,7 +367,7 @@ struct RAFPickerSection: View {
     @ViewBuilder
     private var headerLabel: some View {
         if let step {
-            Theme.StepHeader(number: step, title: header)
+            DSStepHeader(number: step, title: header)
                 .textCase(nil)
         } else {
             Text(header)
@@ -417,7 +417,7 @@ struct RAFPickerSection: View {
             ProgressView()
             Text("Copying from Photos…")
                 .font(.subheadline)
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
         }
         .task {
             let copied = await PhotoLibraryRAW.copy(items)

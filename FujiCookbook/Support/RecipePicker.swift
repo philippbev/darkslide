@@ -181,7 +181,7 @@ struct RecipePickerSheet: View {
                     Text(title).font(.headline)
                     Text("\(selection.count) of \(limit)")
                         .font(.caption)
-                        .foregroundStyle(Theme.ink3)
+                        .foregroundStyle(DSColor.textSecondary)
                 }
             }
             ToolbarItem(placement: .confirmationAction) {
@@ -208,24 +208,24 @@ struct RecipePickerSheet: View {
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: 5) {
                         Text(choice.name)
-                            .font(Theme.serif(16))
-                            .foregroundStyle(Theme.ink)
+                            .font(DSFont.headline)
+                            .foregroundStyle(DSColor.textPrimary)
                             .lineLimit(1)
                         if choice.isFavorite {
                             Image(systemName: "star.fill")
                                 .font(.caption2)
-                                .foregroundStyle(Theme.star)
+                                .foregroundStyle(DSColor.textPrimary)
                         }
                     }
                     Text(choice.summary)
                         .font(.caption)
-                        .foregroundStyle(Theme.ink2)
+                        .foregroundStyle(DSColor.textSecondary)
                         .lineLimit(1)
                 }
                 Spacer(minLength: 6)
                 if let badge = choice.badge { BadgeTag(text: badge) }
                 Image(systemName: selectionSymbol(selected: selected))
-                    .foregroundStyle(selected ? Theme.accent : Theme.ink3)
+                    .foregroundStyle(selected ? DSColor.signalText : DSColor.textSecondary)
             }
             .contentShape(Rectangle())
         }

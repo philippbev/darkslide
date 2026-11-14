@@ -140,7 +140,7 @@ struct RecommendationResultView: View {
                 if pick.isAnchor {
                     Image(systemName: "pin.fill")
                         .font(.caption2)
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(DSColor.signalText)
                 }
             }
             .frame(width: 26)
@@ -153,7 +153,7 @@ struct RecommendationResultView: View {
                             .font(.caption2.weight(.medium))
                             .padding(.horizontal, 7)
                             .padding(.vertical, 2)
-                            .background(Theme.accent.opacity(0.15), in: Capsule())
+                            .background(DSColor.signal.opacity(0.15), in: Capsule())
                     }
                     if let film = recipe.settings.filmSimulation {
                         Text(film.displayName)

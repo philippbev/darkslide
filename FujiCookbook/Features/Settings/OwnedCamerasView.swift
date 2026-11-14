@@ -27,12 +27,12 @@ struct OwnedCamerasView: View {
         } label: {
             HStack {
                 Text(model.id)
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(DSColor.textPrimary)
                 Spacer()
                 if owned {
                     Image(systemName: "checkmark")
                         .fontWeight(.semibold)
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(DSColor.signalText)
                 }
             }
         }

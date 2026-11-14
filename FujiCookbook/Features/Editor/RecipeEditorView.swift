@@ -53,7 +53,7 @@ struct RecipeEditorView: View {
             cameraNameSection
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.paper.ignoresSafeArea())
+        .background(DSColor.background.ignoresSafeArea())
         .navigationTitle(isNew ? "New Recipe" : "Edit Recipe")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

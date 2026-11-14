@@ -249,7 +249,7 @@ struct DiagnosticsReportView: View {
                         reportCard.padding(.top, 10)
                     }
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(DSColor.textPrimary)
                 } else {
                     reportCard
                 }
@@ -258,7 +258,7 @@ struct DiagnosticsReportView: View {
             }
             .padding(18)
         }
-        .background(Theme.paper.ignoresSafeArea())
+        .background(DSColor.background.ignoresSafeArea())
         .navigationTitle(isGuided ? "Review & Share Test Results" : "Report a Problem")
         .navigationBarTitleDisplayMode(.inline)
         .task { captureReport() }
@@ -290,12 +290,12 @@ struct DiagnosticsReportView: View {
                 }
             } else {
                 Text("Open Technical Details to see the saved report.")
-                    .font(.subheadline).foregroundStyle(Theme.ink2)
+                    .font(.subheadline).foregroundStyle(DSColor.textSecondary)
             }
             Text("Your test progress stays saved when you share.")
-                .font(.caption).foregroundStyle(Theme.ink2)
+                .font(.caption).foregroundStyle(DSColor.textSecondary)
         }
-        .foregroundStyle(Theme.ink)
+        .foregroundStyle(DSColor.textPrimary)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .themedCard(cornerRadius: 16)
@@ -310,7 +310,7 @@ struct DiagnosticsReportView: View {
                 .frame(minHeight: 100)
                 .accessibilityLabel("Optional note about your test")
         }
-        .foregroundStyle(Theme.ink)
+        .foregroundStyle(DSColor.textPrimary)
         .padding(14)
         .themedCard(cornerRadius: 16)
     }
@@ -323,7 +323,7 @@ struct DiagnosticsReportView: View {
                 .padding(.vertical, 12)
         }
         .buttonStyle(.plain)
-        .foregroundStyle(Theme.accent)
+        .foregroundStyle(DSColor.signalText)
     }
 
     private var header: some View {
@@ -341,7 +341,7 @@ struct DiagnosticsReportView: View {
             isGuided ? "Choose an app or Save to Files when the share sheet opens." : "Nothing is sent unless you send it.",
         ].compactMap { $0 }.joined(separator: " "))
             .font(.subheadline)
-            .foregroundStyle(Theme.ink2)
+            .foregroundStyle(DSColor.textSecondary)
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .themedCard(cornerRadius: 16)
@@ -371,14 +371,14 @@ struct DiagnosticsReportView: View {
             .padding(.top, 10)
         }
         .font(.subheadline.weight(.semibold))
-        .foregroundStyle(Theme.ink)
+        .foregroundStyle(DSColor.textPrimary)
     }
 
     /// In chunks, not one `Text`: a whole camera-report JSON in a single view renders blank.
     private func monospacedCard(_ text: String) -> some View {
         ReportTextColumn(text: text)
             .font(.caption.monospaced())
-            .foregroundStyle(Theme.ink)
+            .foregroundStyle(DSColor.textPrimary)
             .textSelection(.enabled)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)

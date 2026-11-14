@@ -59,7 +59,7 @@ struct CameraPropertyReportView: View {
                     if lastRead.probes.isEmpty {
                         Text("The camera returned nothing. If the session dropped, reconnect and try again.")
                             .font(.subheadline)
-                            .foregroundStyle(Theme.ink2)
+                            .foregroundStyle(DSColor.textSecondary)
                             .padding(14)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .themedCard(cornerRadius: 16)
@@ -73,7 +73,7 @@ struct CameraPropertyReportView: View {
             }
             .padding(18)
         }
-        .background(Theme.paper.ignoresSafeArea())
+        .background(DSColor.background.ignoresSafeArea())
         .navigationTitle("Property Report")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -93,7 +93,7 @@ struct CameraPropertyReportView: View {
                  ? "Reads every preset property of one slot and asks the camera which values it accepts. Nothing is written except the slot selection."
                  : "This camera doesn't offer its custom slots over USB, so the slot selector is left alone — this reads whichever slot the camera currently has selected, and writes nothing at all.")
                 .font(.subheadline)
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
 
             if maySelect, let slotCount {
                 Picker("Slot", selection: $slot) {
@@ -115,10 +115,10 @@ struct CameraPropertyReportView: View {
                             : (lastRead != nil ? "Read the Selected Slot Again" : "Read the Selected Slot")))
                         .font(.subheadline.weight(.semibold))
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(DSColor.onSignal)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.accent))
+                .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(DSColor.signal))
             }
             .buttonStyle(.plain)
             // Both probes included: a read during a probe would move the slot selector out from
@@ -137,12 +137,12 @@ struct CameraPropertyReportView: View {
 
     private func resultsCard(_ read: Read) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Theme.SectionLabel("Slot C\(read.slot)")
+            DSSectionLabel("Slot C\(read.slot)")
                 .padding(.horizontal, 4)
             VStack(spacing: 0) {
                 ForEach(read.probes) { probe in
                     if probe.id != read.probes.first?.id {
-                        Rectangle().fill(Theme.line).frame(height: 1)
+                        Rectangle().fill(DSColor.separator).frame(height: 1)
                     }
                     row(probe)
                 }
@@ -156,33 +156,33 @@ struct CameraPropertyReportView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(probe.name)
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(DSColor.textPrimary)
                 Spacer(minLength: 8)
                 Text(PTPHex.propertyLabel(probe.code))
                     .font(.caption.monospaced())
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
             }
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("holds")
                     .font(.caption)
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
                 Text(probe.valueSummary)
                     .font(.caption.monospaced())
-                    .foregroundStyle(probe.currentValueIsOutOfSet ? Theme.warning : Theme.ink2)
+                    .foregroundStyle(probe.currentValueIsOutOfSet ? Theme.warning : DSColor.textSecondary)
             }
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("accepts")
                     .font(.caption)
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
                 Text(probe.allowedSummary)
                     .font(.caption.monospaced())
-                    .foregroundStyle(Theme.ink2)
+                    .foregroundStyle(DSColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             if let descriptor = probe.descriptor {
                 Text("\(descriptor.dataTypeName) · \(descriptor.isWritable ? "read/write" : "read-only")")
                     .font(.caption2)
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
             }
             if probe.currentValueIsOutOfSet {
                 Text("The value it holds isn’t in the set it says it accepts — our encoding for this field is likely wrong.")
@@ -238,7 +238,7 @@ struct CameraPropertyReportView: View {
         if !mayWrite {
             Text("The grain write probe is only offered on cameras Fuji Cookbook writes to. It works by writing real values and reading back what stuck, which isn't something to do to a body whose encodings aren't known.")
                 .font(.caption)
-                .foregroundStyle(Theme.ink3)
+                .foregroundStyle(DSColor.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 4)
         } else {
@@ -350,12 +350,12 @@ private struct WriteProbeCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Theme.SectionLabel(title)
+            DSSectionLabel(title)
                 .padding(.horizontal, 4)
             VStack(alignment: .leading, spacing: 12) {
                 Text(explanation)
                     .font(.caption)
-                    .foregroundStyle(Theme.ink2)
+                    .foregroundStyle(DSColor.textSecondary)
 
                 Button(action: run) {
                     HStack(spacing: 8) {
@@ -371,7 +371,7 @@ private struct WriteProbeCard: View {
                         ForEach(entries) { entry in
                             Text("wrote \(valueLabel(entry.wrote)): \(entry.outcome)")
                                 .font(.caption.monospaced())
-                                .foregroundStyle(entry.outcome == "ACCEPTED" ? Theme.accent : Theme.ink2)
+                                .foregroundStyle(entry.outcome == "ACCEPTED" ? DSColor.signalText : DSColor.textSecondary)
                         }
                     }
                     CopyShareButtons(text: exportText, layout: .inline)

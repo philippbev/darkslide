@@ -39,7 +39,7 @@ struct RecipeCompareView: View {
                         let visible = visibleRows.filter { $0.group == group }
                         if !visible.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
-                                Theme.SectionLabel(group.displayName)
+                                DSSectionLabel(group.displayName)
                                 card(visible)
                             }
                         }
@@ -49,7 +49,7 @@ struct RecipeCompareView: View {
             }
             .padding(18)
         }
-        .background(Theme.paper.ignoresSafeArea())
+        .background(DSColor.background.ignoresSafeArea())
         .navigationTitle("Compare Settings")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -82,7 +82,7 @@ struct RecipeCompareView: View {
             name(recipeA, align: .leading)
             Image(systemName: "arrow.left.arrow.right")
                 .font(.caption)
-                .foregroundStyle(Theme.ink3)
+                .foregroundStyle(DSColor.textSecondary)
                 .padding(.top, 6)
             name(recipeB, align: .trailing)
         }
@@ -92,18 +92,16 @@ struct RecipeCompareView: View {
 
     private func name(_ recipe: Recipe?, align: HorizontalAlignment) -> some View {
         VStack(alignment: align, spacing: 4) {
-            // Serif on the names only: `Theme.serif` is fixed-point and doesn't scale with Dynamic
-            // Type, so it never carries a value.
             Text(recipe?.name ?? "Choose a recipe")
-                .font(Theme.serif(17))
-                .foregroundStyle(recipe == nil ? Theme.ink3 : Theme.ink)
+                .font(DSFont.headline)
+                .foregroundStyle(recipe == nil ? DSColor.textSecondary : DSColor.textPrimary)
                 .multilineTextAlignment(align == .leading ? .leading : .trailing)
             if let recipe {
                 HStack(spacing: 5) {
                     FilmSwatch(simulation: recipe.settings.filmSimulation)
                     Text(recipe.settings.filmSimulation?.displayName ?? "No film simulation")
                         .font(.caption)
-                        .foregroundStyle(Theme.ink3)
+                        .foregroundStyle(DSColor.textSecondary)
                 }
             }
         }
@@ -114,13 +112,13 @@ struct RecipeCompareView: View {
         VStack(spacing: 12) {
             Text("Pick a second recipe to see what separates them.")
                 .font(.subheadline)
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
                 .multilineTextAlignment(.center)
             Button { showingPicker = true } label: {
                 Label("Choose Recipe", systemImage: "plus.circle")
             }
             .buttonStyle(.borderedProminent)
-            .tint(Theme.accent)
+            .tint(DSColor.signal)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 28)
@@ -137,7 +135,7 @@ struct RecipeCompareView: View {
         }
         return Text(parts.joined(separator: " · "))
             .font(.subheadline.weight(.medium))
-            .foregroundStyle(s.differing == 0 ? Theme.accent : Theme.ink2)
+            .foregroundStyle(s.differing == 0 ? DSColor.signalText : DSColor.textSecondary)
             .accessibilityLabel(s.differing == 0
                                 ? "These recipes agree on every setting that applies to both"
                                 : parts.joined(separator: ", "))
@@ -148,7 +146,7 @@ struct RecipeCompareView: View {
              ? "Nothing differs. Switch to All Settings to see the full comparison."
              : "Nothing to compare.")
             .font(.subheadline)
-            .foregroundStyle(Theme.ink3)
+            .foregroundStyle(DSColor.textSecondary)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 24)
     }
@@ -156,7 +154,7 @@ struct RecipeCompareView: View {
     private func card(_ rows: [DiffRow]) -> some View {
         VStack(spacing: 0) {
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
-                if index > 0 { Rectangle().fill(Theme.line).frame(height: 1).padding(.leading, 14) }
+                if index > 0 { Rectangle().fill(DSColor.separator).frame(height: 1).padding(.leading, 14) }
                 self.row(row)
             }
         }
@@ -174,15 +172,15 @@ struct RecipeCompareView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(row.label)
                     .font(.subheadline)
-                    .foregroundStyle(Theme.ink2)
+                    .foregroundStyle(DSColor.textSecondary)
                 if let note = footnote(row) {
-                    Text(note).font(.caption2).foregroundStyle(Theme.ink3)
+                    Text(note).font(.caption2).foregroundStyle(DSColor.textSecondary)
                 }
             }
             Spacer(minLength: 12)
             HStack(spacing: 6) {
                 sideText(row.a, emphasised: true)
-                Image(systemName: "arrow.right").font(.caption2).foregroundStyle(Theme.ink3)
+                Image(systemName: "arrow.right").font(.caption2).foregroundStyle(DSColor.textSecondary)
                 sideText(row.b, emphasised: false)
             }
         }
@@ -196,7 +194,7 @@ struct RecipeCompareView: View {
         Text(display(side))
             .font(.subheadline.weight(emphasised ? .semibold : .regular))
             .monospacedDigit()
-            .foregroundStyle(side.presence == .set ? (emphasised ? Theme.ink : Theme.ink3) : Theme.ink3)
+            .foregroundStyle(side.presence == .set ? (emphasised ? DSColor.textPrimary : DSColor.textSecondary) : DSColor.textSecondary)
             .multilineTextAlignment(.trailing)
     }
 
@@ -220,9 +218,9 @@ struct RecipeCompareView: View {
 
     private func tint(_ status: DiffStatus) -> Color {
         switch status {
-        case .same: return Theme.accent
+        case .same: return DSColor.signal
         case .differs, .setOnlyInA, .setOnlyInB: return Theme.warning
-        default: return Theme.ink3.opacity(0.6)
+        default: return DSColor.textSecondary.opacity(0.6)
         }
     }
 

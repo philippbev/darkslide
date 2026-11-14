@@ -136,23 +136,23 @@ struct GuidedIntroStep: View {
         let coverage = coverage
         return VStack(alignment: .leading, spacing: 10) {
             Label {
-                Text("What you'll check").foregroundStyle(Theme.ink)
+                Text("What you'll check").foregroundStyle(DSColor.textPrimary)
             } icon: {
-                Image(systemName: "checklist").foregroundStyle(Theme.accent)
+                Image(systemName: "checklist").foregroundStyle(DSColor.signalText)
             }
             .font(.subheadline.weight(.semibold))
             ForEach(coverage.checks.map(Self.row(for:)), id: \.self) { check in
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
                     Image(systemName: check.systemImage)
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(DSColor.signalText)
                         .frame(width: checkIconWidth)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(check.title)
                             .font(.caption.weight(.semibold))
-                            .foregroundStyle(Theme.ink)
+                            .foregroundStyle(DSColor.textPrimary)
                         Text(check.detail)
                             .font(.caption)
-                            .foregroundStyle(Theme.ink2)
+                            .foregroundStyle(DSColor.textSecondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -161,7 +161,7 @@ struct GuidedIntroStep: View {
             if let note = coverage.note {
                 Text(note)
                     .font(.caption)
-                    .foregroundStyle(Theme.ink2)
+                    .foregroundStyle(DSColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -190,7 +190,7 @@ struct GuidedIntroStep: View {
             }
             GuidedPlanChoices(session: $session)
             Text("If something doesn't work, you can still share what you have. Nothing leaves your phone until you choose to share it.")
-                .font(.caption).foregroundStyle(Theme.ink2)
+                .font(.caption).foregroundStyle(DSColor.textSecondary)
         } actions: {
             GuidedPrimaryButton(title: "Begin", systemImage: "arrow.right", action: onAdvance)
         }
@@ -351,17 +351,17 @@ struct GuidedIdentityStep: View {
             if let connected = camera.session.connected {
                 VStack(alignment: .leading, spacing: 10) {
                     Text(connected.model?.displayName ?? connected.productName)
-                        .font(Theme.serif(22))
-                        .foregroundStyle(Theme.ink)
+                        .font(DSFont.title)
+                        .foregroundStyle(DSColor.textPrimary)
                     Label(connected.capabilityBadge.text, systemImage: connected.capabilityBadge.symbol)
                         .font(.footnote.weight(.medium))
-                        .foregroundStyle(Theme.ink2)
+                        .foregroundStyle(DSColor.textSecondary)
                     if let firmware = connected.firmwareVersion {
-                        Text("Firmware \(firmware)").font(.footnote).foregroundStyle(Theme.ink3)
+                        Text("Firmware \(firmware)").font(.footnote).foregroundStyle(DSColor.textSecondary)
                     }
                     Text("Name reported by the camera: \(connected.productName)")
                         .font(.caption)
-                        .foregroundStyle(Theme.ink3)
+                        .foregroundStyle(DSColor.textSecondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(14)
@@ -429,7 +429,7 @@ struct GuidedReadSlotsStep: View {
                             .padding(.horizontal, 14)
                             .padding(.vertical, 10)
                         if slot.index != camera.slotReader.slots.last?.index {
-                            Rectangle().fill(Theme.line).frame(height: 1).padding(.leading, 14)
+                            Rectangle().fill(DSColor.separator).frame(height: 1).padding(.leading, 14)
                         }
                     }
                 }
@@ -546,7 +546,7 @@ struct GuidedCompareStep: View {
                 }
                 if session.writePass?.dialConfirmed == true {
                     Label("Film Simulation dial confirmed on C", systemImage: "checkmark.circle")
-                        .font(.subheadline).foregroundStyle(Theme.ink2)
+                        .font(.subheadline).foregroundStyle(DSColor.textSecondary)
                 } else {
                     Button("The Film Simulation dial is on C") { recordDial(true) }
                         .font(.subheadline.weight(.semibold))
@@ -566,13 +566,13 @@ struct GuidedCompareStep: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("\(comparison.label) · \(comparison.displayName)")
                                     .font(.subheadline.weight(.medium))
-                                    .foregroundStyle(Theme.ink)
+                                    .foregroundStyle(DSColor.textPrimary)
                                 Text(verdictNote(for: comparison.slot))
                                     .font(.caption)
-                                    .foregroundStyle(Theme.ink3)
+                                    .foregroundStyle(DSColor.textSecondary)
                             }
                             Spacer(minLength: 8)
-                            Image(systemName: "chevron.right").font(.caption).foregroundStyle(Theme.ink3)
+                            Image(systemName: "chevron.right").font(.caption).foregroundStyle(DSColor.textSecondary)
                         }
                         .padding(.horizontal, 14)
                         .padding(.vertical, 12)
@@ -580,14 +580,14 @@ struct GuidedCompareStep: View {
                     }
                     .buttonStyle(.plain)
                     if comparison.slot != comparisons.last?.slot {
-                        Rectangle().fill(Theme.line).frame(height: 1).padding(.leading, 46)
+                        Rectangle().fill(DSColor.separator).frame(height: 1).padding(.leading, 46)
                     }
                 }
             }
             .themedCard(cornerRadius: 16)
             Text(session.plan?.optionalChecks.contains(.secondSlotComparison) == true ? "Check two slots, preferably with different settings." : "Check one slot. You can check more if you'd like.")
                 .font(.caption)
-                .foregroundStyle(Theme.ink3)
+                .foregroundStyle(DSColor.textSecondary)
                 .padding(.horizontal, 4)
             }
         } actions: {
@@ -596,7 +596,7 @@ struct GuidedCompareStep: View {
             if checkedCount > 0, !camera.session.isConnected {
                 Text("Plug the camera back in — the next step needs it.")
                     .font(.caption)
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
             }
             if checkedCount == 0, !comparisons.isEmpty {
                 GuidedSecondaryButton(title: "I can't check this now", action: onAdvance)
@@ -627,9 +627,9 @@ struct GuidedCompareStep: View {
         case "differs"?, "unverified"?:
             Image(systemName: "exclamationmark.circle.fill").font(.title3).foregroundStyle(Theme.warning)
         case "matches"?:
-            Image(systemName: "checkmark.circle.fill").font(.title3).foregroundStyle(Theme.accent)
+            Image(systemName: "checkmark.circle.fill").font(.title3).foregroundStyle(DSColor.signalText)
         default:
-            Image(systemName: "circle").font(.title3).foregroundStyle(Theme.ink3.opacity(0.6))
+            Image(systemName: "circle").font(.title3).foregroundStyle(DSColor.textSecondary.opacity(0.6))
         }
     }
 
@@ -1129,7 +1129,7 @@ struct GuidedKitchenStep: View {
             if let completion {
                 let produced = completion.cells.filter(\.succeeded).count
                 Text(completion.hasSuccessfulOutput ? "\(produced) photo\(produced == 1 ? "" : "s") ready to review\(completion.hasFailures ? "; some versions failed" : "")" : "No usable photo was produced. The failure is recorded.")
-                    .font(.subheadline).foregroundStyle(completion.hasFailures ? Theme.warning : Theme.ink2)
+                    .font(.subheadline).foregroundStyle(completion.hasFailures ? Theme.warning : DSColor.textSecondary)
                 if completion.saveFailed {
                     Text("The photos could not be saved on this device. The report still records the attempt.")
                         .font(.caption).foregroundStyle(Theme.warning)
@@ -1140,7 +1140,7 @@ struct GuidedKitchenStep: View {
                 if completion.hasSuccessfulOutput {
                     ForEach(completion.run.recipes) { recipe in
                         Text("\(recipe.name): \(GuidedTestRecipes.observationGuidance(for: recipe.settings))")
-                            .font(.caption).foregroundStyle(Theme.ink2)
+                            .font(.caption).foregroundStyle(DSColor.textSecondary)
                     }
                     GuidedAnswerPicker(question: produced == 1 ? "Does the photo open normally and look as described?" : "Do the photos open normally and look as described?",
                         answer: observation(completion.run.id.uuidString))
@@ -1149,7 +1149,7 @@ struct GuidedKitchenStep: View {
                 Text("This attempt has no saved result. Try again when ready; the earlier attempt stays in the report.")
                     .font(.caption).foregroundStyle(Theme.warning)
             } else {
-                Text("Ready to try").font(.caption).foregroundStyle(Theme.ink3)
+                Text("Ready to try").font(.caption).foregroundStyle(DSColor.textSecondary)
             }
             Button(completion == nil ? (id == "testKitchen" || id == "expandedKitchen" ? "Open Test Kitchen" : "Open Develop") : "Try again") {
                 stopReference()
@@ -1166,7 +1166,7 @@ struct GuidedKitchenStep: View {
                 message: "1. Tap Start below, then unplug the USB cable.\n2. On the camera, use RAW Conversion on the same frame with the settings below. Apply any Dynamic Range adjustment shown here.\n3. Compare that JPEG with the app's saved photo. Colour and tone should be similar; grain can vary.\n4. Reconnect before another develop or restoring settings.\n\nChoose Didn't check if you cannot make or view the reference JPEG.")
             if referenceActive {
                 Label("You can unplug now to use the camera's menus", systemImage: "cable.connector.slash")
-                    .font(.caption).foregroundStyle(Theme.ink2)
+                    .font(.caption).foregroundStyle(DSColor.textSecondary)
                 Button("Finish reference check", action: stopReference)
             } else {
                 Button("Start reference check") {
@@ -1179,10 +1179,10 @@ struct GuidedKitchenStep: View {
                     .font(.subheadline)
                 if !cell.clampedFields.isEmpty {
                     Text("Adjusted settings: \(cell.clampedFields.joined(separator: ", "))")
-                        .font(.caption).foregroundStyle(Theme.ink2)
+                        .font(.caption).foregroundStyle(DSColor.textSecondary)
                 }
                 ForEach(cell.notes, id: \.self) { note in
-                    Text(note).font(.caption).foregroundStyle(Theme.ink2)
+                    Text(note).font(.caption).foregroundStyle(DSColor.textSecondary)
                 }
             }
             if let recipe = completion.run.recipes.first {

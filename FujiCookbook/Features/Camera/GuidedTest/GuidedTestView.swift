@@ -71,7 +71,7 @@ struct GuidedTestView: View {
                                       onClose: { close() })
                 } else {
                     ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Theme.paper.ignoresSafeArea())
+                        .background(DSColor.background.ignoresSafeArea())
                 }
             }
             .navigationTitle("Camera Test")
@@ -197,7 +197,7 @@ struct GuidedTestView: View {
                     Image(systemName: "list.bullet")
                         .font(.caption2.weight(.semibold))
                 }
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(DSColor.textPrimary)
             }
             .accessibilityLabel("\(positionLabel(step)). Show the checklist.")
             .disabled(isRunning)
@@ -596,15 +596,15 @@ struct GuidedTestHubView: View {
             }
             .padding(18)
         }
-        .background(Theme.paper.ignoresSafeArea())
+        .background(DSColor.background.ignoresSafeArea())
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Camera Test").font(Theme.serif(24)).foregroundStyle(Theme.ink)
+            Text("Camera Test").font(DSFont.title).foregroundStyle(DSColor.textPrimary)
             Text(session.isLive ? "Your progress is saved. Continue the test, or share what you have so far."
                  : "Your test results are saved. Review them below or share the report.")
-                .font(.subheadline).foregroundStyle(Theme.ink2)
+                .font(.subheadline).foregroundStyle(DSColor.textSecondary)
         }
     }
 
@@ -622,17 +622,17 @@ struct GuidedTestHubView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(step.title(in: session))
                                 .font(.subheadline.weight(step == session.step ? .semibold : .regular))
-                                .foregroundStyle(Theme.ink)
+                                .foregroundStyle(DSColor.textPrimary)
                             if let note = note(for: step) {
                                 Text(note)
                                     .font(.caption)
-                                    .foregroundStyle(Theme.ink3)
+                                    .foregroundStyle(DSColor.textSecondary)
                             }
                         }
                         Spacer(minLength: 8)
                         Image(systemName: "chevron.right")
                             .font(.caption)
-                            .foregroundStyle(Theme.ink3)
+                            .foregroundStyle(DSColor.textSecondary)
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 12)
@@ -641,7 +641,7 @@ struct GuidedTestHubView: View {
                 .buttonStyle(.plain)
                 .disabled(step != session.step && !session.completedSteps.contains(step))
                 if index < steps.count - 1 {
-                    Rectangle().fill(Theme.line).frame(height: 1).padding(.leading, 46)
+                    Rectangle().fill(DSColor.separator).frame(height: 1).padding(.leading, 46)
                 }
             }
         }
@@ -653,15 +653,15 @@ struct GuidedTestHubView: View {
         if session.completedSteps.contains(step) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.title3)
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(DSColor.signalText)
         } else if step == session.step {
             Image(systemName: "circle.dotted")
                 .font(.title3)
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(DSColor.signalText)
         } else {
             Image(systemName: "circle")
                 .font(.title3)
-                .foregroundStyle(Theme.ink3.opacity(0.6))
+                .foregroundStyle(DSColor.textSecondary.opacity(0.6))
         }
     }
 

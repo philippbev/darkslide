@@ -49,7 +49,7 @@ struct SlotComparisonView: View {
             }
             footer
         }
-        .background(Theme.paper.ignoresSafeArea())
+        .background(DSColor.background.ignoresSafeArea())
         .navigationTitle("\(slotLabel) · \(slotName)")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -76,7 +76,7 @@ struct SlotComparisonView: View {
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(DSColor.signalText)
                         .padding(.horizontal, 14)
                         .accessibilityLabel("\(row.differs ? "Clear difference" : "Report a difference") for \(row.label)")
                     }
@@ -92,7 +92,7 @@ struct SlotComparisonView: View {
                     }
                 }
                 if index < comparison.rows.count - 1 {
-                    Rectangle().fill(Theme.line).frame(height: 1).padding(.leading, 14)
+                    Rectangle().fill(DSColor.separator).frame(height: 1).padding(.leading, 14)
                 }
             }
         }
@@ -106,10 +106,10 @@ struct SlotComparisonView: View {
             if row.differs || presentation.priorityControlled {
                 Image(systemName: row.differs ? "exclamationmark.circle.fill" : "lock")
                     .font(.subheadline)
-                    .foregroundStyle(row.differs ? Theme.warning : Theme.ink3.opacity(0.6))
+                    .foregroundStyle(row.differs ? Theme.warning : DSColor.textSecondary.opacity(0.6))
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(row.label).font(.subheadline).foregroundStyle(Theme.ink2)
+                Text(row.label).font(.subheadline).foregroundStyle(DSColor.textSecondary)
                 if row.differs {
                     Text(presentation.priorityControlled ? "You marked this as different earlier" : "You marked this as different")
                         .font(.caption).foregroundStyle(Theme.warning)
@@ -118,7 +118,7 @@ struct SlotComparisonView: View {
             Spacer(minLength: 12)
             Text(presentation.value)
                 .font(.subheadline.weight(.medium))
-                .foregroundStyle(presentation.priorityControlled ? Theme.ink3 : Theme.ink)
+                .foregroundStyle(presentation.priorityControlled ? DSColor.textSecondary : DSColor.textPrimary)
                 .multilineTextAlignment(.trailing)
         }
         .padding(.horizontal, 14)
@@ -132,12 +132,12 @@ struct SlotComparisonView: View {
     private var conditions: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Also note for \(slotLabel)", systemImage: "info.circle")
-                .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+                .font(.subheadline.weight(.semibold)).foregroundStyle(DSColor.textPrimary)
             Text("The app can't read a bank's ISO or image format, and both decide whether the camera accepts Dynamic Range, D-Range Priority and Clarity.")
-                .font(.caption).foregroundStyle(Theme.ink2)
+                .font(.caption).foregroundStyle(DSColor.textSecondary)
             GuidedTextField(label: "ISO (optional)", placeholder: "e.g. 125, 1600 or Auto", text: isoBinding)
             VStack(alignment: .leading, spacing: 6) {
-                Text("Image format").font(.caption.weight(.semibold)).foregroundStyle(Theme.ink2)
+                Text("Image format").font(.caption.weight(.semibold)).foregroundStyle(DSColor.textSecondary)
                 GuidedChoiceRow<GuidedTestSession.ImageFormatAnswer>(
                     choices: [.init(value: .jpeg, label: "JPEG"), .init(value: .heif, label: "HEIF"),
                               .init(value: .notChecked, label: "Didn't check")],
@@ -165,7 +165,7 @@ struct SlotComparisonView: View {
             Label("The app couldn't identify these values", systemImage: "questionmark.circle")
                 .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.warning)
             Text("If you can, enter what the camera shows. The app can't confirm these values yet.")
-                .font(.caption).foregroundStyle(Theme.ink2)
+                .font(.caption).foregroundStyle(DSColor.textSecondary)
             ForEach(comparison.fieldsAppCouldNotRead, id: \.self) { field in
                 GuidedTextField(label: "\(field) — camera shows (optional)",
                                 placeholder: "Value shown in the camera's menu",
@@ -204,7 +204,7 @@ struct SlotComparisonView: View {
         .padding(.horizontal, 18)
         .padding(.top, 12)
         .padding(.bottom, 8)
-        .background(Theme.paper)
+        .background(DSColor.background)
     }
 
     private func setDifference(_ index: Int, differs: Bool) {

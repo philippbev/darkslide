@@ -114,7 +114,7 @@ struct FrameAndFitView: View {
                 editor
             }
         }
-        .background(Theme.paper.ignoresSafeArea())
+        .background(DSColor.background.ignoresSafeArea())
         .navigationTitle("Frame & Fit")
         .navigationBarTitleDisplayMode(.inline)
         .photosPicker(isPresented: $showPicker,
@@ -157,17 +157,17 @@ struct FrameAndFitView: View {
                 } label: {
                     Label(isLoading ? "Loading…" : "Choose Photos", systemImage: "photo")
                         .font(.headline)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(DSColor.onSignal)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 15)
-                        .background(Theme.amber, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .background(DSColor.signal, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
                 .buttonStyle(.plain)
                 .disabled(isLoading)
 
                 Text("Pick up to \(photoCapacity) — they'll share one frame.")
                     .font(.footnote)
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
             }
             .padding(.horizontal, 24)
         }
@@ -230,7 +230,7 @@ struct FrameAndFitView: View {
             canvasBody(layout: live, scale: scale)
                 .overlay { cardLayer(layout: live, scale: scale) }
                 .clipped()
-                .overlay(Rectangle().strokeBorder(Theme.line, lineWidth: 0.5))
+                .overlay(Rectangle().strokeBorder(DSColor.separator, lineWidth: 0.5))
                 .shadow(color: Color(red: 0.16, green: 0.13, blue: 0.06).opacity(0.18), radius: 10, y: 4)
                 .contentShape(Rectangle())
                 .gesture(repositionGesture(base: base, scale: scale, onScreen: onScreen))
@@ -392,10 +392,10 @@ struct FrameAndFitView: View {
                 Button { share() } label: {
                     Label("Share", systemImage: "square.and.arrow.up")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(DSColor.textPrimary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(Theme.paper2, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+                        .background(DSColor.panel, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
                 }
                 .buttonStyle(.plain)
 
@@ -403,10 +403,10 @@ struct FrameAndFitView: View {
                     Label(options.tiles > 1 ? "Save \(options.tiles) Images" : "Save to Photos",
                           systemImage: "checkmark")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(DSColor.onSignal)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(Theme.amber, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+                        .background(DSColor.signal, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
                 }
                 .buttonStyle(.plain)
             }
@@ -414,8 +414,8 @@ struct FrameAndFitView: View {
             .opacity(isExporting ? 0.45 : 1)
         }
         .padding(16)
-        .background(Theme.card.ignoresSafeArea(edges: .bottom))
-        .overlay(alignment: .top) { Rectangle().fill(Theme.line).frame(height: 0.5) }
+        .background(DSColor.surface.ignoresSafeArea(edges: .bottom))
+        .overlay(alignment: .top) { Rectangle().fill(DSColor.separator).frame(height: 0.5) }
     }
 
     // MARK: Seeding
@@ -557,19 +557,19 @@ struct FrameAndFitView: View {
                     Text("\(card.options.style.title) needs a taller frame than \(options.canvas.ratioText). "
                          + "Try \(card.options.style.nativeRatioText), or another style.")
                         .font(.footnote)
-                        .foregroundStyle(Theme.ink3)
+                        .foregroundStyle(DSColor.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 if let plan = cardFramePlan, sources.count > plan.photoCapacity {
                     Text("\(card.options.style.title) holds \(plan.photoCapacity) photos; the rest aren't drawn.")
                         .font(.footnote)
-                        .foregroundStyle(Theme.ink3)
+                        .foregroundStyle(DSColor.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             } else {
                 Text("Pick a recipe and its settings are laid over the frame. Leave it unset for a plain frame.")
                     .font(.footnote)
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
@@ -606,7 +606,7 @@ struct FrameAndFitView: View {
 
     private var recipeRow: some View {
         HStack(spacing: 10) {
-            Text("Recipe").font(.subheadline).foregroundStyle(Theme.ink)
+            Text("Recipe").font(.subheadline).foregroundStyle(DSColor.textPrimary)
             Spacer(minLength: 8)
             Menu {
                 // The way back off the card. This menu is the whole switch, so it has to be able to
@@ -639,10 +639,10 @@ struct FrameAndFitView: View {
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.caption2.weight(.semibold)).opacity(0.6)
                 }
-                .foregroundStyle(card.recipeUUID == nil ? Theme.accent : Theme.ink)
+                .foregroundStyle(card.recipeUUID == nil ? DSColor.signalText : DSColor.textPrimary)
                 .padding(.horizontal, 11)
                 .padding(.vertical, 7)
-                .background(Theme.paper2, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                .background(DSColor.panel, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
             }
             .disabled(recipes.isEmpty)
         }
@@ -660,10 +660,10 @@ struct FrameAndFitView: View {
                     } label: {
                         Text(style.title)
                             .font(.footnote.weight(.medium))
-                            .foregroundStyle(style == card.options.style ? Theme.accent : Theme.ink2)
+                            .foregroundStyle(style == card.options.style ? DSColor.signalText : DSColor.textSecondary)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 7)
-                            .background(style == card.options.style ? Theme.accentSoft : Theme.paper2,
+                            .background(style == card.options.style ? DSColor.panel : DSColor.panel,
                                         in: Capsule())
                     }
                     .buttonStyle(.plain)
@@ -702,7 +702,7 @@ struct FrameAndFitView: View {
                 Text("\(card.options.style.title) sets the layout: \(plan.photoCapacity) photos on a "
                      + "\(plan.arrangement.rows) × \(plan.arrangement.columns) grid, with the recipe in the first cell.")
                     .font(.footnote)
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 repositionHint
             } else {
@@ -722,7 +722,7 @@ struct FrameAndFitView: View {
                 if options.tiles > 1 {
                     Text("Exported as \(options.tiles) images. Post them as a carousel in order — the photo runs across the seams.")
                         .font(.footnote)
-                        .foregroundStyle(Theme.ink3)
+                        .foregroundStyle(DSColor.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 } else {
                     repositionHint
@@ -776,12 +776,12 @@ struct FrameAndFitView: View {
                     .font(.footnote.weight(.medium))
             }
             .buttonStyle(.plain)
-            .foregroundStyle(Theme.accent)
+            .foregroundStyle(DSColor.signalText)
         } else if options.canvas != .original {
             Text(sources.count > 1 ? "Drag a photo to choose its crop, pinch to zoom in."
                                    : "Drag to choose the crop, pinch to zoom in.")
                 .font(.footnote)
-                .foregroundStyle(Theme.ink3)
+                .foregroundStyle(DSColor.textSecondary)
         }
     }
 
@@ -793,13 +793,13 @@ struct FrameAndFitView: View {
                 Text("\(card.options.style.title) brings its own paper and grid, so the frame's border "
                      + "and gap are set aside while it's on.")
                     .font(.footnote)
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else if cardSuppliesPaper {
                 Text("\(card.options.style.title) brings its own paper, so the frame's border is set "
                      + "aside while it's on.")
                     .font(.footnote)
-                    .foregroundStyle(Theme.ink3)
+                    .foregroundStyle(DSColor.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else {
                 percentSlider(title: "Border", value: $options.border, range: FrameRenderer.borderRange)
@@ -819,15 +819,15 @@ struct FrameAndFitView: View {
     private func percentSlider(title: String, value: Binding<CGFloat>, range: ClosedRange<CGFloat>) -> some View {
         VStack(spacing: 4) {
             HStack {
-                Text(title).font(.subheadline).foregroundStyle(Theme.ink)
+                Text(title).font(.subheadline).foregroundStyle(DSColor.textPrimary)
                 Spacer()
                 Text("\(Int((value.wrappedValue * 100).rounded()))%")
                     .font(.subheadline.weight(.semibold))
                     .monospacedDigit()
-                    .foregroundStyle(Theme.ink2)
+                    .foregroundStyle(DSColor.textSecondary)
             }
             Slider(value: value, in: range, step: 0.01)
-                .tint(Theme.amber)
+                .tint(DSColor.signal)
                 .accessibilityLabel(title)
                 .accessibilityValue("\(Int((value.wrappedValue * 100).rounded())) percent")
         }
@@ -835,7 +835,7 @@ struct FrameAndFitView: View {
 
     private var backgroundRow: some View {
         HStack(spacing: 10) {
-            Text("Background").font(.subheadline).foregroundStyle(Theme.ink)
+            Text("Background").font(.subheadline).foregroundStyle(DSColor.textPrimary)
             Spacer()
             swatch(.white, name: "White")
             swatch(.black, name: "Black")
@@ -879,10 +879,10 @@ struct FrameAndFitView: View {
                     } label: {
                         Image(systemName: "plus")
                             .font(.title3)
-                            .foregroundStyle(Theme.ink2)
+                            .foregroundStyle(DSColor.textSecondary)
                             .frame(width: 52, height: 52)
-                            .background(Theme.paper2, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.line))
+                            .background(DSColor.panel, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(DSColor.separator))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Add another photo")
@@ -920,7 +920,7 @@ struct FrameAndFitView: View {
             Spacer()
         }
         .font(.caption)
-        .foregroundStyle(Theme.ink3)
+        .foregroundStyle(DSColor.textSecondary)
     }
 
     // MARK: Managing the set
@@ -1199,7 +1199,7 @@ private struct PhotoThumb: View {
             .scaledToFill()
             .frame(width: 52, height: 52)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.line))
+            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(DSColor.separator))
             .overlay(alignment: .bottomLeading) {
                 if showsPosition {
                     Text("\(position)")
@@ -1253,7 +1253,7 @@ private struct CanvasChip: View {
         Button(action: action) {
             VStack(spacing: 5) {
                 RoundedRectangle(cornerRadius: 2.5, style: .continuous)
-                    .fill(selected ? Color.white : Theme.ink3)
+                    .fill(selected ? DSColor.onSignal : DSColor.textSecondary)
                     .frame(width: glyph.width, height: glyph.height)
                     .frame(width: 26, height: 26)
                 Text(canvas.label)
@@ -1263,14 +1263,14 @@ private struct CanvasChip: View {
                     .monospacedDigit()
                     .opacity(0.7)
             }
-            .foregroundStyle(selected ? Color.white : Theme.ink2)
+            .foregroundStyle(selected ? DSColor.onSignal : DSColor.textSecondary)
             .frame(width: 74)
             .padding(.vertical, 9)
-            .background(selected ? AnyShapeStyle(Theme.accent) : AnyShapeStyle(Theme.paper2),
+            .background(selected ? AnyShapeStyle(DSColor.signal) : AnyShapeStyle(DSColor.panel),
                         in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay {
                 if !selected {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Theme.line)
+                    RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(DSColor.separator)
                 }
             }
         }
@@ -1295,7 +1295,7 @@ private struct ArrangementChip: View {
                         HStack(spacing: 2) {
                             ForEach(0..<arrangement.columns, id: \.self) { _ in
                                 RoundedRectangle(cornerRadius: 1, style: .continuous)
-                                    .fill(selected ? Color.white : Theme.ink3)
+                                    .fill(selected ? DSColor.onSignal : DSColor.textSecondary)
                             }
                         }
                     }
@@ -1305,14 +1305,14 @@ private struct ArrangementChip: View {
                 Text(arrangement.label)
                     .font(.caption.weight(.semibold))
             }
-            .foregroundStyle(selected ? Color.white : Theme.ink2)
+            .foregroundStyle(selected ? DSColor.onSignal : DSColor.textSecondary)
             .padding(.horizontal, 11)
             .padding(.vertical, 9)
-            .background(selected ? AnyShapeStyle(Theme.accent) : AnyShapeStyle(Theme.paper2),
+            .background(selected ? AnyShapeStyle(DSColor.signal) : AnyShapeStyle(DSColor.panel),
                         in: RoundedRectangle(cornerRadius: 11, style: .continuous))
             .overlay {
                 if !selected {
-                    RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Theme.line)
+                    RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(DSColor.separator)
                 }
             }
         }

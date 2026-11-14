@@ -10,21 +10,21 @@ struct SlotRow: View {
             Text(slot.label)
                 .font(.subheadline.weight(.semibold))
                 .monospacedDigit()
-                .foregroundStyle(slot.isOccupied ? Theme.accent : Theme.ink3)
+                .foregroundStyle(slot.isOccupied ? DSColor.signalText : DSColor.textSecondary)
                 .frame(width: 38, height: 38)
-                .background(slot.isOccupied ? Theme.accentSoft : Theme.paper2,
+                .background(slot.isOccupied ? DSColor.panel : DSColor.panel,
                             in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             VStack(alignment: .leading, spacing: 3) {
                 if slot.isOccupied {
                     Text(slot.resolvedName ?? "Unnamed")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(DSColor.textPrimary)
                     // The film simulation alone: it is what tells slots apart at a glance, and the
                     // recipe summary's dynamic range only crowds the line.
                     if let sim = slot.settings?.filmSimulation {
                         Text(sim.displayName)
                             .font(.footnote)
-                            .foregroundStyle(Theme.ink2)
+                            .foregroundStyle(DSColor.textSecondary)
                             .lineLimit(1)
                     }
                     // The one place a divergent body announces itself. `SlotRow` is used by the
@@ -43,12 +43,12 @@ struct SlotRow: View {
                         Label("\(field): \(label) — set on the camera, not part of a recipe",
                               systemImage: "camera")
                             .font(.caption2)
-                            .foregroundStyle(Theme.ink2)
+                            .foregroundStyle(DSColor.textSecondary)
                     }
                 } else {
                     Text("Empty")
                         .font(.subheadline)
-                        .foregroundStyle(Theme.ink3)
+                        .foregroundStyle(DSColor.textSecondary)
                 }
             }
             Spacer(minLength: 0)

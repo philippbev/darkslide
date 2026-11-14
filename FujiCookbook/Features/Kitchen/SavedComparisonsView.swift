@@ -52,7 +52,7 @@ struct SavedComparisonsView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.paper.ignoresSafeArea())
+        .background(DSColor.background.ignoresSafeArea())
         .navigationTitle(scopedToBatch ? "Results" : "Recent Results")
         .navigationBarTitleDisplayMode(.inline)
     }

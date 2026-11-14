@@ -50,7 +50,7 @@ struct ChaptersListView: View {
             } description: {
                 Text("Pick a chapter on the left to see its slots.")
             }
-            .background(Theme.paper.ignoresSafeArea())
+            .background(DSColor.background.ignoresSafeArea())
         }
     }
 
@@ -62,7 +62,7 @@ struct ChaptersListView: View {
                 chapterList
             }
         }
-        .background(Theme.paper.ignoresSafeArea())
+        .background(DSColor.background.ignoresSafeArea())
         .navigationTitle("Chapters")
         .settingsToolbarItem()
         .toolbar {
@@ -110,7 +110,7 @@ struct ChaptersListView: View {
             .overlay {
                 if splitSelection == chapter.persistentModelID {
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(Theme.accent, lineWidth: 2)
+                        .strokeBorder(DSColor.signal, lineWidth: 2)
                 }
             }
         } else {
@@ -159,20 +159,20 @@ private struct ChapterRow: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .firstTextBaseline) {
                 Text(chapter.name)
-                    .font(Theme.serif(20))
-                    .foregroundStyle(Theme.ink)
+                    .font(DSFont.headline)
+                    .foregroundStyle(DSColor.textPrimary)
                     .lineLimit(1)
                 Spacer()
                 Text("\(chapter.recipeUUIDs.count) of \(Chapter.maxSlots)")
                     .font(.caption.weight(.semibold))
                     .monospacedDigit()
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(DSColor.signalText)
             }
             slotStrip
                 .padding(.top, 14)
             Text(recipeNames)
                 .font(.footnote)
-                .foregroundStyle(Theme.ink2)
+                .foregroundStyle(DSColor.textSecondary)
                 .lineLimit(2)
                 .padding(.top, 12)
         }
@@ -190,10 +190,10 @@ private struct ChapterRow: View {
                 Text("C\(index)")
                     .font(.caption2.weight(.semibold))
                     .monospacedDigit()
-                    .foregroundStyle(filled ? Theme.accent : Theme.ink3)
+                    .foregroundStyle(filled ? DSColor.signalText : DSColor.textSecondary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 9)
-                    .background(filled ? Theme.accentSoft : Theme.paper2,
+                    .background(filled ? DSColor.panel : DSColor.panel,
                                 in: RoundedRectangle(cornerRadius: 7, style: .continuous))
             }
         }
