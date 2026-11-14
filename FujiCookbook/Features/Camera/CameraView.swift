@@ -1,18 +1,22 @@
 import SwiftUI
+import SwiftData
 
-/// The camera workspace: connect, see detected model/firmware and slot contents, and launch the
-/// import / push flows. Connection state reads as one confident status card; slots show what's
-/// loaded; Import / Push are equal-weight buttons.
+/// The camera workspace as an instrument: the device panel, the custom slots as keys, the chosen
+/// slot's archive card with three knobs, and a floating bar that loads a recipe into that slot or
+/// undoes the last load. Disconnected, the panel shows the camera last read and the ways to connect.
 struct CameraView: View {
     @Environment(CameraServices.self) private var camera
     @Environment(AppRouter.self) private var router
+    @Query(Recipe.listFetch(sortBy: [SortDescriptor(\Recipe.name)])) private var recipes: [Recipe]
 
     /// Gates the Demo Camera and the property report — see `DiagnosticMode`.
     @AppStorage(DiagnosticMode.key) private var diagnosticMode = false
+    /// The camera last read and its slots as read then, for the panel while nothing is connected.
+    @AppStorage(CameraSlotSnapshot.storageKey) private var slotSnapshotsJSON = ""
+    @AppStorage(RememberedCamera.displayNameKey) private var rememberedCameraName = ""
 
     @State private var showingGuide = false
     @State private var showingImport = false
-    @State private var showingPush = false
     @State private var showingPropertyReport = false
     @State private var showingConnectionLog = false
     @State private var showingBackupShare = false
@@ -20,6 +24,14 @@ struct CameraView: View {
     @State private var restoreTarget: RestoreRequest?
     @State private var backupError: String?
     @State private var pendingBackup: CameraBackup?
+    /// The slot the card shows and the bar loads into; nil until the user picks one, which means
+    /// the first slot that holds a setting (`CameraInstrument.selection`).
+    @State private var chosenSlot: Int?
+    /// "Load Recipe into C3": the recipe picker first, then the push with that slot filled in.
+    /// The push opens only once the picker is gone, from its `onDismiss`.
+    @State private var showingRecipePicker = false
+    @State private var pickedPush: PushRequest?
+    @State private var push: PushRequest?
     /// What to open the Camera Test with, or nil when it isn't showing.
     ///
     /// Carried as one value rather than two `@State` flags beside an `isPresented` sheet: one value
@@ -61,6 +73,14 @@ struct CameraView: View {
         var sessionID: String?
     }
 
+    /// One recipe into one slot, handed to `PushView` as a pre-filled assignment, so the push keeps
+    /// its own confirmation, compatibility warnings and read-back.
+    private struct PushRequest: Identifiable {
+        let slot: Int
+        let recipe: UUID
+        var id: String { "\(slot)-\(recipe)" }
+    }
+
     /// A recognized body the app selects no slot on (`ConnectedCamera.slotsUnreachable`). Not "we
     /// won't write to it": there is nothing there to read either, so the screen explains the camera
     /// instead of offering it slots and then failing to fill them.
@@ -70,51 +90,60 @@ struct CameraView: View {
         CameraCardState(isConnected: camera.session.isConnected, isRecovering: camera.connector.isRecovering)
     }
 
+    /// Slots, keys and the bar are for a recognized body with slots.
+    private var showsSlots: Bool {
+        camera.session.isConnected && camera.session.connected?.isUnsupported != true && !hasNoSlots
+    }
+
+    private var slots: [CameraSlot] { camera.slotReader.slots }
+
+    private var selectedSlot: CameraSlot? {
+        CameraInstrument.selection(chosenSlot, in: slots).flatMap { index in slots.first { $0.index == index } }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    // While reconnecting the card says so. Recovery's own attempts would otherwise
+                let inLibrary = CameraInstrument.libraryRecipes(for: slots, in: recipes)
+                VStack(alignment: .leading, spacing: DSSpacing.block) {
+                    Text("Camera")
+                        .dsLargeTitle()
+                        .accessibilityAddTraits(.isHeader)
+                    // While reconnecting the panel says so. Recovery's own attempts would otherwise
                     // flash "Connecting…", a failure with Connection Help, and slot reads above it.
                     if cardState != .reconnecting { transientStatus }
                     if camera.session.isConnected {
-                        connectedCard
+                        connectedPanel
                         if let banner = camera.session.connected.flatMap({ $0.identification.guessBanner(productName: $0.productName) }) {
-                            Label { Text(banner) } icon: {
-                                Image(systemName: "questionmark.diamond.fill").foregroundStyle(Theme.warning)
-                            }
-                            .font(.subheadline)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(14)
-                            .themedCard(cornerRadius: 16)
+                            CameraNotice(title: banner, systemImage: "questionmark.diamond.fill") { EmptyView() }
                         }
                         if camera.session.connected?.isUnsupported == true {
                             unrecognizedCard
                             cameraTestSection
                         } else if hasNoSlots {
-                            // `slotsCard` is hidden rather than emptied: "No slots read yet."
+                            // The slot keys are hidden rather than emptied: "No slots read yet."
                             // is untrue here and implies a pull-to-refresh would help.
                             noSlotProtocolCard
                             cameraTestSection
                         } else {
                             // What was read before the drop, until the reconnect reads it again.
-                            slotsCard.opacity(cardState == .reconnecting ? 0.45 : 1)
+                            Group {
+                                slotKeys(inLibrary: inLibrary)
+                                if let slot = selectedSlot { slotCard(slot, libraryRecipe: inLibrary[slot.index]) }
+                            }
+                            .opacity(cardState == .reconnecting ? 0.45 : 1)
                         }
                         driftCard
                         divergenceCard
-                        // Neither tile can ever enable on a body with no slots — Import needs an
-                        // occupied one and Push needs write support — and two permanently greyed
-                        // tiles read as something broken rather than something explained.
-                        if !hasNoSlots { actionButtons }
                         if camera.session.model != nil, !camera.slotWriter.canPush, !hasNoSlots {
                             Text(camera.slotWriter.pushBlockReason ?? "Push is disabled for this camera because its parameter encodings haven't been verified on hardware yet. Reading recipes is always safe.")
-                                .font(.caption)
-                                .foregroundStyle(Theme.ink3)
-                                .padding(.horizontal, 4)
+                                .font(DSFont.subhead)
+                                .foregroundStyle(DSColor.textSecondary)
                         }
                         backupRow
                         if camera.session.model != nil { reportProblemRow }
                     } else {
+                        offlinePanel
                         connectCard
                     }
                     helpButton
@@ -124,12 +153,19 @@ struct CameraView: View {
                     if diagnosticMode { connectionLogButton }
                     if camera.session.isConnected, diagnosticMode { propertyReportButton }
                 }
-                .padding(18)
+                .padding(DSSpacing.screenMargin)
             }
-            .background(Theme.paper.ignoresSafeArea())
-            .navigationTitle("Camera")
+            .background(DSColor.background.ignoresSafeArea())
+            .safeAreaInset(edge: .bottom) { if showsSlots { actionBar } }
+            .tint(DSColor.signal)
+            .navigationBarTitleDisplayMode(.inline)
             .settingsToolbarItem()
             .toolbar {
+                // The title lives in the scroll view; an empty principal item keeps the bar from
+                // repeating it inline in `Theme`'s serif.
+                ToolbarItem(placement: .principal) {
+                    Color.clear.frame(width: 1, height: 1).accessibilityHidden(true)
+                }
                 if camera.session.isConnected {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button("Disconnect") { Task { await camera.connector.disconnect() } }
@@ -157,7 +193,20 @@ struct CameraView: View {
             .sheet(item: $photoImport) { request in
                 NavigationStack { PhotoImportView(source: request.makeSource()) }
             }
-            .sheet(isPresented: $showingPush) { NavigationStack { PushView(preselectedRecipe: nil) } }
+            .sheet(isPresented: $showingRecipePicker, onDismiss: {
+                push = pickedPush
+                pickedPush = nil
+            }) {
+                RecipePickerSheet(title: "Load into \(selectedSlot?.label ?? "Slot")",
+                                  choices: recipes.map(RecipeChoice.init),
+                                  mode: .single) { picked in
+                    guard case .library(let uuid)? = picked.first, let slot = selectedSlot else { return }
+                    pickedPush = PushRequest(slot: slot.index, recipe: uuid)
+                }
+            }
+            .sheet(item: $push) { request in
+                NavigationStack { PushView(preselectedRecipe: nil, preassignedSlots: [request.slot: request.recipe]) }
+            }
             .sheet(item: $restoreTarget) { target in
                 RestoreView(slot: target.slot, slotName: target.name,
                             saved: target.saved, source: target.source)
@@ -192,134 +241,237 @@ struct CameraView: View {
         // Ahead of the status, which a cancel has already set to disconnected: the connect can
         // still be inside a session open, and the Connect rows wait for it.
         case _ where camera.connector.connectProgress == .cancelling:
-            statusCard {
-                HStack(spacing: 10) {
+            statusPanel {
+                HStack(spacing: DSSpacing.s) {
                     ProgressView()
-                    Text("Cancelling…").foregroundStyle(Theme.ink2)
+                    Text("Cancelling…")
                 }
             }
         case .connecting:
-            statusCard {
-                HStack(spacing: 10) {
+            statusPanel {
+                HStack(spacing: DSSpacing.s) {
                     ProgressView()
-                    Text("Connecting…").foregroundStyle(Theme.ink2)
+                    Text("Connecting…")
                     // Only a connect the user started; recovery's reconnects also pass through
                     // `.connecting`, and Disconnect ends those.
                     if camera.connector.connectProgress == .running {
                         Spacer()
                         Button("Cancel") { Task { await camera.connector.cancelConnect() } }
-                            .font(.subheadline.weight(.semibold))
+                            .buttonStyle(.dsTextKey(isActive: false))
                     }
                 }
             }
         case .working(let message):
-            statusCard {
-                HStack(spacing: 10) {
+            statusPanel {
+                HStack(spacing: DSSpacing.s) {
                     ProgressView()
-                    Text(message).foregroundStyle(Theme.ink2)
+                    Text(message)
                 }
             }
         case .failed(let message):
-            statusCard {
-                VStack(alignment: .leading, spacing: 10) {
-                    Label { Text(message) } icon: {
-                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Theme.warning)
-                    }
-                    HStack(spacing: 16) {
-                        Button("Connection Help") { showingGuide = true }
-                            .font(.subheadline.weight(.semibold))
-                        // A camera that never appears is the most common failure and the one
-                        // the app can say least about by itself — it has the two permission states
-                        // and the stage that failed, and nothing that separates a charge-only cable
-                        // from the wrong USB mode. That part has to be asked.
-                        Button("Tell Us What Happened") {
-                            cameraTest = CameraTestRequest(entry: .noCamera)
-                        }
-                        .font(.subheadline.weight(.semibold))
+            CameraNotice(title: message, systemImage: "exclamationmark.triangle.fill") {
+                HStack(spacing: DSSpacing.s) {
+                    Button("Connection Help") { showingGuide = true }
+                    // A camera that never appears is the most common failure and the one
+                    // the app can say least about by itself — it has the two permission states
+                    // and the stage that failed, and nothing that separates a charge-only cable
+                    // from the wrong USB mode. That part has to be asked.
+                    Button("Tell Us What Happened") {
+                        cameraTest = CameraTestRequest(entry: .noCamera)
                     }
                 }
+                .buttonStyle(.dsTextKey(isActive: false))
             }
         case .connected, .disconnected:
             EmptyView()
         }
     }
 
-    private func statusCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+    private func statusPanel<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         content()
-            .font(.subheadline)
+            .font(DSFont.subhead)
+            .foregroundStyle(DSColor.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
-            .themedCard(cornerRadius: 16)
+            .padding(DSSpacing.l)
+            .background(DSColor.panel, in: RoundedRectangle(cornerRadius: DSRadius.panel, style: .continuous))
     }
 
-    // MARK: Connected
+    // MARK: Device panel
 
-    /// One confident status card: live dot, transport, serif model name, key facts. While a dropped
-    /// session is recovering, the card turns grey and the dot becomes a spinner, so the camera last
-    /// seen never reads as connected.
+    /// The camera held: its name, a mono line of firmware, transport and slot range, and two LEDs.
+    /// While a dropped session recovers, LINK goes dark and the line says "Reconnecting", so the
+    /// camera last seen never reads as connected.
     @ViewBuilder
-    private var connectedCard: some View {
+    private var connectedPanel: some View {
         if let connected = camera.session.connected, let state = cardState {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 10) {
-                    switch state {
-                    case .live:
-                        Circle()
-                            .fill(Color(red: 0.56, green: 0.89, blue: 0.69))
-                            .frame(width: 10, height: 10)
-                            .background(Circle().fill(Color(red: 0.56, green: 0.89, blue: 0.69).opacity(0.25)).frame(width: 18, height: 18))
-                    case .reconnecting:
-                        // Laid out at the dot's size and allowed to overflow it, as the dot's halo
-                        // does, so the header text doesn't move when the state changes.
-                        ProgressView()
-                            .controlSize(.mini)
-                            .tint(.white)
-                            .frame(width: 10, height: 10)
-                    }
-                    Text(linkLabel(for: connected, in: state))
-                        .font(.caption.weight(.semibold))
-                        .kerning(1.0)
-                        .textCase(.uppercase)
-                        .foregroundStyle(.white.opacity(0.85))
+            let showsRange = connected.model != nil && !hasNoSlots
+            VStack(alignment: .leading, spacing: DSSpacing.s) {
+                DSDevicePanel(title: connected.model?.displayName ?? connected.productName,
+                              meta: CameraInstrument.panelMeta(firmware: connected.firmwareVersion,
+                                                               isDemo: connected.isDemo,
+                                                               isReconnecting: state == .reconnecting,
+                                                               slotCount: showsRange ? camera.slotReader.effectiveSlotCount : 0)) {
+                    DSPanelLEDs(indicators: CameraInstrument.panelLEDs(isLive: state == .live,
+                                                                       canWrite: camera.slotWriter.canPush))
                 }
-                Text(connected.model?.displayName ?? connected.productName)
-                    .font(Theme.serif(24))
-                    .foregroundStyle(.white)
-                HStack(spacing: 16) {
-                    if let fw = connected.firmwareVersion {
-                        Text("Firmware \(fw)")
-                    }
-                    // No slot range for a body with no slots, or when the count is unknown because the
-                    // slot walk failed: "Slots C1–C0" would be worse than none, and so would a guess.
-                    if connected.model != nil, !hasNoSlots, camera.slotReader.effectiveSlotCount > 0 {
-                        Text("Slots C1–C\(camera.slotReader.effectiveSlotCount)")
-                    }
-                    // One source for the seal, shared with the test's identity step — which asks the
-                    // tester to confirm it, and records what they were shown.
-                    Label(connected.capabilityBadge.text, systemImage: connected.capabilityBadge.symbol)
-                }
-                .font(.footnote.weight(.medium))
-                .foregroundStyle(.white.opacity(0.9))
+                // One source for the seal, shared with the test's identity step — which asks the
+                // tester to confirm it, and records what they were shown.
+                Label(connected.capabilityBadge.text, systemImage: connected.capabilityBadge.symbol)
+                    .dsMetaMono()
+                    .padding(.horizontal, DSSpacing.xs)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
-            .background(Theme.accent, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            // Grayscale keeps the green's luminance, so the white text keeps its contrast in both
-            // appearances.
-            .grayscale(state == .reconnecting ? 1 : 0)
             .animation(.easeInOut(duration: 0.25), value: state)
             .accessibilityElement(children: .combine)
         }
     }
 
-    /// The card's header: whether the session is live, and over what.
-    private func linkLabel(for connected: ConnectedCamera, in state: CameraCardState) -> String {
-        let transport = connected.isDemo ? "Demo" : "USB"
-        switch state {
-        case .live: return "Connected · \(transport)"
-        case .reconnecting: return "Reconnecting · \(transport)"
+    /// Nothing connected: the camera last read, dark, with the day of that read.
+    private var offlinePanel: some View {
+        let snapshot = CameraSlotSnapshot.all(from: slotSnapshotsJSON)[rememberedCameraName]
+        let field = LibraryCameraField(snapshot: snapshot, connectedCameraName: nil)
+        let meta = ["Offline", snapshot.map { _ in field.value }, field.asOf]
+            .compactMap { $0 }.joined(separator: "   ")
+        return DSDevicePanel(title: rememberedCameraName.isEmpty ? "No Camera" : rememberedCameraName, meta: meta) {
+            DSPanelLEDs(indicators: CameraInstrument.panelLEDs(isLive: false, canWrite: false))
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    // MARK: Slots
+
+    /// C1–C7 as keys, the chosen one active, and the import key last.
+    private func slotKeys(inLibrary: [Int: Recipe]) -> some View {
+        VStack(alignment: .leading, spacing: DSSpacing.s) {
+            Text("Custom Slots").dsMetaMono(DSColor.textPrimary).accessibilityAddTraits(.isHeader)
+            if slots.isEmpty {
+                Text("No slots read yet.")
+                    .font(DSFont.subhead)
+                    .foregroundStyle(DSColor.textSecondary)
+            } else {
+                let selected = CameraInstrument.selection(chosenSlot, in: slots)
+                let canImport = actionsAvailable && slots.contains { $0.isOccupied }
+                DSSlotGrid {
+                    ForEach(slots) { slot in
+                        DSSlotKey(slot: slot.label,
+                                  name: slot.isOccupied ? slot.displayName : nil,
+                                  isOccupied: slot.isOccupied,
+                                  isSelected: slot.index == selected) {
+                            chosenSlot = slot.index
+                        }
+                        // The free undo, also on the key: the bytes this slot held before the app
+                        // last wrote to it.
+                        .contextMenu {
+                            if let request = undoRequest(for: slot) {
+                                Button { restoreTarget = request } label: {
+                                    Label("Undo Last Push to \(slot.label)", systemImage: "arrow.uturn.backward")
+                                }
+                            }
+                        }
+                    }
+                    DSSlotImportKey(newCount: CameraInstrument.newSlotCount(slots, inLibrary: inLibrary)) {
+                        showingImport = true
+                    }
+                    .disabled(!canImport)
+                    .opacity(canImport ? 1 : 0.45)
+                }
+            }
         }
     }
+
+    /// The chosen slot as an archive card: its label as the number, the setting's name, the film
+    /// simulation band, COLOR / GRAIN / DYNAMIC as knobs, the rest as a data sheet, and whether the
+    /// library holds it.
+    private func slotCard(_ slot: CameraSlot, libraryRecipe: Recipe?) -> some View {
+        DSArchiveCard {
+            DSArchiveHeader(objectNumber: slot.label,
+                            fields: CameraInstrument.sideFields(isOccupied: slot.isOccupied, libraryRecipe: libraryRecipe))
+            DSRule()
+            if slot.isOccupied, let settings = slot.settings {
+                DSArchiveTitle(title: slot.resolvedName ?? "Unnamed")
+                DSSimulationBand(simulation: settings.filmSimulation)
+                HStack(alignment: .top) {
+                    ForEach(CameraInstrument.knobs(for: settings), id: \.label) { knob in
+                        DSKnob(label: knob.label, value: knob.value, position: knob.position)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                .padding(.vertical, DSSpacing.l)
+                .padding(.horizontal, DSSpacing.s)
+                DSRule()
+                DSDataSheet(fields: CameraInstrument.dataSheetFields(for: settings))
+                slotNotes(slot)
+                DSRule()
+                DSArchiveFooter(barcodeSeed: "\(camera.session.connected?.productName ?? "")-\(slot.label)",
+                                text: CameraInstrument.footer(isOccupied: true, libraryRecipe: libraryRecipe))
+            } else {
+                DSArchiveTitle(title: slot.isOccupied ? slot.displayName : "Empty",
+                               description: slot.isOccupied
+                               ? "The camera holds a setting here that this app couldn't read."
+                               : "This slot holds no setting. Load a recipe into it below.")
+            }
+        }
+    }
+
+    /// What the card can't show as a field: values the app couldn't read, and settings only the
+    /// camera holds. Said as information, so an import doesn't look like it lost something.
+    @ViewBuilder
+    private func slotNotes(_ slot: CameraSlot) -> some View {
+        if !slot.unsupportedFields.isEmpty || !slot.cameraOnlyFields.isEmpty {
+            DSSeparator()
+            VStack(alignment: .leading, spacing: DSSpacing.xs) {
+                if !slot.unsupportedFields.isEmpty {
+                    Label("\(slot.unsupportedFields.count) setting\(slot.unsupportedFields.count == 1 ? "" : "s") this app couldn't read",
+                          systemImage: "exclamationmark.triangle.fill")
+                }
+                ForEach(slot.cameraOnlyFields.sorted(by: { $0.key < $1.key }), id: \.key) { field, label in
+                    Label("\(field): \(label), set on the camera, not part of a recipe", systemImage: "camera")
+                }
+            }
+            .font(DSFont.subhead)
+            .foregroundStyle(DSColor.textSecondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(DSSpacing.m)
+        }
+    }
+
+    // MARK: Action bar
+
+    /// "Load Recipe into C3" and the undo of the last push to that slot. The undo is an icon key so
+    /// the primary key keeps its whole label at every text size.
+    private var actionBar: some View {
+        let slot = selectedSlot
+        let canLoad = actionsAvailable && camera.slotWriter.canPush && slot != nil
+        let undo = slot.flatMap(undoRequest(for:))
+        return DSFloatingActionBar(status: CameraInstrument.actionStatus(slotLabel: slot?.label,
+                                                                         canWrite: camera.slotWriter.canPush,
+                                                                         isBusy: !actionsAvailable)) {
+            HStack(spacing: DSSpacing.m) {
+                DSIconKey(systemImage: "arrow.uturn.backward",
+                          label: "Undo Last Push to \(slot?.label ?? "Slot")") {
+                    restoreTarget = undo
+                }
+                .disabled(undo == nil || !actionsAvailable)
+                Button { showingRecipePicker = true } label: {
+                    Label("Load Recipe into \(slot?.label ?? "Slot")", systemImage: "arrow.up.to.line")
+                        .lineLimit(1)
+                }
+                .buttonStyle(.dsPrimary)
+                .disabled(!canLoad)
+            }
+        }
+    }
+
+    /// The bytes this slot held before the app last wrote to it, when there are any and the app may
+    /// write. The name is the one the push *replaced*, never the slot's current one; `undoName`
+    /// holds the rule.
+    private func undoRequest(for slot: CameraSlot) -> RestoreRequest? {
+        guard camera.slotWriter.canPush,
+              let saved = camera.reports.history.lastPushPriorBytes(forSlot: slot.index) else { return nil }
+        return RestoreRequest(slot: slot.index, name: camera.reports.history.undoName(forSlot: slot.index),
+                              saved: saved, source: .lastPush)
+    }
+
+    // MARK: Notices
 
     /// The unrecognized-body path's whole purpose: turn "not supported" into an artifact that gets
     /// the body supported. The report is on disk already; this card says what it holds and leaves
@@ -328,21 +480,13 @@ struct CameraView: View {
     @ViewBuilder
     private var unrecognizedCard: some View {
         if let report = camera.reports.report {
-            VStack(alignment: .leading, spacing: 10) {
-                Label("This camera isn't supported yet", systemImage: "questionmark.diamond")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink)
+            CameraNotice(title: "This camera isn't supported yet", systemImage: "questionmark.diamond") {
                 Text("Fuji Cookbook read everything \(report.camera.productName) would show it and changed nothing. Sharing a report is what gets this camera supported. It contains what the camera says about itself and the recipe settings it currently holds — nothing leaves the phone until you share it.")
-                    .font(.caption)
-                    .foregroundStyle(Theme.ink2)
                 // No share button here: the Camera Test below leads to the fuller report — the same
                 // camera data plus the logs and the answers only a person can give — and two
                 // buttons offering different halves of one thing would make the weaker one look
                 // like the quicker route.
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .themedCard(cornerRadius: 16)
         }
     }
 
@@ -358,22 +502,12 @@ struct CameraView: View {
     @ViewBuilder
     private var noSlotProtocolCard: some View {
         if camera.reports.report != nil, let model = camera.session.model {
-            VStack(alignment: .leading, spacing: 10) {
-                // No model name here: the green card directly above already names the body, and
-                // `blockReason` opens with it too — three in a row read as a stutter.
-                Label("No custom slots over USB", systemImage: "lock.fill")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink)
+            // No model name in the title: the panel directly above already names the body, and
+            // `blockReason` opens with it too — three in a row read as a stutter.
+            CameraNotice(title: "No custom slots over USB", systemImage: "lock.fill") {
                 Text("\(model.writeSupport.blockReason ?? "This camera's firmware doesn't expose custom slots over USB.") Fuji Cookbook read everything it would show and changed nothing — it didn't even ask the camera to select a slot.")
-                    .font(.caption)
-                    .foregroundStyle(Theme.ink2)
                 Text("Sharing a report is what gets this camera's support confirmed. It holds what the camera says about itself and which settings it answered for — nothing leaves the phone until you share it. The Camera Test walks you through producing one.")
-                    .font(.caption)
-                    .foregroundStyle(Theme.ink2)
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .themedCard(cornerRadius: 16)
         }
     }
 
@@ -382,41 +516,26 @@ struct CameraView: View {
     /// replaced. The app didn't do it, and says so — on a dial body, the dial is the usual answer.
     @ViewBuilder
     private var driftCard: some View {
-        if !camera.slotReader.filmSimulationDrift.isEmpty {
+        let drift = camera.slotReader.filmSimulationDrift
+        if !drift.isEmpty {
             let dial = camera.session.model?.hasFilmSimulationDial ?? false
-            VStack(alignment: .leading, spacing: 10) {
-                Label(camera.slotReader.filmSimulationDrift.count == 1 ? "A slot changed since you last wrote it"
-                                                              : "\(camera.slotReader.filmSimulationDrift.count) slots changed since you last wrote them",
-                      systemImage: "arrow.triangle.2.circlepath")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink)
-                ForEach(camera.slotReader.filmSimulationDrift) { drift in
-                    Text(drift.summary + ".")
-                        .font(.caption)
-                        .foregroundStyle(Theme.ink2)
-                }
+            CameraNotice(title: drift.count == 1 ? "A slot changed since you last wrote it"
+                                                 : "\(drift.count) slots changed since you last wrote them",
+                         systemImage: "arrow.triangle.2.circlepath") {
+                ForEach(drift) { Text($0.summary + ".") }
                 Text(dial
                      ? "Fuji Cookbook didn't do this. On the \(camera.session.model?.displayName ?? "camera"), the Film Simulation dial can change a custom slot's film simulation — check that it's on “C”. Push the recipe again to restore it."
                      : "Fuji Cookbook didn't do this. Push the recipe again to restore it, and if it keeps happening, send a report.")
-                    .font(.caption)
-                    .foregroundStyle(Theme.ink2)
-                NavigationLink {
-                    DiagnosticsReportView()
-                } label: {
+                NavigationLink { DiagnosticsReportView() } label: {
                     Label("Report a Problem", systemImage: "square.and.arrow.up")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.accent)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.dsTextKey(isActive: false))
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .themedCard(cornerRadius: 16)
         }
     }
 
     /// Slots whose contents the codec could not fully read.
-    private var divergentSlots: [CameraSlot] { camera.slotReader.slots.filter { !$0.unsupportedFields.isEmpty } }
+    private var divergentSlots: [CameraSlot] { slots.filter { !$0.unsupportedFields.isEmpty } }
 
     /// Tells the user when a slot holds values the codec doesn't recognize, and offers a report.
     ///
@@ -429,30 +548,18 @@ struct CameraView: View {
         if !divergentSlots.isEmpty {
             let count = divergentSlots.reduce(0) { $0 + $1.unsupportedFields.count }
             let names = divergentSlots.map(\.label).joined(separator: ", ")
-            VStack(alignment: .leading, spacing: 10) {
-                Label("Some settings didn't read cleanly", systemImage: "exclamationmark.triangle.fill")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink)
+            CameraNotice(title: "Some settings didn't read cleanly", systemImage: "exclamationmark.triangle.fill") {
                 Text("Fuji Cookbook read \(count) value\(count == 1 ? "" : "s") on \(names) that it doesn't recognize on this camera. It left \(count == 1 ? "that setting" : "those settings") blank rather than guessing, so what you see may be incomplete — and that's exactly the kind of fact that gets this camera properly supported.")
-                    .font(.caption)
-                    .foregroundStyle(Theme.ink2)
-                NavigationLink {
-                    DiagnosticsReportView()
-                } label: {
+                NavigationLink { DiagnosticsReportView() } label: {
                     Label("Report a Problem", systemImage: "square.and.arrow.up")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.accent))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.dsPrimary)
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .themedCard(cornerRadius: 16)
         }
     }
+
+    // MARK: Backup
 
     /// One pending restore: which slot, from where, and the bytes.
     struct RestoreRequest: Identifiable {
@@ -470,23 +577,22 @@ struct CameraView: View {
     /// respect but its values, so it is offered **one slot at a time**: that keeps the exposure
     /// identical to the push it undoes, and it matches how damage actually happens.
     ///
-    /// A quiet row below Import and Push rather than a card above them: Undo Last Push already
-    /// covers a slot's latest push, so this is the fullest way back, not the only one.
+    /// A quiet section below the slot card: Undo Last Push already covers a slot's latest push, so
+    /// this is the fullest way back, not the only one.
     @ViewBuilder
     private var backupRow: some View {
-        if camera.session.model != nil, camera.slotReader.slots.contains(where: { $0.isOccupied }) {
-            VStack(alignment: .leading, spacing: 8) {
+        if camera.session.model != nil, slots.contains(where: { $0.isOccupied }) {
+            DSArchiveSection(title: "Backup") {
                 Text("Save every slot's exact settings to a file you keep, so you can put any slot back later.")
-                    .font(.caption)
-                    .foregroundStyle(Theme.ink3)
+                    .font(DSFont.subhead)
+                    .foregroundStyle(DSColor.textSecondary)
                 // Side by side, stacked when the largest text sizes leave no room for both.
                 ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 16) { backupButtons }
-                    VStack(alignment: .leading, spacing: 8) { backupButtons }
+                    HStack(spacing: DSSpacing.s) { backupButtons }
+                    VStack(alignment: .leading, spacing: DSSpacing.s) { backupButtons }
                 }
+                .buttonStyle(.dsTextKey(isActive: false))
             }
-            .padding(.horizontal, 4)
-            .frame(maxWidth: .infinity, alignment: .leading)
             .sheet(isPresented: $showingBackupShare) {
                 if let backup = camera.slotReader.slotBackup {
                     ShareBundle.backupShareSheet(backup)
@@ -499,18 +605,12 @@ struct CameraView: View {
     private var backupButtons: some View {
         Button { showingBackupShare = true } label: {
             Label("Save Backup", systemImage: "square.and.arrow.up")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Theme.accent)
         }
-        .buttonStyle(.plain)
         .disabled(camera.slotReader.slotBackup == nil)
         if camera.slotWriter.canPush {
             Button { showingBackupPicker = true } label: {
                 Label("Restore a Slot…", systemImage: "arrow.uturn.backward")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.accent)
             }
-            .buttonStyle(.plain)
         }
     }
 
@@ -530,13 +630,13 @@ struct CameraView: View {
                     } label: {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("C\(slot.index)").font(.subheadline.weight(.semibold))
+                                Text("C\(slot.index)").font(DSFont.subhead.weight(.semibold))
                                 Text(slot.occupied ? (slot.name ?? slot.summary ?? "Occupied")
                                                    : "Empty when this backup was taken")
-                                    .font(.caption).foregroundStyle(Theme.ink3)
+                                    .font(DSFont.subhead).foregroundStyle(DSColor.textSecondary)
                             }
                             Spacer()
-                            if slot.occupied { Image(systemName: "chevron.right").font(.caption) }
+                            if slot.occupied { Image(systemName: "chevron.right").font(DSFont.subhead) }
                         }
                     }
                     .disabled(!slot.occupied || backup.properties(forSlot: slot.index) == nil)
@@ -575,6 +675,8 @@ struct CameraView: View {
         }
     }
 
+    // MARK: Camera Test
+
     /// The route for people who want to help: one quiet row at the end of the page.
     ///
     /// Offered for every connected body, verified or not: every other report route here is worded
@@ -593,7 +695,7 @@ struct CameraView: View {
         let latest = testRecords.latest
         let recoveries = testRecords.recoveries
         if session != nil || camera.session.isConnected || latest != nil || !recoveries.isEmpty {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: DSSpacing.s) {
                 if let session {
                     cameraTestRow(title: "Camera Test in progress",
                                   subtitle: "\(GuidedTestFlow.positionLabel(of: session.step, in: session)). Pick up where you left off.",
@@ -617,8 +719,7 @@ struct CameraView: View {
                     Button("Review Saved Test Results") {
                         cameraTest = CameraTestRequest(wave: latest.wave, sessionID: latest.id)
                     }
-                    .font(.subheadline.weight(.semibold))
-                    .padding(.horizontal, 4)
+                    .buttonStyle(.dsTextKey(isActive: false))
                 }
                 ForEach(recoveries) { record in
                     Button {
@@ -626,8 +727,7 @@ struct CameraView: View {
                     } label: {
                         Label("Review \(record.backup.camera.productName) settings", systemImage: "arrow.uturn.backward.circle")
                     }
-                    .font(.subheadline.weight(.semibold))
-                    .padding(.horizontal, 4)
+                    .buttonStyle(.dsTextKey(isActive: false))
                 }
             }
         }
@@ -646,36 +746,36 @@ struct CameraView: View {
         return connected.model?.displayName ?? connected.productName
     }
 
-    /// The quiet row: a card that reads as a place to go, not a task to do.
+    /// The quiet row: a framed place to go, not a task to do.
     private func cameraTestRow(title: String, subtitle: String, systemImage: String,
                                action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 12) {
+            HStack(spacing: DSSpacing.m) {
                 Image(systemName: systemImage)
-                    .font(.title3)
-                    .foregroundStyle(Theme.accent)
+                    .font(DSFont.headline)
+                    .foregroundStyle(DSColor.signalText)
                     .frame(width: 28)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.ink)
+                        .font(DSFont.headline)
+                        .foregroundStyle(DSColor.textPrimary)
                     Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(Theme.ink2)
+                        .font(DSFont.subhead)
+                        .foregroundStyle(DSColor.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .multilineTextAlignment(.leading)
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(Theme.ink3)
+                    .font(DSFont.subhead.weight(.semibold))
+                    .foregroundStyle(DSColor.textSecondary)
             }
-            .padding(14)
+            .padding(DSSpacing.m)
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
+            .dsArchiveFrame()
         }
-        .buttonStyle(.plain)
-        .themedCard(cornerRadius: 16)
+        .buttonStyle(DSPlainPressStyle())
     }
 
     private func refreshTestRecords() {
@@ -689,53 +789,20 @@ struct CameraView: View {
     /// confident about, reading and pushing without complaint, getting it wrong. Not gated on
     /// Diagnostic Mode — a tester will not find that toggle.
     private var reportProblemRow: some View {
-        ReportProblemRow(prompt: "Recipes look wrong, or a push didn't take?", chevron: true)
-            .padding(.horizontal, 4)
-            .buttonStyle(.plain)
-    }
-
-    @ViewBuilder
-    private var slotsCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Theme.SectionLabel("Custom Slots")
-                .padding(.horizontal, 4)
-            VStack(spacing: 0) {
-                if camera.slotReader.slots.isEmpty {
-                    Text("No slots read yet.")
-                        .font(.subheadline)
-                        .foregroundStyle(Theme.ink3)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(14)
-                } else {
-                    ForEach(camera.slotReader.slots) { slot in
-                        if slot.index != camera.slotReader.slots.first?.index {
-                            Rectangle().fill(Theme.line).frame(height: 1)
-                        }
-                        SlotRow(slot: slot)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 10)
-                            // The free undo: no file, no export, just the bytes this slot held
-                            // before the app last wrote to it. Offered here rather than as a card
-                            // because it is about *this* slot and only exists for slots we pushed to.
-                            .contextMenu {
-                                if camera.slotWriter.canPush, let saved = camera.reports.history.lastPushPriorBytes(forSlot: slot.index) {
-                                    Button {
-                                        restoreTarget = RestoreRequest(
-                                            slot: slot.index,
-                                            // The name the push *replaced*, never the slot's current
-                                            // one; `undoName` holds the rule.
-                                            name: camera.reports.history.undoName(forSlot: slot.index),
-                                            saved: saved, source: .lastPush)
-                                    } label: {
-                                        Label("Undo Last Push to C\(slot.index)", systemImage: "arrow.uturn.backward")
-                                    }
-                                }
-                            }
-                    }
-                }
+        NavigationLink { DiagnosticsReportView() } label: {
+            HStack(spacing: DSSpacing.s) {
+                Text("Recipes look wrong, or a push didn't take?")
+                    .foregroundStyle(DSColor.textSecondary)
+                Spacer(minLength: 0)
+                Text("Report a Problem")
+                    .fontWeight(.semibold)
+                    .foregroundStyle(DSColor.signalText)
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(DSColor.signalText)
             }
-            .themedCard(cornerRadius: 16)
+            .font(DSFont.subhead)
         }
+        .buttonStyle(DSPlainPressStyle())
     }
 
     private var actionsAvailable: Bool {
@@ -744,98 +811,54 @@ struct CameraView: View {
 
     /// Whether Import and Push may open: a live session with nothing running.
     ///
-    /// `connected` stays set while a dropped session recovers, so the card can show the camera as
+    /// `connected` stays set while a dropped session recovers, so the panel can show the camera as
     /// reconnecting, but the transport is down for the whole recovery. That includes a failed
     /// attempt's `.failed` while the next one waits, which `isBusy` alone doesn't cover.
     nonisolated static func actionsAvailable(status: CameraSession.Status, cardState: CameraCardState?) -> Bool {
         cardState == .live && !status.isBusy
     }
 
-    /// Import / Push as equal-weight tiles instead of list rows.
-    private var actionButtons: some View {
-        HStack(spacing: 10) {
-            actionTile(title: "Import",
-                       systemImage: "square.and.arrow.down",
-                       prominent: false,
-                       enabled: actionsAvailable && camera.slotReader.slots.contains { $0.isOccupied }) {
-                showingImport = true
-            }
-            actionTile(title: "Push",
-                       systemImage: "square.and.arrow.up",
-                       prominent: true,
-                       enabled: actionsAvailable && camera.slotWriter.canPush) {
-                showingPush = true
-            }
-        }
-    }
-
-    /// The outline tile and the filled tile share padding 14, so the pair stays one height.
-    @ViewBuilder
-    private func actionTile(title: String, systemImage: String, prominent: Bool,
-                            enabled: Bool, action: @escaping () -> Void) -> some View {
-        let label = VStack(spacing: 7) {
-            Image(systemName: systemImage)
-                .font(.title3.weight(.medium))
-            Text(title)
-                .font(.footnote.weight(.semibold))
-        }
-        if prominent {
-            Button(action: action) {
-                label
-                    .foregroundStyle(Color.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.accent))
-            }
-            .buttonStyle(.plain)
-            .disabled(!enabled)
-            .opacity(enabled ? 1 : 0.45)
-        } else {
-            Button(action: action) { label }
-                .buttonStyle(.outline)
-                .disabled(!enabled)
-        }
-    }
-
     // MARK: Disconnected
 
     private var connectCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Theme.SectionLabel("Connect")
-                .padding(.horizontal, 4)
+        VStack(alignment: .leading, spacing: DSSpacing.s) {
+            Text("Connect").dsMetaMono(DSColor.textPrimary).accessibilityAddTraits(.isHeader)
             // One connect at a time: the rows wait out the one under way, whose progress shows above.
             VStack(spacing: 0) {
                 if SharedContainer.isLocalMacBuild {
                     // See `SharedContainer.isLocalMacBuild`: no USB camera in this build.
                     Text("This Mac build is signed to run locally, so it can't reach a camera over USB. Recipes, chapters and the Kitchen work; the Demo Camera and Demo Card are under the diagnostic tools.")
-                        .font(.footnote)
-                        .foregroundStyle(Theme.ink2)
+                        .font(DSFont.subhead)
+                        .foregroundStyle(DSColor.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(14)
+                        .padding(DSSpacing.m)
                 } else {
                     connectRow(title: "Connect Camera (USB)", systemImage: "cable.connector") {
                         Task { await camera.connector.connectHardware() }
                     }
-                    Rectangle().fill(Theme.line).frame(height: 1)
+                    DSSeparator()
                     connectRow(title: "Import Photos (USB)", systemImage: "photo.on.rectangle.angled") {
                         photoImport = .camera
                     }
                 }
                 // Recorded on the walk, so on the phone that goes along: not on the Mac.
                 if !ProcessInfo.processInfo.isMacCatalystApp {
+                    DSSeparator()
                     connectRow(title: LocationRecorder.shared.isRecording ? "Location Track (Recording)" : "Location Track",
                                systemImage: "location") {
                         showingLocationTrack = true
                     }
                 }
                 if diagnosticMode {
+                    DSSeparator()
                     connectRow(title: "Import Photos from Demo Card", systemImage: "play.circle") {
                         photoImport = .demo
                     }
-                    Rectangle().fill(Theme.line).frame(height: 1)
+                    DSSeparator()
                     connectRow(title: "Connect Demo Camera", systemImage: "play.circle") {
                         Task { await camera.connector.connectDemo() }
                     }
+                    DSSeparator()
                     // The demo model converts, so the develop step's profile harvest never shows
                     // on it. This one presents as a GFX100 — read, write, no Kitchen — which is the
                     // only way to walk that step without owning such a body.
@@ -846,34 +869,33 @@ struct CameraView: View {
             }
             .disabled(camera.connector.isConnecting)
             .opacity(camera.connector.isConnecting ? 0.45 : 1)
-            .themedCard(cornerRadius: 16)
+            .dsArchiveFrame()
             Text(diagnosticMode
                  ? "No Fuji body handy? “Connect Demo Camera” runs the full read/import/push workflow with a simulated camera. For real hardware, connect by USB in “USB RAW Conv./Backup Restore” mode — see Connection Help. Importing photos needs “USB Card Reader” mode instead."
                  : "Connect your camera by USB in “USB RAW Conv./Backup Restore” mode — see Connection Help. Importing photos needs “USB Card Reader” mode instead.")
-                .font(.caption)
-                .foregroundStyle(Theme.ink3)
-                .padding(.horizontal, 4)
+                .font(DSFont.subhead)
+                .foregroundStyle(DSColor.textSecondary)
         }
     }
 
     private func connectRow(title: String, systemImage: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 12) {
+            HStack(spacing: DSSpacing.m) {
                 Image(systemName: systemImage)
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(DSColor.signalText)
                     .frame(width: 24)
                 Text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink)
+                    .font(DSFont.headline)
+                    .foregroundStyle(DSColor.textPrimary)
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(Theme.ink3)
+                    .font(DSFont.subhead.weight(.semibold))
+                    .foregroundStyle(DSColor.textSecondary)
             }
-            .padding(14)
+            .padding(DSSpacing.m)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(DSPlainPressStyle())
     }
 
     /// Diagnostics: what the camera says it holds and will accept, per property. Lives here rather
@@ -881,11 +903,9 @@ struct CameraView: View {
     private var propertyReportButton: some View {
         Button { showingPropertyReport = true } label: {
             Label("Camera Property Report", systemImage: "list.bullet.rectangle")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(Theme.ink2)
-                .frame(maxWidth: .infinity, alignment: .center)
+                .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.dsSecondary)
     }
 
     /// Diagnostics: the connect/disconnect/keepalive/recovery event history (`CameraLog`). Shown
@@ -893,21 +913,41 @@ struct CameraView: View {
     private var connectionLogButton: some View {
         Button { showingConnectionLog = true } label: {
             Label("Connection Log", systemImage: "text.alignleft")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(Theme.ink2)
-                .frame(maxWidth: .infinity, alignment: .center)
+                .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.dsSecondary)
     }
 
     private var helpButton: some View {
         Button { showingGuide = true } label: {
             Label("Connection Help & Requirements", systemImage: "questionmark.circle")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(Theme.accent)
+                .font(DSFont.subhead.weight(.semibold))
+                .foregroundStyle(DSColor.signalText)
                 .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.vertical, 10)
+                .padding(.vertical, DSSpacing.s)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(DSPlainPressStyle())
+    }
+}
+
+/// A notice on the Camera tab: a framed title with its symbol, and text or keys under it. The
+/// symbol's shape carries the kind of notice; color stays with the signal.
+private struct CameraNotice<Content: View>: View {
+    let title: String
+    let systemImage: String
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DSSpacing.s) {
+            Label(title, systemImage: systemImage)
+                .font(DSFont.headline)
+                .foregroundStyle(DSColor.textPrimary)
+            content
+                .font(DSFont.subhead)
+                .foregroundStyle(DSColor.textSecondary)
+        }
+        .padding(DSSpacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .dsArchiveFrame()
     }
 }
