@@ -178,24 +178,63 @@ struct RecipeFilterChipRow: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                FilterChip(label: "All · \(totalCount)", selected: !filter.isActive) {
-                    filter.clearFacets()
-                }
-                FilterChip(label: "★ Favorites", selected: filter.favoritesOnly) {
-                    filter.favoritesOnly.toggle()
-                }
-                ForEach(cameras.chips(active: filter.camera)) { model in
-                    FilterChip(label: model.id, selected: filter.camera == model) {
-                        filter.camera = (filter.camera == model) ? nil : model
-                    }
-                }
-                ForEach(availableFilmSimulations) { sim in
-                    FilterChip(label: sim.displayName, selected: filter.filmSimulation == sim) {
-                        filter.filmSimulation = (filter.filmSimulation == sim) ? nil : sim
+                ForEach(filter.chips(availableFilmSimulations: availableFilmSimulations, cameras: cameras)) { chip in
+                    FilterChip(label: label(for: chip), selected: chip.isSelected) {
+                        filter.toggle(chip.kind)
                     }
                 }
             }
             .padding(.horizontal, 16)
+        }
+    }
+
+    /// This row's own wording; the design-system row in the Library says the plain label.
+    private func label(for chip: RecipeFilterChip) -> String {
+        switch chip.kind {
+        case .all: return "All · \(totalCount)"
+        case .favorites: return "★ Favorites"
+        case .camera, .filmSimulation: return chip.label
+        }
+    }
+}
+
+/// One chip of a filter row: what it narrows to, what it says, and whether it is on.
+struct RecipeFilterChip: Identifiable {
+    enum Kind: Hashable {
+        case all, favorites
+        case camera(CameraModel)
+        case filmSimulation(FilmSimulation)
+    }
+
+    let kind: Kind
+    let label: String
+    let isSelected: Bool
+
+    var id: Kind { kind }
+}
+
+extension RecipeFilter {
+    /// The chips a filter row shows, in order: All, Favorites, the user's cameras, then one per film
+    /// simulation present.
+    func chips(availableFilmSimulations: [FilmSimulation], cameras: RecipeFilterCameras) -> [RecipeFilterChip] {
+        [RecipeFilterChip(kind: .all, label: "All", isSelected: !isActive),
+         RecipeFilterChip(kind: .favorites, label: "Favorites", isSelected: favoritesOnly)]
+            + cameras.chips(active: camera).map {
+                RecipeFilterChip(kind: .camera($0), label: $0.id, isSelected: camera == $0)
+            }
+            + availableFilmSimulations.map {
+                RecipeFilterChip(kind: .filmSimulation($0), label: $0.displayName, isSelected: filmSimulation == $0)
+            }
+    }
+
+    /// A tap on a chip: All clears every facet; any other chip turns its facet on, or off again when
+    /// it is already the one in use.
+    mutating func toggle(_ kind: RecipeFilterChip.Kind) {
+        switch kind {
+        case .all: clearFacets()
+        case .favorites: favoritesOnly.toggle()
+        case .camera(let model): camera = (camera == model) ? nil : model
+        case .filmSimulation(let sim): filmSimulation = (filmSimulation == sim) ? nil : sim
         }
     }
 }
