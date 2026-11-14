@@ -1,6 +1,6 @@
-# Fuji Cookbook Fork – Design-System v2.1
+# Fuji Cookbook Fork – Design-System v2.2
 
-Stand: 14.11.2026 (v2.1: Rückfragen aus Claude Code eingearbeitet). Quelle: Canvas „Fuji Cookbook – Design-Richtung“ (claude.ai), Artboards „Grundlagen v2“, „Rezepte“, „Rezept als Archivkarte“, „Kamera als Instrument“, „Import“. Ablage im Repo: `docs/fork/design-system.md`. Ersetzt v1 vollständig.
+Stand: 14.11.2026 (v2.1: Rückfragen aus Claude Code; v2.2: Entscheidungen zum Rollout der Rezepte-Liste). Quelle: Canvas „Fuji Cookbook – Design-Richtung“ (claude.ai), Artboards „Grundlagen v2“, „Rezepte“, „Rezept als Archivkarte“, „Kamera als Instrument“, „Import“. Ablage im Repo: `docs/fork/design-system.md`. Ersetzt v1 vollständig.
 
 ## Richtung
 **iOS-Struktur mit mutigen Details aus Hardware-Instrument und technischem Archiv.**
@@ -33,6 +33,7 @@ Regeln: Werte nur durch Abstand trennen, **kein „·“ als Trenner**. Keine Ve
 | `knobMark` | `#7D93FF` | `#1F3BD6` | Zeiger auf dem Regler |
 | `ledOff` | `#BDBCB6` | `#4A4A47` | LED aus |
 | `ledOK` | `#3FD07A` | `#3FD07A` | Verbindung steht |
+| `danger` | Systemrot | Systemrot | nur zerstörende Aktionen (Löschen), über `role: .destructive`; nie als Deko |
 | `chromeGlass` | `background` @ 88 % + Material | dito | schwebende Leisten < iOS 26 |
 
 `AccentColor` im Asset-Katalog wird **erst in Phase 5** auf `signal` gesetzt (sonst färbt es sofort alle alten Views um). Umsetzung als Color Sets (Any/Dark) oder Helper `Color(light:dark:)` über `UIColor { traits in … }`.
@@ -103,10 +104,15 @@ Alle Komponenten und Dateien tragen das Präfix **DS** (z. B. `DSHardwareKey`, `
 **FloatingActionBar** – unten, Material/Glass, Trennlinie oben, Mono-Statuszeile (z. B. „ZIEL C3   SCHREIBEN  ZURÜCKLESEN  PRÜFEN“) + Primär-Taste.
 
 ## Screens (Referenz-PNGs folgen in `docs/fork/design/`; bis dahin gilt der Text)
-1. **Rezepte** – Kopf mit Icon-Tasten (Filter, „+“ als Primär), Large Title + DataFieldRow (ARCHIV | KAMERA), Suche, Kapitel als Text-Tasten mit LED (horizontal scrollend), RecipeRow-Liste, System-Tab-Bar. Tab-Reihenfolge im Mockup ist vereinfacht; die App behält ihre Tabs (Rezepte, Kapitel, Ideen, Küche, Kamera) – Entscheidung in Phase 5.
+1. **Rezepte** – Toolbar mit Systemknöpfen (unter iOS 26 Glas, „+“ darf Glas-Knopf mit blauem Symbol sein), Large Title + DataFieldRow (ARCHIV | KAMERA), eine horizontal scrollende Reihe Text-Tasten mit LED: zuerst die Filter (Alle, Favoriten, Kameras, Filmsimulationen), dann nach einem Trenner die Kapitel; genau eine Taste aktiv. RecipeRow-Liste. **Suche bleibt unten** (Daumenbereich, iOS-26-Muster). System-Tab-Bar. Tab-Reihenfolge im Mockup ist vereinfacht; die App behält ihre Tabs (Rezepte, Kapitel, Ideen, Küche, Kamera) – Entscheidung in Phase 5.
 2. **Rezept-Detail** – ArchiveCard wie oben, Tags, FloatingActionBar „Auf Kamera laden“ + Teilen.
 3. **Kamera** – Large Title, DevicePanel, SlotKey-Raster C1–C7 + Import-Kachel, Archivkarte des gewählten Slots mit drei Knobs (FARBE, KORN, DYNAMIK), FloatingActionBar „Rezept in C3 laden“ + „Rückgängig“.
 4. **Import** – DataFieldRow (QUELLE | MODUS | AUSWAHL n/m), Panel „Standort aus Aufzeichnung“ mit HardwareSwitch, ContactSheet nach Tagen, FloatingActionBar mit Ziel + „N Bilder importieren“, oben „ALLE/KEINE“.
+
+## Daten hinter der Oberfläche
+- **Feld KAMERA / Slot-Badges:** zeigen den zuletzt ausgelesenen Stand der Kamera (z. B. „5/7“, „C1“). Ohne Verbindung: LED aus, Zusatz „STAND tt.mm.“. Nie ausgelesen: „—“, keine Badges.
+- **Archivnummer:** fortlaufend nach `createdAt`, fest gespeichert, gelöschte Nummern werden nicht neu vergeben. Im **Backup** enthalten und bei Wiederherstellung beibehalten (bei Kollision nächste freie). In **geteilten `.fujirecipe`-Dateien nicht enthalten** – Import vergibt die nächste freie Nummer. iCloud-Duplikat: das Rezept mit dem älteren `createdAt` behält die Nummer, das andere bekommt die nächste freie.
+- **Übergang:** Bis zum Ende von Phase 5 ist ein gemischter Zustand (alte Tab-Leiste, alte Screens mit neuem Blau in Systemknöpfen) akzeptiert.
 
 ## Umsetzungsregeln für Phase 1
 - Tokens zentral: `FujiCookbook/DesignSystem/` (`DSColors.swift`, `DSSimulationColors.swift`, `DSTypography.swift`, `DSMetrics.swift`, `Components/…`). v2 **ersetzt** v1 vollständig; v1-Typen werden entfernt. Nach `Shared/` nur, was die ShareExtension braucht.
