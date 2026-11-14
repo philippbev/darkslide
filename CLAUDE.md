@@ -1,13 +1,19 @@
 # Fuji Cookbook Fork
 
-Persönlicher Fork von zgrimz/fuji-cookbook für Philipp (Fujifilm X100VI). Native SwiftUI-App für iPhone und iPad, Ziel zusätzlich macOS. Roadmap: `docs/fork/roadmap.md` (Kopie aus dem claude.ai-Projekt „fuji-cookbook fork“, dort ist die führende Version).
+Persönlicher Fork von zgrimz/fuji-cookbook für Philipp (Fujifilm X100VI). Native SwiftUI-App für iPhone und iPad; macOS ist on hold. Roadmap: `docs/fork/roadmap.md` (Kopie aus dem claude.ai-Projekt „fuji-cookbook fork“, dort ist die führende Version).
+
+## Mobile first (verbindlich)
+- iPhone und iPad haben Vorrang. macOS ist on hold.
+- Die Mac-Catalyst-Basis bleibt im Code und darf nicht kaputtgehen: Änderungen müssen weiter für Catalyst kompilieren (`#if`/`isMacCatalystApp`-Zweige mitpflegen).
+- Keine Mac-spezifischen Anpassungen und keine Mac-only-Features mehr, bis Philipp den Mac wieder aufnimmt.
+- Neue Features werden auf dem iPhone gebaut und getestet: Simulator (iPhone 17 Pro) für die laufende Arbeit, das eigene iPhone für Gerätetests.
 
 ## Sprache
 - Mit Philipp auf Deutsch kommunizieren. Code, Kommentare und Commit-Messages auf Englisch (wie im Upstream).
 
 ## Build & Test
 - Xcode 26+, iOS-SDK 26 hinter Availability-Checks, Deployment Target iOS 17, Swift 5, keine Drittanbieter-Abhängigkeiten.
-- Einmalig: `cp Config/Local.example.xcconfig Config/Local.xcconfig`, dort `DEVELOPMENT_TEAM` (vorerst leer) und `APP_IDENTIFIER_BASE = cloud.bevier.fujicookbook` setzen.
+- Einmalig: `cp Config/Local.example.xcconfig Config/Local.xcconfig`, dort `DEVELOPMENT_TEAM` (Personal Team fürs eigene iPhone) und `APP_IDENTIFIER_BASE = cloud.bevier.fujicookbook` setzen.
 - Tests (keine Hardware nötig), Simulator an die lokal verfügbaren anpassen:
   `xcodebuild test -scheme FujiCookbook -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -collect-test-diagnostics never`
 - Nach jeder Änderung bauen und die betroffenen Tests laufen lassen; vor einem Merge die ganze Suite.
