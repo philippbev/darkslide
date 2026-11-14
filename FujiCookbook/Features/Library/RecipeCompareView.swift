@@ -219,7 +219,7 @@ struct RecipeCompareView: View {
     private func tint(_ status: DiffStatus) -> Color {
         switch status {
         case .same: return DSColor.signal
-        case .differs, .setOnlyInA, .setOnlyInB: return Theme.warning
+        case .differs, .setOnlyInA, .setOnlyInB: return DSColor.caution
         default: return DSColor.textSecondary.opacity(0.6)
         }
     }

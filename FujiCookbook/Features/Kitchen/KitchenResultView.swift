@@ -71,7 +71,7 @@ struct KitchenResultView: View {
                         ForEach(result.warnings, id: \.self) { warning in
                             Label(warning, systemImage: "exclamationmark.triangle.fill")
                                 .font(.footnote)
-                                .foregroundStyle(Theme.warning)
+                                .foregroundStyle(DSColor.caution)
                         }
 
                         Button { save(result) } label: {

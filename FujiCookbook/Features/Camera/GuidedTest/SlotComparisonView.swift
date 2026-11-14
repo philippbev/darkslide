@@ -106,13 +106,13 @@ struct SlotComparisonView: View {
             if row.differs || presentation.priorityControlled {
                 Image(systemName: row.differs ? "exclamationmark.circle.fill" : "lock")
                     .font(.subheadline)
-                    .foregroundStyle(row.differs ? Theme.warning : DSColor.textSecondary.opacity(0.6))
+                    .foregroundStyle(row.differs ? DSColor.caution : DSColor.textSecondary.opacity(0.6))
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.label).font(.subheadline).foregroundStyle(DSColor.textSecondary)
                 if row.differs {
                     Text(presentation.priorityControlled ? "You marked this as different earlier" : "You marked this as different")
-                        .font(.caption).foregroundStyle(Theme.warning)
+                        .font(.caption).foregroundStyle(DSColor.caution)
                 }
             }
             Spacer(minLength: 12)
@@ -163,7 +163,7 @@ struct SlotComparisonView: View {
     private var unreadable: some View {
         VStack(alignment: .leading, spacing: 14) {
             Label("The app couldn't identify these values", systemImage: "questionmark.circle")
-                .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.warning)
+                .font(.subheadline.weight(.semibold)).foregroundStyle(DSColor.caution)
             Text("If you can, enter what the camera shows. The app can't confirm these values yet.")
                 .font(.caption).foregroundStyle(DSColor.textSecondary)
             ForEach(comparison.fieldsAppCouldNotRead, id: \.self) { field in

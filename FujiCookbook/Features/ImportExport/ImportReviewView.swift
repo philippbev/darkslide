@@ -75,14 +75,14 @@ struct ImportReviewView: View {
                 Label("\(prepared.skippedPhotos) unreadable photo\(prepared.skippedPhotos == 1 ? " was" : "s were") skipped."
                       + (prepared.photos == nil ? " Existing photos will be kept if you overwrite." : ""),
                       systemImage: "exclamationmark.triangle")
-                    .font(.caption).foregroundStyle(Theme.warning)
+                    .font(.caption).foregroundStyle(DSColor.caution)
             }
             if portable.settings.filmSimulation == nil {
                 // A recipe with no film simulation pushes PROVIA / Standard (`RecipeCompatibility`), so
                 // it is the one omission that has to look like a warning here.
                 Label("No film simulation set — pushed as-is, PROVIA / Standard is written.",
                       systemImage: "exclamationmark.triangle")
-                    .font(.caption).foregroundStyle(Theme.warning)
+                    .font(.caption).foregroundStyle(DSColor.caution)
             } else {
                 Text(RecipeSettingsFormatter.summary(for: portable.settings)).font(.subheadline).foregroundStyle(.secondary)
             }
@@ -90,15 +90,15 @@ struct ImportReviewView: View {
                let warning = Self.overwriteWarning(incoming: portable.settings, existing: match.existing.settings,
                                                    resolution: resolutions[index] ?? Self.defaultResolution(for: match)) {
                 Label(warning, systemImage: "exclamationmark.triangle.fill")
-                    .font(.caption).foregroundStyle(Theme.warning)
+                    .font(.caption).foregroundStyle(DSColor.caution)
             }
             if let model = portable.authoredForModel, CameraModelRegistry.shared.model(withID: model) == nil {
                 Label("Camera profile \(model) isn't known here — its fields are preserved", systemImage: "exclamationmark.triangle")
-                    .font(.caption).foregroundStyle(Theme.warning)
+                    .font(.caption).foregroundStyle(DSColor.caution)
             }
             if let match {
                 Label(match.reason.description, systemImage: "doc.on.doc")
-                    .font(.caption).foregroundStyle(Theme.warning)
+                    .font(.caption).foregroundStyle(DSColor.caution)
                 Picker("Resolution", selection: binding(for: index, match: match)) {
                     ForEach(DuplicateResolution.allCases) { Text($0.displayName).tag($0) }
                 }

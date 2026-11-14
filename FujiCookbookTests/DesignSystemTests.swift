@@ -24,6 +24,8 @@ final class DesignSystemTests: XCTestCase {
         (Tokens.textSecondary, Tokens.panel),
         (Tokens.onSignal, Tokens.signal),
         (Tokens.signalText, Tokens.background),
+        (Tokens.caution, Tokens.background),
+        (Tokens.caution, Tokens.surface),
         (Tokens.signalText, Tokens.surface),
         (Tokens.filmEdgeText, Tokens.filmEdge)
     ]
@@ -77,6 +79,8 @@ final class DesignSystemTests: XCTestCase {
         XCTAssertEqual(Tokens.chromeGlass.light, Tokens.background.light)
         XCTAssertEqual(Tokens.chromeGlass.dark, Tokens.background.dark)
         XCTAssertEqual(Tokens.chromeGlass.lightOpacity, 0.88)
+        XCTAssertEqual(Tokens.caution.light, 0x9A5200)
+        XCTAssertEqual(Tokens.caution.dark, 0xE08C34)
     }
 
     /// `danger` is the system red itself, which iOS may retune between versions, so this reads the

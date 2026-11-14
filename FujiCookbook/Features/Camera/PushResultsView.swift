@@ -41,7 +41,7 @@ struct PushResultsView: View {
                         }
                         ForEach(result.advisories, id: \.self) { advisory in
                             Label(advisory, systemImage: "exclamationmark.triangle")
-                                .font(.caption).foregroundStyle(Theme.warning)
+                                .font(.caption).foregroundStyle(DSColor.caution)
                         }
                         // Something the camera said about the bank, not the recipe — an info line,
                         // because nothing went wrong. See `SlotWriteResult.imageSizeFixedByBank`.
@@ -63,7 +63,7 @@ struct PushResultsView: View {
                         // whose cable came out that their camera lacked thirteen features.
                         if !result.rejected.isEmpty {
                             outcomeLabel("Refused by the camera", result.rejected,
-                                         "minus.circle", Theme.warning)
+                                         "minus.circle", DSColor.caution)
                             // A refusal with a likely cause gets it named here: the slot's ISO or
                             // D-Range Priority for Dynamic Range, a HEIF bank for Clarity, a body
                             // that refuses a toning of 0. These are suggestions from the refusal
@@ -86,11 +86,11 @@ struct PushResultsView: View {
                         }
                         let uncertain = result.fields.filter { $0.outcome == .outcomeUnknown || $0.outcome == .unverified }
                         if !uncertain.isEmpty {
-                            outcomeLabel("Could not confirm", uncertain, "questionmark.circle", Theme.warning)
+                            outcomeLabel("Could not confirm", uncertain, "questionmark.circle", DSColor.caution)
                         }
                         if let error = result.errorMessage {
                             Label(error, systemImage: "exclamationmark.triangle.fill")
-                                .font(.caption).foregroundStyle(Theme.warning)
+                                .font(.caption).foregroundStyle(DSColor.caution)
                         }
 
                         // Raw wrote-vs-read values for every field that failed verification —
@@ -138,11 +138,11 @@ struct PushResultsView: View {
         case .applied:
             Label("Written and verified", systemImage: "checkmark.circle.fill").foregroundStyle(DSColor.ledOK)
         case .partiallyApplied:
-            Label("Partly written", systemImage: "exclamationmark.circle.fill").foregroundStyle(Theme.warning)
+            Label("Partly written", systemImage: "exclamationmark.circle.fill").foregroundStyle(DSColor.caution)
         case .unknown:
-            Label("Could not verify", systemImage: "questionmark.circle.fill").foregroundStyle(Theme.warning)
+            Label("Could not verify", systemImage: "questionmark.circle.fill").foregroundStyle(DSColor.caution)
         case .notWritten:
-            Label("Not written", systemImage: "xmark.circle.fill").foregroundStyle(Theme.warning)
+            Label("Not written", systemImage: "xmark.circle.fill").foregroundStyle(DSColor.caution)
         }
     }
 

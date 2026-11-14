@@ -155,7 +155,7 @@ struct RecommenderView: View {
                                 .foregroundStyle(.secondary)
                         }
                     } else {
-                        Text("Missing recipe").foregroundStyle(Theme.warning)
+                        Text("Missing recipe").foregroundStyle(DSColor.caution)
                     }
                 }
                 .onDelete { offsets in

@@ -45,14 +45,14 @@ Persönlicher Fork von zgrimz/fuji-cookbook für Philipp (Fujifilm X100VI). Nati
 - Jede Verhaltensänderung braucht einen Test.
 
 ## Design-System
-- Spezifikation: `docs/fork/design-system.md` (v2.1: Hardware-Instrument + technisches Archiv, Signalfarbe Klein-Blau). Vor jeder UI-Arbeit lesen. Referenz-PNGs folgen in `docs/fork/design/`.
+- Spezifikation: `docs/fork/design-system.md` (v2.3: Hardware-Instrument + technisches Archiv, Signalfarbe Klein-Blau). Vor jeder UI-Arbeit lesen. Referenz-PNGs folgen in `docs/fork/design/`.
 - Code mit Präfix `DS`: Tokens in `Shared/DesignSystem/` (auch für die Share Extension), Komponenten in `FujiCookbook/DesignSystem/Components/`:
   - Tokens: `DSColor` (`DSColors.swift`), Simulationsfarben als Extension `FilmSimulation.dsStyle`/`dsCode`/`dsFill`/`dsText` (`DSSimulationColors.swift`), `DSFont` + Modifier `dsObjectNumber`/`dsFieldLabel`/`dsMetaMono`/`dsKeyLabel` (feste Größen skalieren über `@ScaledMetric`), `DSSpacing`, `DSRadius`, `DSLine`, `DSSize` (`DSMetrics.swift`), Navigationsleiste `DSAppearance` und `DSSectionLabel` (`DSAppearance.swift`).
   - Komponenten unter `Components/`: `DSHardwareKeyStyle` (`.dsPrimary`, `.dsSecondary`, `DSIconKey`, `DSTextKey`), `DSLED`, `DSSlotKey`, `DSKnob`, `DSHardwareSwitchStyle` (`.dsHardware`, `.dsHardwareSwitchOnly`), `DSDevicePanel`, `DSArchiveCard` + Teile, `DSDataFieldRow`, `DSRecipeRow`/`DSArchiveList`, `DSBarcode`, `DSContactSheetTile`/`DSContactSheetGrid`, `DSTag`, `DSFloatingActionBar`, `DSStepHeader`, `DSFlowLayout`, `DSArchiveSection`. Komponenten bekommen Daten nur als Parameter.
   - Vorschau: Settings ▸ Diagnostics ▸ Show Diagnostic Tools ▸ Design System, plus `#Preview` in jeder Komponenten-Datei.
 - Neue UI nur über diese Tokens und Komponenten – keine hartkodierten `Color(...)`/Font-Werte mehr in Views.
 - Phase 5 ist ausgerollt: alle Views nutzen DS-Tokens. `AccentColor` ist Signal-Blau, die Navigationsleiste nutzt `DSAppearance` (keine Serif mehr).
-- Vom alten `Theme` (`Shared/Support/Theme.swift`) ist nur `Theme.warning`/`warningSoft` übrig (Warn-Orange für Hinweise, die die App nicht lesen/schreiben/prüfen konnte), bis die Spezifikation dafür ein Token hat. Die alten Bausteine dort (`themedCard`, `FilterChip`, `ParamChip`, `SettingsTable`, `OutlineButtonStyle` …) zeichnen mit DS-Tokens; neue UI nimmt trotzdem die DS-Komponenten.
+- `Theme` ist entfernt. Hinweise, was die App nicht lesen/schreiben/prüfen konnte, nutzen `DSColor.caution`/`cautionSoft` (Spezifikation v2.3). Ältere gemeinsame Views (`themedCard`, `FilterChip`, `ParamChip`, `SettingsTable`, `OutlineButtonStyle` …) liegen in `Shared/Support/CommonViews.swift` und zeichnen mit DS-Tokens; neue UI nimmt die DS-Komponenten.
 - Feste Farben nur noch für Foto-Overlays (Schwarz hinter Bildern, Hilfslinien) und `CardPalette` (Share Cards).
 
 ## Git

@@ -119,8 +119,7 @@ struct LibraryView: View {
         }
         .background(DSColor.background.ignoresSafeArea())
         .navigationTitle("Recipes")
-        // The title is drawn in the list in the design system's heavy cut (see `header`): the
-        // navigation bar's own font is still `Theme`'s serif for every screen until phase 5. The
+        // The title is drawn in the list (see `header`), with the archive's fields under it. The
         // navigation title stays for the back button and VoiceOver.
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }
@@ -400,7 +399,7 @@ struct LibraryView: View {
             .accessibilityLabel("New Recipe")
         }
         // The title lives in the list (see `libraryColumn`); an empty principal item keeps the
-        // bar from repeating it inline in `Theme`'s serif.
+        // bar from repeating it inline.
         ToolbarItem(placement: .principal) {
             Color.clear.frame(width: 1, height: 1).accessibilityHidden(true)
         }

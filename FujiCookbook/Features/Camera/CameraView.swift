@@ -162,7 +162,7 @@ struct CameraView: View {
             .settingsToolbarItem()
             .toolbar {
                 // The title lives in the scroll view; an empty principal item keeps the bar from
-                // repeating it inline in `Theme`'s serif.
+                // repeating it inline.
                 ToolbarItem(placement: .principal) {
                     Color.clear.frame(width: 1, height: 1).accessibilityHidden(true)
                 }

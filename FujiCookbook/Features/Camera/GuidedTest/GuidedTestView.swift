@@ -581,7 +581,7 @@ struct GuidedTestHubView: View {
                     GuidedNoticeCard(
                         title: "This is a different camera",
                         systemImage: "exclamationmark.triangle.fill",
-                        tint: Theme.warning,
+                        tint: DSColor.caution,
                         message: "This test belongs to \(stored ?? "another camera"). Reconnect that camera to continue, or start a new test for the connected camera.")
                 }
                 if session.transport == "demo" {

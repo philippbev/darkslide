@@ -163,7 +163,7 @@ struct ShareScanView: View {
         VStack(alignment: .leading, spacing: 10) {
             Label(match.reason.description, systemImage: "exclamationmark.triangle.fill")
                 .font(.footnote.weight(.medium))
-                .foregroundStyle(Theme.warning)
+                .foregroundStyle(DSColor.caution)
             Text("Already in your library as “\(match.existing.name)”.")
                 .font(.footnote)
                 .foregroundStyle(DSColor.textSecondary)
@@ -188,7 +188,7 @@ struct ShareScanView: View {
             }
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 32))
-                .foregroundStyle(Theme.warning)
+                .foregroundStyle(DSColor.caution)
             Text(text)
                 .font(.subheadline)
                 .foregroundStyle(DSColor.textSecondary)

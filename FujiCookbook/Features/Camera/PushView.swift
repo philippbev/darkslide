@@ -220,7 +220,7 @@ struct PushView: View {
                         Text(caveat).font(.caption).foregroundStyle(.secondary)
                     }
                 } icon: {
-                    Image(systemName: "checkmark.seal").foregroundStyle(Theme.warning)
+                    Image(systemName: "checkmark.seal").foregroundStyle(DSColor.caution)
                 }
             }
         }
@@ -257,7 +257,7 @@ struct PushView: View {
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 } icon: {
-                    Image(systemName: "exclamationmark.triangle").foregroundStyle(Theme.warning)
+                    Image(systemName: "exclamationmark.triangle").foregroundStyle(DSColor.caution)
                 }
             }
         }
@@ -276,7 +276,7 @@ struct PushView: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }
             } icon: {
-                Image(systemName: "dial.medium").foregroundStyle(Theme.warning)
+                Image(systemName: "dial.medium").foregroundStyle(DSColor.caution)
             }
         }
     }
@@ -308,7 +308,7 @@ struct PushView: View {
         let current = camera.slotReader.slots.first { $0.index == slot }
         LabeledContent("Film simulation") {
             Text(Self.filmSimulationPreview(slot: current, settings: recipe.settings, model: model))
-                .foregroundStyle(recipe.settings.filmSimulation == nil ? Theme.warning : .secondary)
+                .foregroundStyle(recipe.settings.filmSimulation == nil ? DSColor.caution : .secondary)
         }
     }
 
@@ -382,14 +382,14 @@ struct PushView: View {
         let issues = RecipeCompatibility.analyze(recipe.settings, for: model)
         if current?.isOccupied ?? false {
             Label("This will overwrite C\(slot).", systemImage: "exclamationmark.triangle")
-                .font(.caption).foregroundStyle(Theme.warning)
+                .font(.caption).foregroundStyle(DSColor.caution)
         }
         ForEach(issues) { issue in
             // The two film-simulation kinds are the ones that change what the slot ends up
             // holding, unlike "your slot name will be shortened".
             let isFilmSim = issue.kind == .filmSimulationUnset || issue.kind == .filmSimulationUnsupported
             Label(issue.message, systemImage: isFilmSim ? "exclamationmark.triangle" : "info.circle")
-                .font(.caption).foregroundStyle(isFilmSim ? Theme.warning : .secondary)
+                .font(.caption).foregroundStyle(isFilmSim ? DSColor.caution : .secondary)
         }
         if model.supportsSlotNaming {
             let source = recipe.effectiveCameraName
@@ -413,11 +413,11 @@ struct PushView: View {
                 // recipe in two slots would otherwise trip the name check too and say less.
                 Label("This recipe is also going to \(Self.slotLabels(sameRecipe)).",
                       systemImage: "exclamationmark.triangle")
-                    .font(.caption).foregroundStyle(Theme.warning)
+                    .font(.caption).foregroundStyle(DSColor.caution)
             } else if !sameName.isEmpty {
                 Label("\(Self.slotLabels(sameName)) will get this same name — the camera shows nothing else to tell them apart.",
                       systemImage: "exclamationmark.triangle")
-                    .font(.caption).foregroundStyle(Theme.warning)
+                    .font(.caption).foregroundStyle(DSColor.caution)
             }
 
             // A slot this push isn't touching that already wears the name. Informational, not a

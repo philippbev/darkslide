@@ -4,14 +4,14 @@ import UIKit
 
 // MARK: - Palette
 
-/// The card palette, spelled out as fixed values rather than read from `Theme`.
+/// The card palette, spelled out as fixed values rather than read from the design system.
 ///
 /// A card is a poster, not a screen: it is exported in light appearance whatever the phone is set
 /// to, so the paper stays warm paper instead of turning into dark-mode paper the moment the user
-/// shares one after sunset. Every value here is the *light* value of the matching `Theme` token,
+/// shares one after sunset. Every value here is a *light* value of the app's first palette,
 /// plus the handful of literals that only exist over a photograph.
 enum CardPalette {
-    // Theme tokens, pinned light.
+    // The first design's paper and ink, pinned light: a shared card keeps its look.
     static let paper = Color(cardHex: 0xF4EFE4)
     /// The inset surface — what an empty photo window on the Quarter Grid card shows.
     static let paper2 = Color(cardHex: 0xEFE8DA)

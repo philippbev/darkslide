@@ -68,12 +68,12 @@ struct RestoreView: View {
                     summaryCard
                     if !originalNameRestorable {
                         GuidedNoticeCard(title: "The original name cannot be restored",
-                                         systemImage: "exclamationmark.circle", tint: Theme.warning,
+                                         systemImage: "exclamationmark.circle", tint: DSColor.caution,
                                          message: "The settings can be restored, but the slot will be named “\(model?.sanitizedSlotName(from: slotName) ?? slotName)”. The original name cannot be written exactly, so this will remain a partial restoration.")
                     }
                     if let plan, plan.fidelity.hasNotes { fidelityCard(plan.fidelity) }
                     if let plan { changesCard(plan.writes) }
-                    if let blockedMessage { Text(blockedMessage).font(.caption).foregroundStyle(Theme.warning) }
+                    if let blockedMessage { Text(blockedMessage).font(.caption).foregroundStyle(DSColor.caution) }
                     writeButton
                 }
                 .padding(18)

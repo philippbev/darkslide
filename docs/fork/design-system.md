@@ -1,6 +1,6 @@
 # Fuji Cookbook Fork – Design-System v2.2
 
-Stand: 14.11.2026 (v2.1: Rückfragen aus Claude Code; v2.2: Entscheidungen zum Rollout der Rezepte-Liste). Quelle: Canvas „Fuji Cookbook – Design-Richtung“ (claude.ai), Artboards „Grundlagen v2“, „Rezepte“, „Rezept als Archivkarte“, „Kamera als Instrument“, „Import“. Ablage im Repo: `docs/fork/design-system.md`. Ersetzt v1 vollständig.
+Stand: 14.11.2026 (v2.1: Rückfragen aus Claude Code; v2.2: Entscheidungen zum Rollout der Rezepte-Liste; v2.3: Token `caution`). Quelle: Canvas „Fuji Cookbook – Design-Richtung“ (claude.ai), Artboards „Grundlagen v2“, „Rezepte“, „Rezept als Archivkarte“, „Kamera als Instrument“, „Import“. Ablage im Repo: `docs/fork/design-system.md`. Ersetzt v1 vollständig.
 
 ## Richtung
 **iOS-Struktur mit mutigen Details aus Hardware-Instrument und technischem Archiv.**
@@ -34,6 +34,8 @@ Regeln: Werte nur durch Abstand trennen, **kein „·“ als Trenner**. Keine Ve
 | `ledOff` | `#BDBCB6` | `#4A4A47` | LED aus |
 | `ledOK` | `#3FD07A` | `#3FD07A` | Verbindung steht |
 | `danger` | Systemrot | Systemrot | nur zerstörende Aktionen (Löschen), über `role: .destructive`; nie als Deko |
+| `caution` | `#9A5200` | `#E08C34` | Hinweise, was die App nicht lesen, schreiben, prüfen oder abschließen konnte; Text und Symbol auf `background`/`surface` (≥ 4,5:1), nie als Taste |
+| `cautionSoft` | `caution` @ 12 % | `caution` @ 16 % | Fläche hinter einem Hinweis oder Badge |
 | `chromeGlass` | `background` @ 88 % + Material | dito | schwebende Leisten < iOS 26 |
 
 `AccentColor` im Asset-Katalog wird **erst in Phase 5** auf `signal` gesetzt (sonst färbt es sofort alle alten Views um). Umsetzung als Color Sets (Any/Dark) oder Helper `Color(light:dark:)` über `UIColor { traits in … }`.

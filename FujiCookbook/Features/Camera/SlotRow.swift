@@ -34,7 +34,7 @@ struct SlotRow: View {
                         Label("\(slot.unsupportedFields.count) setting\(slot.unsupportedFields.count == 1 ? "" : "s") this app couldn't read",
                               systemImage: "exclamationmark.triangle.fill")
                             .font(.caption2)
-                            .foregroundStyle(Theme.warning)
+                            .foregroundStyle(DSColor.caution)
                     }
                     // A setting the slot holds that no recipe carries — a Custom white balance is a
                     // measurement on this camera. Said as information, so an import of this slot

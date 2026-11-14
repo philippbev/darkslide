@@ -83,7 +83,7 @@ struct CameraImportView: View {
 
             if selected.contains(slot.index), let match {
                 Label(match.reason.description, systemImage: "doc.on.doc")
-                    .font(.caption).foregroundStyle(Theme.warning)
+                    .font(.caption).foregroundStyle(DSColor.caution)
                 Picker("Resolution", selection: resolutionBinding(slot.index, match: match)) {
                     ForEach(DuplicateResolution.allCases) { Text($0.displayName).tag($0) }
                 }

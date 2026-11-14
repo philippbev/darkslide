@@ -73,7 +73,7 @@ struct ConnectionLogView: View {
                 .foregroundStyle(DSColor.textSecondary)
             Text(entry.message)
                 .font(.caption.monospaced())
-                .foregroundStyle(entry.isError ? Theme.warning : DSColor.textPrimary)
+                .foregroundStyle(entry.isError ? DSColor.caution : DSColor.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

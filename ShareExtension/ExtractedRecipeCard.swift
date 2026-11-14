@@ -22,7 +22,7 @@ struct ExtractedRecipeCard: View {
                 Label("No film simulation was read, so pushing this recipe writes PROVIA / Standard. Set one before saving if that isn't the look you want.",
                       systemImage: "exclamationmark.triangle.fill")
                     .font(.footnote)
-                    .foregroundStyle(Theme.warning)
+                    .foregroundStyle(DSColor.caution)
             }
             if !rows.isEmpty {
                 Divider().background(DSColor.separator)

@@ -241,7 +241,7 @@ struct ReadRecipeView: View {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.title3)
-                    .foregroundStyle(Theme.warning)
+                    .foregroundStyle(DSColor.caution)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(noRecipeTitle(reading.recipeStatus))
                         .font(.headline)
@@ -252,7 +252,7 @@ struct ReadRecipeView: View {
                 }
             }
             .padding(14)
-            .background(Theme.warningSoft, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(DSColor.cautionSoft, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .listRowInsets(EdgeInsets())
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
@@ -343,7 +343,7 @@ struct ReadRecipeView: View {
                 ForEach(reading.warnings, id: \.self) { warning in
                     Label(warning, systemImage: "exclamationmark.triangle.fill")
                         .font(.footnote)
-                        .foregroundStyle(Theme.warning)
+                        .foregroundStyle(DSColor.caution)
                 }
             }
         }
@@ -447,7 +447,7 @@ struct ReadRecipeView: View {
     private func tierStyle(_ tier: RecipeMatchResult.Tier) -> (fill: Color, tint: Color, icon: String) {
         switch tier {
         case .exact: return (DSColor.panel, DSColor.signal, "checkmark.seal.fill")
-        case .close: return (Theme.warningSoft, Theme.warning, "checkmark.seal")
+        case .close: return (DSColor.cautionSoft, DSColor.caution, "checkmark.seal")
         case .closest, .none: return (DSColor.panel, DSColor.textSecondary, "questionmark.circle")
         }
     }
@@ -489,7 +489,7 @@ struct ReadRecipeView: View {
         }
         switch row.verdict {
         case .same: return DSColor.signal
-        case .different, .missingInRecipe: return Theme.warning
+        case .different, .missingInRecipe: return DSColor.caution
         case .missingInPhoto, .notCompared: return DSColor.textSecondary.opacity(0.3)
         }
     }

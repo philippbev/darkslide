@@ -223,7 +223,7 @@ struct GuidedConnectStep: View {
                 message: CameraTestSetup.usbInstructions(modelID: setupModelID) + " iOS asks for Camera and Files and Folders access. Allow both.")
             if case .failed(let message) = camera.session.status {
                 GuidedNoticeCard(title: "The app couldn't reach it", systemImage: "exclamationmark.triangle.fill",
-                                 tint: Theme.warning, message: message)
+                                 tint: DSColor.caution, message: message)
             }
             if camera.session.isConnected, let connected = camera.session.connected {
                 GuidedNoticeCard(title: "Connected", systemImage: "checkmark.circle.fill",
@@ -369,7 +369,7 @@ struct GuidedIdentityStep: View {
 
                 if let banner = connected.identification.guessBanner(productName: connected.productName) {
                     GuidedNoticeCard(title: "Model not confirmed", systemImage: "questionmark.diamond.fill",
-                                     tint: Theme.warning, message: banner)
+                                     tint: DSColor.caution, message: banner)
                 }
             }
             GuidedAnswerPicker(question: "Is this the camera you've connected?",
@@ -439,7 +439,7 @@ struct GuidedReadSlotsStep: View {
                     let count = divergent.reduce(0) { $0 + $1.unsupportedFields.count }
                     GuidedNoticeCard(
                         title: "Some settings didn't read cleanly",
-                        systemImage: "exclamationmark.triangle.fill", tint: Theme.warning,
+                        systemImage: "exclamationmark.triangle.fill", tint: DSColor.caution,
                         message: "The app couldn't interpret \(count) setting\(count == 1 ? "" : "s") on \(divergent.map(\.label).joined(separator: ", ")). They're left blank for you to check in the camera's menu next.")
                 }
                 if occupied.isEmpty {
@@ -450,7 +450,7 @@ struct GuidedReadSlotsStep: View {
             }
             if let report = session.propertyReport, report.state == .failed || report.state == .refused {
                 GuidedNoticeCard(title: "The camera reading needs another try", systemImage: "exclamationmark.triangle",
-                                 tint: Theme.warning,
+                                 tint: DSColor.caution,
                                  message: report.detail ?? "The reading didn't finish. Reconnect if needed, then try again before writing a recipe.")
             }
         } actions: {
@@ -554,7 +554,7 @@ struct GuidedCompareStep: View {
                         .font(.subheadline)
                     if session.writePass?.dialConfirmed == false {
                         Text("Recorded. The write checks will stay paused until the dial can be set to C.")
-                            .font(.caption).foregroundStyle(Theme.warning)
+                            .font(.caption).foregroundStyle(DSColor.caution)
                     }
                 }
             }
@@ -625,7 +625,7 @@ struct GuidedCompareStep: View {
     private func verdictIcon(for slot: Int) -> some View {
         switch session.slotComparisons.first(where: { $0.slot == slot })?.verdict {
         case "differs"?, "unverified"?:
-            Image(systemName: "exclamationmark.circle.fill").font(.title3).foregroundStyle(Theme.warning)
+            Image(systemName: "exclamationmark.circle.fill").font(.title3).foregroundStyle(DSColor.caution)
         case "matches"?:
             Image(systemName: "checkmark.circle.fill").font(.title3).foregroundStyle(DSColor.signalText)
         default:
@@ -789,10 +789,10 @@ struct GuidedProbeStep: View {
                         + "It's in the report.")
         case .refused:
             GuidedNoticeCard(title: "The check could not start", systemImage: "clock",
-                             tint: Theme.warning, message: outcome.detail ?? "Try again in a moment.")
+                             tint: DSColor.caution, message: outcome.detail ?? "Try again in a moment.")
         case .failed:
             GuidedNoticeCard(title: "That didn't finish", systemImage: "exclamationmark.triangle.fill",
-                             tint: Theme.warning, message: outcome.detail ?? "The camera stopped answering.")
+                             tint: DSColor.caution, message: outcome.detail ?? "The camera stopped answering.")
         case .skipped, .notWritable, .notRun:
             EmptyView()
         }
@@ -989,24 +989,24 @@ struct GuidedDevelopStep: View {
             } else if let record = latestHarvest, record.profileLength != nil {
                 GuidedNoticeCard(
                     title: "New conversion information recorded",
-                    systemImage: "exclamationmark.circle", tint: Theme.warning,
+                    systemImage: "exclamationmark.circle", tint: DSColor.caution,
                     message: "The camera returned information the app doesn't yet understand. It is saved in the report for review.")
             } else {
                 GuidedNoticeCard(
                     title: "No conversion information returned",
-                    systemImage: "exclamationmark.circle", tint: Theme.warning,
+                    systemImage: "exclamationmark.circle", tint: DSColor.caution,
                     message: "The camera accepted the file but returned no conversion information. This result is saved in the report.")
             }
         case .failed:
             GuidedNoticeCard(
-                title: "The check did not finish", systemImage: "exclamationmark.triangle.fill", tint: Theme.warning,
+                title: "The check did not finish", systemImage: "exclamationmark.triangle.fill", tint: DSColor.caution,
                 message: (harvest.detail ?? "The upload was refused.")
                     + " Use a RAW file taken with this same camera. You can retry or continue with the failure recorded.")
         case .skipped:
             GuidedNoticeCard(title: "Skipped", systemImage: "forward.fill",
                              message: "No RAW file was available. You can continue.")
         case .refused:
-            GuidedNoticeCard(title: "The camera was busy", systemImage: "clock", tint: Theme.warning,
+            GuidedNoticeCard(title: "The camera was busy", systemImage: "clock", tint: DSColor.caution,
                              message: harvest.detail ?? "Try again in a moment.")
         case .notWritable, .notRun:
             EmptyView()
@@ -1129,10 +1129,10 @@ struct GuidedKitchenStep: View {
             if let completion {
                 let produced = completion.cells.filter(\.succeeded).count
                 Text(completion.hasSuccessfulOutput ? "\(produced) photo\(produced == 1 ? "" : "s") ready to review\(completion.hasFailures ? "; some versions failed" : "")" : "No usable photo was produced. The failure is recorded.")
-                    .font(.subheadline).foregroundStyle(completion.hasFailures ? Theme.warning : DSColor.textSecondary)
+                    .font(.subheadline).foregroundStyle(completion.hasFailures ? DSColor.caution : DSColor.textSecondary)
                 if completion.saveFailed {
                     Text("The photos could not be saved on this device. The report still records the attempt.")
-                        .font(.caption).foregroundStyle(Theme.warning)
+                        .font(.caption).foregroundStyle(DSColor.caution)
                 }
                 if let batchID = completion.savedBatchID {
                     Button("View photos") { savedResult = Identified(value: batchID) }
@@ -1147,7 +1147,7 @@ struct GuidedKitchenStep: View {
                 }
             } else if run != nil {
                 Text("This attempt has no saved result. Try again when ready; the earlier attempt stays in the report.")
-                    .font(.caption).foregroundStyle(Theme.warning)
+                    .font(.caption).foregroundStyle(DSColor.caution)
             } else {
                 Text("Ready to try").font(.caption).foregroundStyle(DSColor.textSecondary)
             }
