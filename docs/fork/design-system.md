@@ -1,6 +1,6 @@
-# Darkslide – Design-System v2.6
+# Darkslide – Design-System v2.7
 
-Stand: 15.11.2026 (v2.1: Rückfragen aus Claude Code; v2.2: Entscheidungen zum Rollout der Rezepte-Liste; v2.3: App-Icon; v2.4: Name „Darkslide“, Leitmetapher Fotolabor, vier Tabs, Rolls statt Chapters, Dumpling-Icon verworfen; v2.5: neues App-Icon „Rezeptkarte im Entwicklertank“; **v2.6: App-Icon in Icon Composer fertig, acht Ebenen**). Quelle: Canvas „Fuji Cookbook – Design-Richtung“ (claude.ai), Artboards „Grundlagen v2“, „Rezepte“, „Rezept als Archivkarte“, „Kamera als Instrument“, „Import“; App-Icon: Figma-Datei „Darkslide – App Icon“ und `AppIcon.icon`. Ablage im Repo: `docs/fork/design-system.md`. Ersetzt v1 vollständig.
+Stand: 15.11.2026 (v2.1: Rückfragen aus Claude Code; v2.2: Entscheidungen zum Rollout der Rezepte-Liste; v2.3: App-Icon; v2.4: Name „Darkslide“, Leitmetapher Fotolabor, vier Tabs, Rolls statt Chapters, Dumpling-Icon verworfen; v2.5: neues App-Icon „Rezeptkarte im Entwicklertank“; v2.6: App-Icon in Icon Composer fertig, acht Ebenen; **v2.7: neues App-Icon „Rezeptkarte schwebt im Bad“ mit Lichtnetz, sieben Ebenen**). Quelle: Canvas „Fuji Cookbook – Design-Richtung“ (claude.ai), Artboards „Grundlagen v2“, „Rezepte“, „Rezept als Archivkarte“, „Kamera als Instrument“, „Import“; App-Icon: Design-Fläche „Darkslide – App-Icon Skizzen“ (Artboard „K1 – Lichtnetz“) und `AppIcon.icon`. Ablage im Repo: `docs/fork/design-system.md`. Ersetzt v1 vollständig.
 
 ## Name, Leitmetapher und Struktur (v2.4)
 **App-Name: Darkslide.** Der Darkslide ist der Schieber vor der Filmkassette – erst wenn er gezogen ist, kann belichtet werden. Der Name spielt bewusst auf die Dunkelkammer an. Kein „Fuji“ im Namen (Marke von Fujifilm). Fujifilm höchstens beschreibend im App-Store-Untertitel (z. B. „Film recipes for your X camera“). Oberflächensprache: **Englisch**.
@@ -31,7 +31,7 @@ Der Tab „Ideen“ aus früheren Fassungen existiert nicht. Offen: Suche als ei
 - **Signalfarbe Klein-Blau** – die einzige Akzentfarbe. Farbe sonst nur für Filmsimulationen.
 - Hell und dunkel gleichwertig, folgt dem System.
 
-Regeln: Werte nur durch Abstand trennen, **kein „·“ als Trenner**. Keine Verläufe, Texturen oder dekorative Unschärfe. **Ausnahme:** Systemmaterial bzw. Liquid Glass für schwebende Leisten (Tab-Bar, FloatingActionBar) und das App-Icon (Icon Composer) ist erlaubt, sonst nirgends. **Keine Anspielungen auf Leica** (Skalen, Typo, Rot). Touch-Ziele ≥ 44 pt, Kontrast Text ≥ 4.5:1 (große Zahlen ≥ 3:1).
+Regeln: Werte nur durch Abstand trennen, **kein „·“ als Trenner**. Keine Verläufe, Texturen oder dekorative Unschärfe. **Ausnahmen:** Systemmaterial bzw. Liquid Glass für schwebende Leisten (Tab-Bar, FloatingActionBar) und das App-Icon (Icon Composer) ist erlaubt, sonst nirgends; das Lichtnetz im App-Icon ist die einzige Textur. **Keine Anspielungen auf Leica** (Skalen, Typo, Rot). Touch-Ziele ≥ 44 pt, Kontrast Text ≥ 4.5:1 (große Zahlen ≥ 3:1).
 
 ## Farben (semantische Tokens)
 
@@ -130,48 +130,50 @@ Alle Komponenten und Dateien tragen das Präfix **DS** (z. B. `DSHardwareKey`, `
 4. **Light Table (Import)** – DataFieldRow (QUELLE | MODUS | AUSWAHL n/m), Panel „Standort aus Aufzeichnung“ mit HardwareSwitch, ContactSheet nach Tagen, FloatingActionBar mit Ziel + „N Bilder importieren“, oben „ALLE/KEINE“.
 5. **Rolls** und **Darkroom** – Layout noch zu entwerfen.
 
-## App-Icon (v2.6, fertig)
-**Konzept:** Die Rezeptkarte der App (Archivkarte mit Nummernfeld, Datenzeilen und Strichcode) steckt in einem Entwicklertank und wird im Klein-blauen Bad „entwickelt“ – so wie die App Rezepte auf die Kamera bringt. Eine runde Lasche mit Loch oben an der Karte. Die Flüssigkeit ist durchscheinend: Der eingetauchte Teil der Karte bleibt sichtbar.
+## App-Icon (v2.7, fertig)
+**Konzept:** Die Rezeptkarte der App (Archivkarte mit Nummernfeld, Datenzeilen und Strichcode) schwebt leicht gekippt im Klein-blauen Entwicklerbad. Es gibt kein Gefäß: Der ganze Hintergrund ist die Flüssigkeit. Ein Lichtnetz – Licht, das durch die Flüssigkeit fällt – gibt dem Bad Tiefe; Liquid Glass macht es als feines Relief sichtbar. Ein kurzer Schatten lässt die Karte schweben. Das Loch in der Lasche ist ausgeschnitten, man sieht das Bad dahinter. Ersetzt v2.6 „Rezeptkarte im Entwicklertank“.
 
 **Dateien:**
-- **Endprodukt:** `docs/fork/design/app-icon/AppIcon.icon` (Icon Composer, iOS Only). Eingebunden als `FujiCookbook/AppIcon.icon` im App-Target (PR #10).
-- **Quelle der Form:** Figma „Darkslide – App Icon“ (`https://www.figma.com/design/qkORPBcI3u7AgiUcpxgns0`), Seite „App Icon“: Komponente „Darkslide App Icon“ mit Variablen-Sammlung „Darkslide Icon“ (Modi Default/Dark/Mono, iOS-Code-Syntax `DSIcon.*`), Fläche „Preview“ (Maske, Größen 360–29 pt), Fläche „Icon Composer Export“ (acht SVG-Ebenen).
-- Skizzen und verworfene Varianten (A–I): Design-Fläche „Darkslide – App-Icon Skizzen“ (claude.ai). Das Dumpling-Icon aus v2.3 ist verworfen; die Datei „Fuji Cookbook – App Icon“ ist nur noch Archiv.
+- **Endprodukt:** `docs/fork/design/app-icon/AppIcon.icon` (Icon Composer, iOS). Eingebunden als `FujiCookbook/AppIcon.icon` im App-Target; Name und Build-Setting `AppIcon` unverändert.
+- **Quell-Ebenen:** `docs/fork/design/app-icon/v3/` – sieben SVGs (1024 px, nur Flächen, Lage und Drehung schon eingerechnet), Vorschauen hell/dunkel, Checkliste `icon-composer.md`.
+- **Skizzen:** Design-Fläche „Darkslide – App-Icon Skizzen“ (claude.ai), Artboard „K1 – Lichtnetz“. Verworfen: A–I, J, L, K2–K4.
+- Die Figma-Datei „Darkslide – App Icon“ zeigt noch v2.6 und ist nur noch Archiv.
 
 **Geometrie (Raster 1024 px, ohne Maske – die Maske setzt das System):**
-- Tank: U-Form, außen x 152–872, y 460–880, Radius 64; Wand 28 px, innen Radius 40, oben offen.
-- Karte: x 272–752, y 190–810 (480 × 620), eckig, Rahmen 20 px. Lasche: Kreis Mittelpunkt (512, 190), außen r 78, innen r 58, Loch r 26 (ausgestanzt).
-- Karteninhalt: Nummernfeld 124 × 86 in Signal oben links (x 324, y 242); Trennlinie 12 px bei y 360; drei Datenzeilen zweispaltig (Höhe 20, Radius 4) ab y 400 im 48er-Abstand; Strichcode 11 Balken, Höhe 80, ab y 678.
-- Flüssigkeit: innen im Tank, Oberkante y 590, mit 16 px kräftiger Oberflächenlinie.
+- Karte in Grundform wie v2.6: 480 × 620, Rahmen 20 px, Lasche r 78 (außen) / 58 (innen), Loch r 26; Nummernfeld 124 × 86, Trennlinie 12 px, drei zweispaltige Datenzeilen (Höhe 20, Radius 4), Strichcode mit 11 Balken, Höhe 80.
+- Lage: um 51 px nach unten, 1.15-fach um (512, 512) skaliert, −8° um (512, 512) gedreht, dann um (−10, −16) verschoben.
+- Loch: echter Ausschnitt in Rahmen, Fläche und Schatten, kein gefüllter Kreis.
+- Schatten: Silhouette des Rahmens, um (16, 20) versetzt, flach.
+- Lichtnetz: Zellen nach Voronoi (4 × 4, versetzt), organisch verzogen; die Zwischenräume bilden die Ebene `1_background-light`, oben 34 px, unten 10 px breit.
 
-**Ebenen in Icon Composer** – je Farbe eine Ebene, damit Dark pro Ebene umgefärbt werden kann. In der Seitenleiste steht oben, was vorne liegt.
+**Ebenen in Icon Composer** (oben = vorne):
 
 | Gruppe | Ebenen (oben → unten) | Liquid Glass |
 |---|---|---|
-| **3 Liquid** (vorne) | `3_liquid-2-surface`, `3_liquid-1-body` (Opacity 62 % in allen Erscheinungen) | Translucency an, 40 %; Shadow neutral 50 % |
-| **2 Card** | `2_card-5-lines`, `2_card-4-data`, `2_card-3-number`, `2_card-2-surface`, `2_card-1-frame` | Translucency aus; Shadow neutral 50 % |
-| **1 Tank** (hinten) | `1_tank` | Translucency aus; Shadow neutral 50 % |
+| **3 Card** | `3_card-5-lines`, `3_card-4-data`, `3_card-3-number`, `3_card-2-surface`, `3_card-1-frame` | Translucency an, 30 %; Shadow neutral 50 % |
+| **2 Shadow** | `2_shadow` | Translucency an, 30 %; Shadow neutral 50 % |
+| **1 Background** | `1_background-light` | Translucency an, 30 %; Shadow neutral 50 % |
 
-Ebenen-Farben kommen in Default aus den SVGs (Fill „Automatic“). Hintergrund ist keine Ebene, sondern die Füllung des Icons.
+Der Hintergrund ist keine Ebene, sondern die Füllung des Icons.
 
-**Farben je Erscheinung:**
+**Farben je Erscheinung (Stand `AppIcon.icon`):**
 
-| Element | Default (SVG) | Dark (Override) |
+| Element | Default | Dark |
 |---|---|---|
-| Hintergrund | `#E8E7E3` | `#0F0F0F` |
-| Tank, Kartenrahmen | `#121212` | **`#4A4A47`** (heller als `ink`, damit der Tank auf Schwarz sichtbar bleibt) |
-| Linie + Strichcode (`card-5-lines`) | `#121212` | `#3A3A38` |
-| Kartenfläche | `#F7F7F4` | `#F2F2EF` |
-| Nummernfeld, Flüssigkeit | `#1F3BD6` | `#3350F0` |
-| Datenzeilen | `#5A5954` | `#9E9D98` |
+| Hintergrund (Fill) | `#1F3BD6` (`signal`) | `#16278F` |
+| Lichtnetz `1_background-light` | `#1F3BD6` (wie Fill – nur als Glas-Relief sichtbar) | `#16278F` (wie Fill) |
+| Schatten `2_shadow` | `#1830BC` | `#0F1D72` |
+| Kartenrahmen `3_card-1-frame` | `#121212` | `#121212` |
+| Kartenfläche `3_card-2-surface` | `#F7F7F4` | `#F2F2EF` |
+| Nummernfeld `3_card-3-number` | `#1F3BD6` | `#3350F0` |
+| Datenzeilen `3_card-4-data` | `#5A5954` | `#5A5954` |
+| Linie + Strichcode `3_card-5-lines` | `#121212` | `#3A3A38` |
 
 **Mono** (Clear/Tinted): automatische Ableitung von Icon Composer, keine eigenen Werte. Der Hintergrund ist in Mono nicht editierbar.
 
-Hinweis: Die Figma-Variable `icon/ink` steht in Dark noch auf `#3A3A38` für alle Strukturen; maßgeblich für Tank und Rahmen ist `#4A4A47` aus `AppIcon.icon`.
+**Einbinden in Xcode:** `AppIcon.icon` ersetzt die v2.6-Datei an beiden Orten. Bilder für iOS < 26 erzeugt Xcode beim Build; dort prüfen, ob das Lichtnetz in den flachen Fallback-Bildern noch zu sehen ist (es lebt nur vom Glas-Relief).
 
-**Einbinden in Xcode:** `AppIcon.icon` aus `docs/fork/design/app-icon/` in den App-Ordner kopieren (neben den Asset-Katalog, nicht hinein), im Project Navigator dem App-Target zuordnen; unter Target › General › App Icons muss das Feld „App Icon“ `AppIcon` lauten. Die `.icon`-Datei ersetzt das bisherige Icon aus dem Asset-Katalog; Bilder für iOS < 26 erzeugt Xcode beim Build.
-
-**Regeln:** Kein Text, keine Fujifilm-Marke, kein Kameramotiv, kein Rot. Kernform in allen Erscheinungen gleich, nur Farben wechseln. Die Datenzeilen bleiben auch in kleinen Größen.
+**Regeln:** Kein Text, keine Fujifilm-Marke, kein Kameramotiv, kein Rot. Kernform in allen Erscheinungen gleich, nur Farben wechseln. Die Datenzeilen bleiben auch in kleinen Größen. Das Lichtnetz ist die einzige Textur der App und nur im App-Icon erlaubt; keine Verläufe, kein Glow, kein Blur.
 
 ## Daten hinter der Oberfläche
 - **Feld KAMERA / Slot-Badges:** zeigen den zuletzt ausgelesenen Stand der Kamera (z. B. „5/7“, „C1“). Ohne Verbindung: LED aus, Zusatz „STAND tt.mm.“. Nie ausgelesen: „—“, keine Badges.
