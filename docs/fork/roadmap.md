@@ -69,7 +69,7 @@ Ein persönlicher Fork, der Fuji Cookbook zur All-in-One-App für den Fuji-Workf
 **Noch auf das Original verweisend (Restliste):**
 - **Stufe A, dringend:** Support-Adresse `fujicookbook@grovehouse.xyz` (`SupportContact.swift`) – Berichte und Feedback aus Darkslide landen sonst beim Autor des Originals. Datenschutz-URL `fujicookbook.grovehouse.xyz` (`SettingsView.swift`).
 - **Stufe B:** Dokumenttyp `xyz.grovehouse.fujicookbook.recipe` und Beschreibung „Fuji Recipe“; CloudKit-Container `iCloud.xyz.grovehouse.fujicookbookapp`.
-- **Stufe C:** Beispielfotos in „Lua de Mel“; Projekt-, Target-, Schema- und Ordnername `FujiCookbook`, `CFBundleName`, Bundle-ID in `Config/Base.xcconfig`, Entitlements, `scripts/run-mac.sh`; README, `docs/`, CONTRIBUTING, SECURITY, `.github`.
+- **Stufe C:** Projekt-, Target-, Schema- und Ordnername `FujiCookbook`, `CFBundleName`, Bundle-ID in `Config/Base.xcconfig`, Entitlements, `scripts/run-mac.sh`; README, `docs/`, CONTRIBUTING, SECURITY, `.github`.
 - **Bleibt:** `NOTICE`, `TRADEMARKS.md`, Quellenangaben in Kommentaren, Fixture eines alten Berichts in `SerialHashTests`.
 
 ## Phase 3 – Details und offene Prüfpunkte

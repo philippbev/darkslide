@@ -1,0 +1,32 @@
+{
+  "recipe" : {
+    "authoredForModel" : "X100VI",
+    "cameraName" : "FUJICOLOR 400",
+    "cameraNameIsCustom" : true,
+    "name" : "FUJICOLOR 400",
+    "settings" : {
+      "clarity" : -2,
+      "color" : 1,
+      "colorChromeEffect" : "STRONG",
+      "colorChromeFXBlue" : "WEAK",
+      "dRangePriority" : "OFF",
+      "dynamicRange" : "DR400",
+      "filmSimulation" : "CLASSIC_NEG",
+      "grain" : {
+        "size" : "SMALL",
+        "strength" : "WEAK"
+      },
+      "highISONR" : -2,
+      "highlightTone" : -1,
+      "shadowTone" : 0,
+      "sharpness" : -1,
+      "whiteBalance" : {
+        "mode" : "DAYLIGHT",
+        "shiftBlue" : -4,
+        "shiftRed" : 2
+      }
+    }
+  },
+  "schema" : "fuji-recipe",
+  "version" : 1
+}
