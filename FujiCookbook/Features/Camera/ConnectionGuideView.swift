@@ -62,11 +62,13 @@ struct ConnectionGuideView: View {
                     troubleshootRow("Permission prompt", "Allow both Camera and Files and Folders access when iOS asks. Both permissions are needed to communicate with the camera.")
                 }
 
-                Section {
-                    Label("Camera Test backs up your settings before checking grain or writing a recipe. You choose the slot for the test recipe.",
-                          systemImage: "checkmark.shield")
-                        .foregroundStyle(.secondary)
-                        .font(.footnote)
+                if ReportSurfaces.current.showsCameraTest {
+                    Section {
+                        Label("Camera Test backs up your settings before checking grain or writing a recipe. You choose the slot for the test recipe.",
+                              systemImage: "checkmark.shield")
+                            .foregroundStyle(.secondary)
+                            .font(.footnote)
+                    }
                 }
             }
             .navigationTitle("Connection Help")

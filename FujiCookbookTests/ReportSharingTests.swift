@@ -6,19 +6,19 @@ import XCTest
 final class ReportSharingTests: XCTestCase {
 
     private var report: ShareableReport {
-        ShareableReport(kind: .problem, address: "fujicookbook@grovehouse.xyz",
-                        body: ShareableReport.body(for: "fujicookbook@grovehouse.xyz"),
-                        fileName: "fuji-cookbook-camera-report-X-T50-20260904-1524.json",
+        ShareableReport(kind: .problem, address: "hello@bevier.cloud",
+                        body: ShareableReport.body(for: "hello@bevier.cloud"),
+                        fileName: "darkslide-camera-report-X-T50-20260904-1524.json",
                         data: Data("{}".utf8), mimeType: "application/json")
     }
 
     func testTheBodyIsOneFixedLine() {
-        XCTAssertEqual(report.body, "To: fujicookbook@grovehouse.xyz. Darkslide report attached; add what went wrong below.")
+        XCTAssertEqual(report.body, "To: hello@bevier.cloud. Darkslide report attached; add what went wrong below.")
         XCTAssertFalse(report.body.contains("\n"), "Gmail flattens newlines; there are none to flatten")
     }
 
     func testTheSubjectIsTheFileStem() {
-        XCTAssertEqual(report.subject, "fuji-cookbook-camera-report-X-T50-20260904-1524",
+        XCTAssertEqual(report.subject, "darkslide-camera-report-X-T50-20260904-1524",
                        "Mail shows the subject, Gmail shows the file name — same text either way")
     }
 

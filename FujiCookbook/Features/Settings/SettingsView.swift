@@ -96,9 +96,10 @@ struct SettingsView: View {
     /// installed from the App Store.
     private static let termsOfUseURL = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
 
-    /// The hosted copy of `docs/privacy-policy.md`. App Store Connect lists the policy too, so a new
-    /// URL needs changing there as well.
-    private static let privacyPolicyURL = URL(string: "https://fujicookbook.grovehouse.xyz/app-privacy/")!
+    /// `docs/privacy-policy.md` as GitHub renders it. Darkslide isn't on the App Store, so this link
+    /// is the only place the policy is published; if it moves (to bevier.cloud, say), only this
+    /// URL changes.
+    static let privacyPolicyURL = URL(string: "https://github.com/philippbev/darkslide/blob/main/docs/privacy-policy.md")!
 
     private var privacyPolicyRow: some View {
         Link(destination: Self.privacyPolicyURL) {
@@ -279,15 +280,17 @@ struct SettingsView: View {
             NavigationLink {
                 DiagnosticsReportView()
             } label: {
-                Label("Report a Problem", systemImage: "exclamationmark.bubble")
+                Label(ReportSurfaces.current.diagnosticsTitle, systemImage: "exclamationmark.bubble")
             }
-            NavigationLink {
-                SendFeedbackView()
-            } label: {
-                Label("Send Feedback", systemImage: "text.bubble")
+            if ReportSurfaces.current.showsSendFeedback {
+                NavigationLink {
+                    SendFeedbackView()
+                } label: {
+                    Label("Send Feedback", systemImage: "text.bubble")
+                }
             }
         } header: {
-            Text("Help & Feedback")
+            Text(ReportSurfaces.current.helpSectionTitle)
         } footer: {
             Text(helpFooter)
         }
@@ -312,7 +315,13 @@ struct SettingsView: View {
     }
 
     private var helpFooter: String {
-        """
+        guard ReportSurfaces.current.reportsEnabled else {
+            return """
+            The diagnostics report shows app and device details, settings and recent activity. It \
+            stays on this device.
+            """
+        }
+        return """
         Problem reports include diagnostic data. Feedback includes your message and app and \
         device details. Review everything before sharing. Nothing is sent automatically.
         """
