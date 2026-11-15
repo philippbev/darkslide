@@ -1,0 +1,31 @@
+{
+  "recipe" : {
+    "authoredForModel" : "X100VI",
+    "cameraName" : "NATURAL",
+    "cameraNameIsCustom" : true,
+    "name" : "NATURAL",
+    "settings" : {
+      "clarity" : 0,
+      "color" : 0,
+      "colorChromeEffect" : "WEAK",
+      "colorChromeFXBlue" : "WEAK",
+      "dRangePriority" : "OFF",
+      "dynamicRange" : "DR200",
+      "filmSimulation" : "REALA_ACE",
+      "grain" : {
+        "strength" : "OFF"
+      },
+      "highISONR" : -2,
+      "highlightTone" : -1,
+      "shadowTone" : 0,
+      "sharpness" : 0,
+      "whiteBalance" : {
+        "mode" : "AUTO",
+        "shiftBlue" : -1,
+        "shiftRed" : 1
+      }
+    }
+  },
+  "schema" : "fuji-recipe",
+  "version" : 1
+}

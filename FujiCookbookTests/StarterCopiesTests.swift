@@ -1,17 +1,17 @@
 import XCTest
 @testable import FujiCookbook
 
-final class StarterRecipeCopiesTests: XCTestCase {
-    private typealias Copy = StarterRecipeCopies.Copy<String>
-    private typealias Resolution = StarterRecipeCopies.Resolution<String>
+final class StarterCopiesTests: XCTestCase {
+    private typealias Copy = StarterCopies.Copy<String>
+    private typealias Resolution = StarterCopies.Resolution<String>
 
     private func day(_ number: Int) -> Date {
         Date(timeIntervalSinceReferenceDate: TimeInterval(number) * 86_400)
     }
 
     func testNoCopiesOrOneCopyNeedNothing() {
-        XCTAssertEqual(StarterRecipeCopies.resolve([Copy]()), Resolution())
-        XCTAssertEqual(StarterRecipeCopies.resolve([Copy(id: "a", createdAt: day(1), isEdited: false)]),
+        XCTAssertEqual(StarterCopies.resolve([Copy]()), Resolution())
+        XCTAssertEqual(StarterCopies.resolve([Copy(id: "a", createdAt: day(1), isEdited: false)]),
                        Resolution())
     }
 
@@ -19,21 +19,21 @@ final class StarterRecipeCopiesTests: XCTestCase {
         let copies = [Copy(id: "newer", createdAt: day(2), isEdited: false),
                       Copy(id: "oldest", createdAt: day(1), isEdited: false),
                       Copy(id: "newest", createdAt: day(3), isEdited: false)]
-        XCTAssertEqual(StarterRecipeCopies.resolve(copies), Resolution(delete: ["newer", "newest"]))
+        XCTAssertEqual(StarterCopies.resolve(copies), Resolution(delete: ["newer", "newest"]))
     }
 
     /// The edited copy is kept even though it is the newer one: deleting it would lose the edit.
     func testAnEditedCopyReplacesEveryUntouchedOne() {
         let copies = [Copy(id: "untouched", createdAt: day(1), isEdited: false),
                       Copy(id: "edited", createdAt: day(2), isEdited: true)]
-        XCTAssertEqual(StarterRecipeCopies.resolve(copies), Resolution(delete: ["untouched"]))
+        XCTAssertEqual(StarterCopies.resolve(copies), Resolution(delete: ["untouched"]))
     }
 
     func testEditedCopiesPastTheOldestAreRekeyed() {
         let copies = [Copy(id: "edited-later", createdAt: day(3), isEdited: true),
                       Copy(id: "untouched", createdAt: day(1), isEdited: false),
                       Copy(id: "edited-first", createdAt: day(2), isEdited: true)]
-        XCTAssertEqual(StarterRecipeCopies.resolve(copies),
+        XCTAssertEqual(StarterCopies.resolve(copies),
                        Resolution(delete: ["untouched"], rekey: ["edited-later"]))
     }
 
@@ -43,6 +43,6 @@ final class StarterRecipeCopiesTests: XCTestCase {
                       Copy(id: "b", createdAt: day(2), isEdited: true),
                       Copy(id: "c", createdAt: day(3), isEdited: false),
                       Copy(id: "d", createdAt: day(4), isEdited: true)]
-        XCTAssertEqual(StarterRecipeCopies.resolve(copies), StarterRecipeCopies.resolve(copies.reversed()))
+        XCTAssertEqual(StarterCopies.resolve(copies), StarterCopies.resolve(copies.reversed()))
     }
 }

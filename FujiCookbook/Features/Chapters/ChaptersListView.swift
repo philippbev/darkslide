@@ -71,6 +71,10 @@ struct ChaptersListView: View {
             }
         }
         .navigationDestination(for: Chapter.self) { ChapterDetailView(chapter: $0) }
+        // Two devices that each seeded a new library meet with two starter rolls once they sync.
+        .onChange(of: starterRollCopyCount, initial: true) { _, count in
+            if count > 1 { collapseStarterCopies() }
+        }
         // `Identified`: the chapter's persistentModelID changes on its first autosave.
         .sheet(item: $editTarget) { target in
             NavigationStack { ChapterEditorView(chapter: target.value, isNew: true) }
@@ -135,6 +139,17 @@ struct ChaptersListView: View {
                 Text("Create some recipes in the Library first.")
                     .font(.footnote).foregroundStyle(.secondary)
             }
+        }
+    }
+
+    private var starterRollCopyCount: Int { chapters.count { $0.uuid == StarterLibrary.rollUUID } }
+
+    /// Silent on failure, like the Library's: the duplicate stays on screen for the user to delete.
+    private func collapseStarterCopies() {
+        do {
+            try StarterLibrary.collapseCopies(in: modelContext)
+        } catch {
+            AppLog.error(.data, "Collapsing starter copies failed — \(AppLog.bounded(error))")
         }
     }
 

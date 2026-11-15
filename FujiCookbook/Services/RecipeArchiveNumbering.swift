@@ -14,8 +14,8 @@ enum RecipeArchiveNumbering {
     static let highWaterKey = "recipes.archiveNumber.highWater"
 
     /// What the numbering needs to know about a recipe. `ID` tells the recipes apart; the uuid only
-    /// breaks ties in `createdAt`, because copies of the starter recipe share one until
-    /// `StarterRecipe.collapseCopies` merges them.
+    /// breaks ties in `createdAt`, because copies of a starter recipe share one until
+    /// `StarterLibrary.collapseCopies` merges them.
     struct Entry<ID: Hashable>: Equatable {
         let id: ID
         let uuid: UUID

@@ -144,15 +144,15 @@ struct LibraryView: View {
         .alert("Export Failed", isPresented: Binding(isPresent: $exportError)) {
             Button("OK", role: .cancel) {}
         } message: { Text(exportError ?? "") }
-        .alert("Couldn't Add \(StarterRecipe.name)", isPresented: Binding(isPresent: $starterError)) {
+        .alert("Couldn't Add the Starter Recipes", isPresented: Binding(isPresent: $starterError)) {
             Button("OK", role: .cancel) {}
         } message: { Text(starterError ?? "") }
         .exportProgress(exportRunner)
-        // iCloud sync can bring another device's copy of the starter in at any moment after launch.
+        // iCloud sync can bring another device's copies of the starters in at any moment after launch.
         // This query is what sees it arrive, so the collapse rides on it rather than on a second,
         // filtered query of its own.
-        .onChange(of: starterCopyCount, initial: true) { _, count in
-            if count > 1 { collapseStarterCopies() }
+        .onChange(of: hasDuplicateStarters, initial: true) { _, duplicated in
+            if duplicated { collapseStarterCopies() }
         }
         // Every way a recipe arrives (new, import, camera, sync) shows up here as an
         // unnumbered row; a recipe in the new-recipe editor waits until the sheet closes, so a
@@ -167,7 +167,7 @@ struct LibraryView: View {
 
     // MARK: Derived data
 
-    private var starterCopyCount: Int { recipes.count { $0.uuid == StarterRecipe.uuid } }
+    private var hasDuplicateStarters: Bool { StarterLibrary.hasDuplicates(recipeUUIDs: recipes.map(\.uuid)) }
 
     /// What the numbering watches: recipes without a number, numbers held twice (two devices that
     /// numbered before syncing), and the highest number, which the high-water mark has to follow
@@ -332,14 +332,14 @@ struct LibraryView: View {
         ContentUnavailableView {
             Label("No Recipes Yet", systemImage: "tray")
         } description: {
-            Text("Create a recipe, import a .fujirecipe file, or read recipes from your camera. Or add \(StarterRecipe.name), a recipe by the app's creator.")
+            Text("Create a recipe, import a .fujirecipe file, or read recipes from your camera. Or start with three recipes and a roll that holds them.")
         } actions: {
             VStack(spacing: DSSpacing.m) {
                 Button("New Recipe") { createRecipe() }
                     .buttonStyle(.dsPrimary)
                 Button("Import from File") { showingImporter = true }
                     .buttonStyle(.dsSecondary)
-                Button("Add \(StarterRecipe.name)") { addStarterRecipe() }
+                Button("Add Starter Recipes") { addStarterRecipes() }
                     .buttonStyle(.dsSecondary)
                     .disabled(isAddingStarter)
             }
@@ -389,15 +389,15 @@ struct LibraryView: View {
         editTarget = Identified(value: recipe)
     }
 
-    /// Disabled while it runs, so a second tap doesn't decode the bundled file and its photos again.
-    private func addStarterRecipe() {
+    /// Disabled while it runs, so a second tap doesn't decode the bundled files again.
+    private func addStarterRecipes() {
         isAddingStarter = true
         Task {
             defer { isAddingStarter = false }
             do {
-                try await StarterRecipe.add(to: modelContext)
+                try await StarterLibrary.add(to: modelContext)
             } catch {
-                AppLog.error(.importExport, "Adding the starter recipe failed — \(AppLog.bounded(error))")
+                AppLog.error(.importExport, "Adding the starter recipes failed — \(AppLog.bounded(error))")
                 starterError = error.localizedDescription
             }
         }
@@ -407,9 +407,9 @@ struct LibraryView: View {
     /// that arrives tries again.
     private func collapseStarterCopies() {
         do {
-            try StarterRecipe.collapseCopies(in: modelContext)
+            try StarterLibrary.collapseCopies(in: modelContext)
         } catch {
-            AppLog.error(.data, "Collapsing starter recipe copies failed — \(AppLog.bounded(error))")
+            AppLog.error(.data, "Collapsing starter copies failed — \(AppLog.bounded(error))")
         }
     }
 

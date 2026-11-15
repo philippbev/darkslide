@@ -40,7 +40,7 @@ struct RootView: View {
             Text(coordinator.importError ?? "")
         }
         .task {
-            await StarterRecipe.seedIfNeeded(into: modelContext)
+            await StarterLibrary.seedIfNeeded(into: modelContext)
         }
         .overlay {
             if coordinator.isPreparingImport {

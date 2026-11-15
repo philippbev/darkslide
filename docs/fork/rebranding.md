@@ -42,11 +42,11 @@ Offen dabei: Soll der Fork `.fujirecipe`-Dateien des Originals weiter öffnen k�
 | ✅ | (PR #10, sichtbare Texte; Kommentare und Typnamen bleiben) Name in den Swift-Quellen: 68 Treffer für „Fuji Cookbook“ in 28 Dateien, darunter Export- und Berichts-Dateinamen | `FujiCookbook/`, `Shared/`, `ShareExtension/` |
 | ✅ | App-Icon (`AppIcon.icon`, PR #10) und Ladescreen (`DarkslideLaunchMark`, PR #11). App-Icon v3 „Lichtnetz“ (Design-System v2.7) ersetzt v2.6; die v2.6-Ebenen liegen unter `docs/fork/design/app-icon/archive/v2.6/`. Der Ladescreen zeigt dazu die Karte auf dem Klein-Blau des Icons (`DarkslideLaunchCard`, `DarkslideLaunchBath`). | `FujiCookbook/Assets.xcassets` |
 | ✅ | Entfällt: Share Cards samt `BrandMark`/`CardWordmark` entfernt (PR #11) | `FujiCookbook/Features/Library/ShareCard/ShareCardTypography.swift` |
-| ☐ | Die fünf Beispielfotos: `photos`-Schlüssel löschen oder eigene Fotos einsetzen | `FujiCookbook/Resources/Lua de Mel.fujirecipe` |
+| ✅ | Entfällt: Lua de Mel samt Beispielfotos entfernt; neue Bibliotheken starten mit Acros Pro, FUJICOLOR 400, NATURAL und der Roll „Starter“ (`StarterLibrary`) | `FujiCookbook/Resources/*.fujirecipe` |
 | ☐ | `APP_IDENTIFIER_BASE` und `DEVELOPMENT_TEAM` dauerhaft | `Config/Base.xcconfig` |
 | ✅ | Wortmarke und Screenshots der Doku gelöscht (PR #13); neue Bilder nach Phase 5 | `docs/images/` |
 
-Tests, die mitziehen müssen: `StarterRecipeTests` (prüft Credit und die fünf Fotos) sowie die sechs Testdateien, die den App-Namen in Berichts- und Feedback-Texten abgleichen.
+Tests, die mitziehen müssen: `StarterLibraryTests` (prüft die drei gebündelten Rezepte und die Roll) sowie die sechs Testdateien, die den App-Namen in Berichts- und Feedback-Texten abgleichen.
 
 ## Bleibt unverändert
 

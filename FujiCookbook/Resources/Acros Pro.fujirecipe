@@ -1,0 +1,33 @@
+{
+  "recipe" : {
+    "authoredForModel" : "X100VI",
+    "cameraName" : "Acros Pro",
+    "cameraNameIsCustom" : true,
+    "name" : "Acros Pro",
+    "settings" : {
+      "clarity" : 2,
+      "colorChromeEffect" : "OFF",
+      "colorChromeFXBlue" : "OFF",
+      "dRangePriority" : "OFF",
+      "dynamicRange" : "DR200",
+      "filmSimulation" : "ACROS_Ye",
+      "grain" : {
+        "size" : "SMALL",
+        "strength" : "WEAK"
+      },
+      "highISONR" : -4,
+      "highlightTone" : 1,
+      "monochromaticColorMG" : 0,
+      "monochromaticColorWC" : 1,
+      "shadowTone" : 2,
+      "sharpness" : 1,
+      "whiteBalance" : {
+        "mode" : "AUTO",
+        "shiftBlue" : 0,
+        "shiftRed" : 0
+      }
+    }
+  },
+  "schema" : "fuji-recipe",
+  "version" : 1
+}

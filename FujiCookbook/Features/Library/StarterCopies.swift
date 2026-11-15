@@ -1,16 +1,16 @@
 import Foundation
 
-/// Which copies of the starter recipe a library keeps when it holds more than one. Two devices that
-/// each added Lua de Mel hold two copies with the same `StarterRecipe.uuid` once iCloud sync meets
-/// them.
+/// Which copies of a starter recipe, or of the starter roll, a library keeps when it holds more than
+/// one. Two devices that each seeded a new library hold two copies with the same `StarterLibrary`
+/// uuid once iCloud sync meets them.
 ///
 /// The rules read only what sync carries to every device — creation dates and whether a copy was
 /// edited — so two devices deciding at the same time delete the same copies rather than one each.
 /// Two installs in the same instant would tie; that doesn't happen.
 ///
 /// An edited copy is never deleted. Edited copies past the first keep their contents and get new
-/// identities: they are the user's own recipes now, and two recipes must not share a uuid.
-enum StarterRecipeCopies {
+/// identities: they are the user's own now, and two recipes (or rolls) must not share a uuid.
+enum StarterCopies {
     struct Copy<ID: Hashable> {
         let id: ID
         let createdAt: Date
