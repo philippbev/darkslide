@@ -28,10 +28,11 @@ Ein persönlicher Fork, der Fuji Cookbook zur All-in-One-App für den Fuji-Workf
 
 ## Nächste Schritte
 1. ~~`feature/design-system-v2` in main mergen~~ – erledigt (`1a33819`).
-2. ~~**App-Icon einbinden**~~ – erledigt auf `feature/darkslide-naming` (zusammen mit Anzeigename „Darkslide“, vier Tabs und den Laborbegriffen in der Oberfläche).
-3. Phase 3 auf dem iPhone mit der X100VI testen: Import-Modus der Kamera, Geschwindigkeit, Zuordnung der Standorte, RAF-Sidecars.
-4. Rolls spezifizieren (Datenmodell, Migration der Chapters, Laden auf C1–C7, Teilen).
-5. Phase 5 starten, ein Screen pro Branch, nach jedem Screen Freigabe.
+2. ~~**App-Icon einbinden**~~ – erledigt mit PR #10 (`feature/darkslide-naming`), zusammen mit Anzeigename „Darkslide“, vier Tabs und den Laborbegriffen in der Oberfläche. Ergebnisse unten.
+3. **Rebranding Stufe A vor dem Gerätetest:** Support-Adresse und Datenschutz-URL zeigen noch aufs Original (siehe Ergebnisse). Entscheiden: eigene Adresse/Seite oder beides im Fork ausblenden.
+4. Phase 3 auf dem iPhone mit der X100VI testen: Import-Modus der Kamera, Geschwindigkeit, Zuordnung der Standorte, RAF-Sidecars.
+5. Rolls spezifizieren (Datenmodell, Migration der Chapters, Laden auf C1–C7, Teilen).
+6. Phase 5 starten, ein Screen pro Branch, nach jedem Screen Freigabe.
 
 ## Entscheidungen 15.11.2026
 - **Name:** Darkslide. Kein „Fuji“ im Namen. UI-Sprache Englisch.
@@ -39,6 +40,23 @@ Ein persönlicher Fork, der Fuji Cookbook zur All-in-One-App für den Fuji-Workf
 - **Tabs:** Recipes (`rectangle.stack`), Rolls (`film`), Darkroom (`camera.filters`), Camera (`camera.aperture`). Import-Screen heißt „Light Table“.
 - **Rolls ersetzen Chapters:** immer genau sieben Plätze (C1–C7), als Ganzes auf die Kamera ladbar.
 - **App-Icon:** Rezeptkarte im Entwicklertank mit durchscheinendem Klein-blauem Bad; Dumpling-Icon (v2.3) verworfen. Fertig in Icon Composer (`AppIcon.icon`).
+
+## Ergebnisse Darkslide-Naming (15.11.2026, PR #10)
+- **App-Icon:** `FujiCookbook/AppIcon.icon` liegt neben dem Asset-Katalog und gehört über die synchronisierte Gruppe automatisch zum App-Target. Das alte Set heißt jetzt `AppIconLegacy.appiconset`, bleibt erhalten und wird nicht mehr benutzt. Mac Catalyst erzeugt daraus ein `AppIcon.icns`.
+- **Share Extension und Test-Target** brauchen kein eigenes Icon; die Extension zeigt das Icon der App.
+- **Dunkles Icon:** erscheint unter iOS 26 nur mit Homescreen ▸ Customize ▸ Dark, nicht schon im Dunkelmodus. Geprüft im Simulator: Tank in `#4A4A47` bleibt auf Schwarz sichtbar.
+- **Anzeigename:** „Darkslide“ in beiden Info.plists, den Berechtigungsdialogen und allen sichtbaren Texten, auch Berichtsköpfe, Export-Dateinamen („Darkslide Library“, „Darkslide Backup“), Pfade „Files → Darkslide“ und Share-Card-Wortmarke.
+- **Herkunft:** Der About-Text nennt Darkslide einen unabhängigen Fork von Fuji Cookbook (Zachary Grimshaw, Apache 2.0), ohne Verbindung zu dessen Autoren oder Grove House Studio. Philipp hat mit den Erstellern des Originals nichts zu tun; Credits nach Apache 2.0 (`LICENSE`, `NOTICE`) bleiben.
+- **Begriffe in der UI:** Chapter → Roll, Kitchen → Darkroom, Test Kitchen → **Test Strips**, Foto-Import → „Light Table“. Typen, Ordner, IDs, `.fujirecipe` und gespeicherte Daten unverändert (keine Migration); vorhandene Namen wie „New Chapter“ bleiben, neue heißen „New Roll“.
+- **Ideas-Tab:** existiert im Code hinter `FeatureFlags.ideasEnabled = false` und bleibt aus.
+- **Lokalisierung:** keine Strings-Dateien vorhanden.
+- **Tests:** 1421 grün (iPhone 17 Pro), Catalyst baut.
+
+**Noch auf das Original verweisend (Restliste):**
+- **Stufe A, dringend:** Support-Adresse `fujicookbook@grovehouse.xyz` (`SupportContact.swift`) – Berichte und Feedback aus Darkslide landen sonst beim Autor des Originals. Datenschutz-URL `fujicookbook.grovehouse.xyz` (`SettingsView.swift`).
+- **Stufe B:** Dokumenttyp `xyz.grovehouse.fujicookbook.recipe` und Beschreibung „Fuji Recipe“; CloudKit-Container `iCloud.xyz.grovehouse.fujicookbookapp`.
+- **Stufe C:** `LaunchMark`, `BrandMark` der Share Cards, Beispielfotos in „Lua de Mel“; Projekt-, Target-, Schema- und Ordnername `FujiCookbook`, `CFBundleName`, Bundle-ID in `Config/Base.xcconfig`, Entitlements, `scripts/run-mac.sh`; README, `docs/`, CONTRIBUTING, SECURITY, `.github`.
+- **Bleibt:** `NOTICE`, `TRADEMARKS.md`, Quellenangaben in Kommentaren, Fixture eines alten Berichts in `SerialHashTests`.
 
 ## Phase 3 – Details und offene Prüfpunkte
 - Rezept-Funktionen brauchen *USB RAW CONV./BACKUP RESTORE*, Import den Kartenmodus. App erkennt den Modus und leitet an.
@@ -57,4 +75,4 @@ Ein persönlicher Fork, der Fuji Cookbook zur All-in-One-App für den Fuji-Workf
 - Rolls: Migration bestehender Chapters mit mehr als sieben Rezepten; Dateiendung beim Teilen (`.fujirecipe` umbenennen?)
 - Suche als eigener Tab (iOS-26-Muster)?
 - Layout der Screens Rolls und Darkroom
-- Rebranding im Code: Anzeigename und sichtbare Texte erledigt (`feature/darkslide-naming`); Rest (Bundle-ID, Projekt-/Target-Namen, Support-Adresse, Datenschutz-URL, Dokumenttyp, Launch-Mark) nach Checkliste `docs/fork/rebranding.md`
+- Rebranding im Code: Anzeigename und sichtbare Texte erledigt (PR #10); Rest (Bundle-ID, Projekt-/Target-Namen, Support-Adresse, Datenschutz-URL, Dokumenttyp, Launch-Mark) nach Checkliste `docs/fork/rebranding.md`
