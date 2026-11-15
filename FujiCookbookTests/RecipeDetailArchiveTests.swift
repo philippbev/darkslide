@@ -55,13 +55,13 @@ final class RecipeDetailArchiveTests: XCTestCase {
         XCTAssertNil(Archive.slotNameField(name: "KODA64", isCustom: true).note)
     }
 
-    func testTheSideFieldsAreSlotChapterAndCreated() {
+    func testTheSideFieldsAreSlotRollAndCreated() {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Europe/Berlin")!
         let created = calendar.date(from: DateComponents(year: 2026, month: 3, day: 7, hour: 9))!
         XCTAssertEqual(Archive.sideFields(slot: "C3", chapterNames: ["Street"], createdAt: created, calendar: calendar),
                        [DSDataField(label: "Slot", value: "C3"),
-                        DSDataField(label: "Chapter", value: "Street"),
+                        DSDataField(label: "Roll", value: "Street"),
                         DSDataField(label: "Created", value: "2026-03-07")])
         XCTAssertEqual(Archive.sideFields(slot: nil, chapterNames: [], createdAt: created, calendar: calendar).prefix(2).map(\.value),
                        ["—", "—"])

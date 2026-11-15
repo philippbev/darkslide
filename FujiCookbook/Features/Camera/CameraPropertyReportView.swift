@@ -203,7 +203,7 @@ struct CameraPropertyReportView: View {
 
     /// Plain-text form of the report, for pasting into the protocol notes or an issue.
     nonisolated static func reportText(camera connected: ConnectedCamera?, read: Read) -> String {
-        var lines: [String] = ["Fuji Cookbook — camera property report"]
+        var lines: [String] = ["Darkslide — camera property report"]
         if let connected {
             lines.append("Camera: \(connected.productName)"
                          + (connected.model.map { " · model \($0.id)" } ?? " · unrecognized model")
@@ -236,7 +236,7 @@ struct CameraPropertyReportView: View {
     @ViewBuilder
     private var grainProbeCard: some View {
         if !mayWrite {
-            Text("The grain write probe is only offered on cameras Fuji Cookbook writes to. It works by writing real values and reading back what stuck, which isn't something to do to a body whose encodings aren't known.")
+            Text("The grain write probe is only offered on cameras Darkslide writes to. It works by writing real values and reading back what stuck, which isn't something to do to a body whose encodings aren't known.")
                 .font(.caption)
                 .foregroundStyle(DSColor.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -256,7 +256,7 @@ struct CameraPropertyReportView: View {
     }
 
     nonisolated static func grainProbeText(camera connected: ConnectedCamera?, run: ProbeRun) -> String {
-        var lines = ["Fuji Cookbook — D195 grain write probe", "Slot: C\(run.slot)"]
+        var lines = ["Darkslide — D195 grain write probe", "Slot: C\(run.slot)"]
         if let connected { lines.insert("Camera: \(connected.productName)", at: 1) }
         lines += run.entries.map { "wrote \($0.wrote): \($0.outcome)" }
         return lines.joined(separator: "\n")
@@ -305,7 +305,7 @@ struct CameraPropertyReportView: View {
     }
 
     nonisolated static func dynamicRangeProbeText(camera connected: ConnectedCamera?, run: ProbeRun) -> String {
-        var lines = ["Fuji Cookbook — D190 dynamic range write probe", "Slot: C\(run.slot)"]
+        var lines = ["Darkslide — D190 dynamic range write probe", "Slot: C\(run.slot)"]
         if let connected { lines.insert("Camera: \(connected.productName)", at: 1) }
         lines += run.entries.map { "wrote \(drLabel($0.wrote)): \($0.outcome)" }
         lines.append("Note: the slot's own ISO and D-Range Priority decide which of these are allowed. D-Range Priority is D191, above; the ISO is not readable over USB — record it from the camera's menu.")

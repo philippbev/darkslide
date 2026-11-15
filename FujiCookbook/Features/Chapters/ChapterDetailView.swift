@@ -62,9 +62,9 @@ struct ChapterDetailView: View {
     /// Why the chapter can't be pushed right now, or nil when the push row is live. A note in place
     /// of the button, because a disabled tinted row still reads as tappable.
     private var pushBlockedReason: String? {
-        if isEmpty { return "Add recipes to this chapter to push it." }
+        if isEmpty { return "Add recipes to this roll to push it." }
         // The Connect row sits right below this, so the note only has to name the blocker.
-        if !camera.session.isConnected { return "Connect a camera to push this chapter." }
+        if !camera.session.isConnected { return "Connect a camera to push this roll." }
         if !canPush {
             return camera.slotWriter.pushBlockReason ?? "Push isn't available for \(camera.session.model?.displayName ?? "this camera")."
         }
@@ -75,7 +75,7 @@ struct ChapterDetailView: View {
         List {
             Section {
                 if isEmpty {
-                    Text("This chapter has no recipes yet.").foregroundStyle(.secondary)
+                    Text("This roll has no recipes yet.").foregroundStyle(.secondary)
                 } else {
                     ForEach(Array(chapter.recipeUUIDs.enumerated()), id: \.element) { index, id in
                         LabeledContent {
@@ -114,7 +114,7 @@ struct ChapterDetailView: View {
                     Text(reason).foregroundStyle(.secondary)
                 } else {
                     Button { showingPush = true } label: {
-                        Label("Push Chapter to Camera…", systemImage: "square.and.arrow.up")
+                        Label("Push Roll to Camera…", systemImage: "square.and.arrow.up")
                     }
                 }
                 // An empty chapter has nothing to push regardless of the camera, so the connection
@@ -150,25 +150,25 @@ struct ChapterDetailView: View {
             }
         }
         .sheet(item: $shareItem) { ShareSheet(items: $0.urls) }
-        .confirmationDialog("Share Chapter", isPresented: $showingShareOptions, titleVisibility: .visible) {
+        .confirmationDialog("Share Roll", isPresented: $showingShareOptions, titleVisibility: .visible) {
             Button("Include Sample Photos") { share(includePhotos: true) }
             Button("Recipes Only") { share(includePhotos: false) }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("The file holds this chapter and its recipes. Opening it in Fuji Cookbook restores both.")
+            Text("The file holds this roll and its recipes. Opening it in Darkslide restores both.")
         }
         .alert("Export Failed", isPresented: Binding(isPresent: $exportError)) {
             Button("OK", role: .cancel) {}
         } message: { Text(exportError ?? "") }
         .exportProgress(exportRunner)
         .confirmationDialog("Delete “\(chapter.name)”?", isPresented: $showingDeleteConfirm, titleVisibility: .visible) {
-            Button("Delete Chapter", role: .destructive) {
+            Button("Delete Roll", role: .destructive) {
                 modelContext.delete(chapter)
                 dismiss()
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This removes the chapter only. The recipes in it stay in your library.")
+            Text("This removes the roll only. The recipes in it stay in your library.")
         }
     }
 

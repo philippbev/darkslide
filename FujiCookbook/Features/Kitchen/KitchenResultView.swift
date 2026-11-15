@@ -106,7 +106,7 @@ struct KitchenResultView: View {
                 } footer: {
                     Text(saveFailed
                          ? "Saving to Recent Results failed. A recovery copy is kept in the app's Recovered Develops folder. You can save or export it above."
-                         : "Kept in Recent Results in the Kitchen — closing this doesn't discard them.")
+                         : "Kept in Recent Results in the Darkroom — closing this doesn't discard them.")
                 }
             }
 

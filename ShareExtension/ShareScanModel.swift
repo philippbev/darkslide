@@ -105,7 +105,7 @@ final class ShareScanModel {
         guard let config = ScanConfiguration.current(), config.isConfigured else {
             stage = .unavailable(
                 title: "AI Scanning Isn't Set Up",
-                message: "Turn on AI Features in Fuji Cookbook's Settings, add your API key, and pick a model. Until then this screenshot waits in the app.")
+                message: "Turn on AI Features in Darkslide's Settings, add your API key, and pick a model. Until then this screenshot waits in the app.")
             return
         }
         configuration = config
@@ -119,7 +119,7 @@ final class ShareScanModel {
             AppLog.flush()
             stage = .unavailable(
                 title: "Can't Reach Your Library",
-                message: "Fuji Cookbook couldn't open your recipes from here. Save this screenshot and the app will read it the next time you open it.")
+                message: "Darkslide couldn't open your recipes from here. Save this screenshot and the app will read it the next time you open it.")
             return
         }
 

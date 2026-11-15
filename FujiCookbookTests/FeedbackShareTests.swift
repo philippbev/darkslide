@@ -16,7 +16,7 @@ final class FeedbackShareTests: XCTestCase {
     }
 
     func testTheFileIsExactlyWhatWasPassedIn() {
-        let note = "Fuji Cookbook — feedback\n\nApp          1.0 (12)\n\nlove the app"
+        let note = "Darkslide — feedback\n\nApp          1.0 (12)\n\nlove the app"
         let share = SupportMail.feedback(text: note)
         XCTAssertEqual(String(decoding: share.data, as: UTF8.self), note,
                        "nothing is spliced in behind the view's back")

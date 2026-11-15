@@ -1,7 +1,8 @@
 import SwiftUI
 import SwiftData
 
-/// Top-level tab layout: Recipes, Chapters, Ideas (behind a flag), Kitchen and Camera.
+/// Top-level tab layout: Recipes, Rolls, Ideas (behind a flag), Darkroom and Camera. The labels follow
+/// the darkroom vocabulary (design system v2.6); the types behind them keep their old names for now.
 struct RootView: View {
     @Environment(ImportCoordinator.self) private var importCoordinator
     @Environment(AISettings.self) private var aiSettings
@@ -83,7 +84,7 @@ struct RootView: View {
                 Label("The last session ended unexpectedly", systemImage: "exclamationmark.triangle.fill")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(DSColor.textPrimary)
-                Text("Fuji Cookbook closed on its own while you were using it. Its log was kept, and a report is the only way this gets fixed.")
+                Text("Darkslide closed on its own while you were using it. Its log was kept, and a report is the only way this gets fixed.")
                     .font(.caption)
                     .foregroundStyle(DSColor.textSecondary)
                 HStack(spacing: 16) {
@@ -117,10 +118,10 @@ struct RootView: View {
     private func tabs(selection: Binding<AppTab>) -> some View {
         if #available(iOS 18.0, *) {
             TabView(selection: selection) {
-                Tab("Recipes", systemImage: "tray.full", value: AppTab.library) {
+                Tab("Recipes", systemImage: "rectangle.stack", value: AppTab.library) {
                     LibraryView()
                 }
-                Tab("Chapters", systemImage: "books.vertical", value: AppTab.chapters) {
+                Tab("Rolls", systemImage: "film", value: AppTab.chapters) {
                     ChaptersListView()
                 }
                 if FeatureFlags.ideasEnabled {
@@ -128,10 +129,10 @@ struct RootView: View {
                         RecommenderView()
                     }
                 }
-                Tab("Kitchen", systemImage: "frying.pan", value: AppTab.kitchen) {
+                Tab("Darkroom", systemImage: "camera.filters", value: AppTab.kitchen) {
                     KitchenView()
                 }
-                Tab("Camera", systemImage: "cable.connector", value: AppTab.camera) {
+                Tab("Camera", systemImage: "camera.aperture", value: AppTab.camera) {
                     CameraView()
                 }
             }
@@ -139,11 +140,11 @@ struct RootView: View {
         } else {
             TabView(selection: selection) {
                 LibraryView()
-                    .tabItem { Label("Recipes", systemImage: "tray.full") }
+                    .tabItem { Label("Recipes", systemImage: "rectangle.stack") }
                     .tag(AppTab.library)
 
                 ChaptersListView()
-                    .tabItem { Label("Chapters", systemImage: "books.vertical") }
+                    .tabItem { Label("Rolls", systemImage: "film") }
                     .tag(AppTab.chapters)
 
                 if FeatureFlags.ideasEnabled {
@@ -153,11 +154,11 @@ struct RootView: View {
                 }
 
                 KitchenView()
-                    .tabItem { Label("Kitchen", systemImage: "frying.pan") }
+                    .tabItem { Label("Darkroom", systemImage: "camera.filters") }
                     .tag(AppTab.kitchen)
 
                 CameraView()
-                    .tabItem { Label("Camera", systemImage: "cable.connector") }
+                    .tabItem { Label("Camera", systemImage: "camera.aperture") }
                     .tag(AppTab.camera)
             }
         }

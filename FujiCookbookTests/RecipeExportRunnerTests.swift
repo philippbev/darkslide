@@ -65,8 +65,8 @@ final class RecipeExportRunnerTests: XCTestCase {
 
     func testTheFileNameEndsWithTheLocalDate() throws {
         let noon = try XCTUnwrap(Calendar.current.date(from: DateComponents(year: 2026, month: 10, day: 5, hour: 12)))
-        XCTAssertEqual(RecipeExporter.fileName(for: "Fuji Cookbook Backup", on: noon),
-                       "Fuji Cookbook Backup 2026-10-05.fujirecipe")
+        XCTAssertEqual(RecipeExporter.fileName(for: "Darkslide Backup", on: noon),
+                       "Darkslide Backup 2026-10-05.fujirecipe")
         XCTAssertEqual(RecipeExporter.fileName(for: "Harbour: Light/2", on: noon),
                        "Harbour- Light-2 2026-10-05.fujirecipe", "unsafe characters still become dashes")
         XCTAssertEqual(RecipeExporter.fileName(for: "  ", on: noon), "Recipe 2026-10-05.fujirecipe")

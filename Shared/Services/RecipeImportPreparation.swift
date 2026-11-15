@@ -18,7 +18,7 @@ enum RecipeImportValidation {
             throw RecipeFileError.resourceLimit(detail: "This file contains more than \(limits.recipes) recipes. Export smaller recipe groups.")
         }
         guard (file.chapters?.count ?? 0) <= limits.chapters else {
-            throw RecipeFileError.resourceLimit(detail: "This file contains more than \(limits.chapters) chapters.")
+            throw RecipeFileError.resourceLimit(detail: "This file contains more than \(limits.chapters) rolls.")
         }
         for (index, recipe) in file.allRecipes.enumerated() {
             try Task.checkCancellation()

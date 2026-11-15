@@ -71,7 +71,7 @@ struct TestKitchenView: View {
             diagnosticsSection
         }
         .paperBackground()
-        .navigationTitle("Test Kitchen")
+        .navigationTitle("Test Strips")
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $cookedBatchID) { id in
             SavedComparisonsView(batchID: id)
@@ -192,8 +192,8 @@ struct TestKitchenView: View {
                        enabled: canCook, action: cook)
         } footer: {
             Text(guided == nil
-                 ? "Develops a grid of \(pickedRAFs.count) file\(pickedRAFs.count == 1 ? "" : "s") × \(resolvedRecipes.count) recipe\(resolvedRecipes.count == 1 ? "" : "s"), saved to Recent Results in the Kitchen.\n\nVersions are developed at reduced resolution — they're for judging a recipe, not for keeping. Develop the winner on its own for the full-resolution file.\n\nKeep the app in the foreground and the camera awake — each version is a separate on-camera conversion."
-                 : "Keep the app open and the USB cable connected until all previews appear. These smaller JPEGs are saved in Kitchen → Recent Results. View each recipe's version, then tap Continue Camera Test to record your observation.")
+                 ? "Develops a grid of \(pickedRAFs.count) file\(pickedRAFs.count == 1 ? "" : "s") × \(resolvedRecipes.count) recipe\(resolvedRecipes.count == 1 ? "" : "s"), saved to Recent Results in the Darkroom.\n\nVersions are developed at reduced resolution — they're for judging a recipe, not for keeping. Develop the winner on its own for the full-resolution file.\n\nKeep the app in the foreground and the camera awake — each version is a separate on-camera conversion."
+                 : "Keep the app open and the USB cable connected until all previews appear. These smaller JPEGs are saved in Darkroom → Recent Results. View each recipe's version, then tap Continue Camera Test to record your observation.")
         }
     }
 
@@ -268,7 +268,7 @@ struct TestKitchenView: View {
                     // The camera did its part; the local store didn't. Saying "nothing developed"
                     // here would blame the camera for a SwiftData failure.
                     failure = CookFailure(title: "Couldn't save the comparison",
-                                          message: "The previews were developed but could not be saved to Recent Results. Recovery copies are kept in Files → Fuji Cookbook → Recovered Develops.")
+                                          message: "The previews were developed but could not be saved to Recent Results. Recovery copies are kept in Files → Darkslide → Recovered Develops.")
                 }
             }
         }

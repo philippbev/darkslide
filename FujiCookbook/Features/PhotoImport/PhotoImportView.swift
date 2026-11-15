@@ -36,7 +36,7 @@ struct PhotoImportView: View {
         content
             .background(DSColor.background.ignoresSafeArea())
             .tint(DSColor.signal)
-            .navigationTitle("Import Photos")
+            .navigationTitle("Light Table")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {

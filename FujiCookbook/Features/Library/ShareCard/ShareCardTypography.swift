@@ -338,7 +338,7 @@ struct CardWordmark: View {
     }
 
     private var wordmark: some View {
-        Text("Fuji Cookbook")
+        Text("Darkslide")
             .font(.system(size: textSize, weight: .semibold, design: .serif))
             .tracking(Self.trackingEm * textSize)
             .foregroundStyle(color)

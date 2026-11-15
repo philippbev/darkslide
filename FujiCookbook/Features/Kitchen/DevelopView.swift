@@ -185,8 +185,8 @@ struct DevelopView: View {
                 .textCase(nil)
         } footer: {
             Text(guided == nil
-                 ? "Developed at full resolution and saved to Recent Results in the Kitchen.\n\nKeep Fuji Cookbook in the foreground and the camera awake while developing — backgrounding the app can drop the USB connection and interrupt the transfer.\n\nThe recipe's white balance is applied to the develop, including a color temperature in Kelvin. A recipe with no white balance set keeps the one the photo was shot at.\n\nA recipe's Dynamic Range is capped to what the RAW was shot at — a higher DR (e.g. DR400 on a DR200 file) has no exposure headroom to develop and is reduced automatically (shown in the result)."
-                 : "Keep the app open and the USB cable connected until the photo appears. The full-resolution JPEG is saved in Kitchen → Recent Results. Any Dynamic Range adjustment is shown with the photo.")
+                 ? "Developed at full resolution and saved to Recent Results in the Darkroom.\n\nKeep Darkslide in the foreground and the camera awake while developing — backgrounding the app can drop the USB connection and interrupt the transfer.\n\nThe recipe's white balance is applied to the develop, including a color temperature in Kelvin. A recipe with no white balance set keeps the one the photo was shot at.\n\nA recipe's Dynamic Range is capped to what the RAW was shot at — a higher DR (e.g. DR400 on a DR200 file) has no exposure headroom to develop and is reduced automatically (shown in the result)."
+                 : "Keep the app open and the USB cable connected until the photo appears. The full-resolution JPEG is saved in Darkroom → Recent Results. Any Dynamic Range adjustment is shown with the photo.")
         }
     }
 
@@ -252,7 +252,7 @@ struct DevelopView: View {
                 do {
                     try await CookStore.persistChecked([comparison], fullResolution: false, into: modelContext)
                 } catch {
-                    probeReport = run.report + "\n\nThe probe's previews couldn't be saved to Recent Results. Recovery copies are kept in Files → Fuji Cookbook → Recovered Develops."
+                    probeReport = run.report + "\n\nThe probe's previews couldn't be saved to Recent Results. Recovery copies are kept in Files → Darkslide → Recovered Develops."
                 }
             }
         }

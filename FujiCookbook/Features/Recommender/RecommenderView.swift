@@ -116,7 +116,7 @@ struct RecommenderView: View {
             Label {
                 Text("Filling out “\(sourceChapter?.name ?? "")”. Its recipes are pinned below, and the result can be written straight back to it.")
             } icon: {
-                Image(systemName: "books.vertical").foregroundStyle(DSColor.signalText)
+                Image(systemName: "film").foregroundStyle(DSColor.signalText)
             }
             Button("Start Fresh Instead", role: .destructive) { resetComposer() }
         }
@@ -199,7 +199,7 @@ struct RecommenderView: View {
             }
             .disabled(isThinking || slotRange.lowerBound == slotRange.upperBound)
         } header: {
-            Text("Chapter Size")
+            Text("Roll Size")
         } footer: {
             Text(sizeFooter)
         }
@@ -217,14 +217,14 @@ struct RecommenderView: View {
                             Text("Asking \(aiSettings.provider.displayName) with your key…")
                         }
                     } else {
-                        Label(anchorUUIDs.isEmpty ? "Get Recipe Ideas" : "Complete the Chapter",
+                        Label(anchorUUIDs.isEmpty ? "Get Recipe Ideas" : "Complete the Roll",
                               systemImage: "sparkles")
                     }
                 }
                 .disabled(isThinking)
             }
         } footer: {
-            Text("The model picks only from your library — nothing is invented, and nothing changes until you save the result as a chapter. Every result is kept below.")
+            Text("The model picks only from your library — nothing is invented, and nothing changes until you save the result as a roll. Every result is kept below.")
         }
     }
 

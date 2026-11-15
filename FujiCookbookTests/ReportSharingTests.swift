@@ -13,7 +13,7 @@ final class ReportSharingTests: XCTestCase {
     }
 
     func testTheBodyIsOneFixedLine() {
-        XCTAssertEqual(report.body, "To: fujicookbook@grovehouse.xyz. Fuji Cookbook report attached; add what went wrong below.")
+        XCTAssertEqual(report.body, "To: fujicookbook@grovehouse.xyz. Darkslide report attached; add what went wrong below.")
         XCTAssertFalse(report.body.contains("\n"), "Gmail flattens newlines; there are none to flatten")
     }
 

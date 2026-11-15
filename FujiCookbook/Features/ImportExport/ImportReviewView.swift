@@ -43,11 +43,11 @@ struct ImportReviewView: View {
 
                 if !pending.chapters.isEmpty {
                     Section {
-                        Label("\(pending.chapters.count) chapter\(pending.chapters.count == 1 ? "" : "s") will be restored",
-                              systemImage: "books.vertical")
+                        Label("\(pending.chapters.count) roll\(pending.chapters.count == 1 ? "" : "s") will be restored",
+                              systemImage: "film")
                             .font(.subheadline)
                     } footer: {
-                        Text("Chapters are re-linked to the imported recipes. Existing identical chapters are skipped.")
+                        Text("Rolls are re-linked to the imported recipes. Existing identical rolls are skipped.")
                     }
                 }
             }

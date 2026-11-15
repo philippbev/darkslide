@@ -348,8 +348,8 @@ extension GuidedTestSession.OptionalCheck {
         case .mono: return "Write CT Mono"
         case .kelvin: return "Write CT Kelvin"
         case .extraRestarts: return "Restart after additional recipes"
-        case .testKitchen: return "Compare two recipes in Test Kitchen"
-        case .expandedKitchen: return "Test Kitchen with more RAW files"
+        case .testKitchen: return "Compare two recipes in Test Strips"
+        case .expandedKitchen: return "Test Strips with more RAW files"
         case .cameraReference: return "Compare with the camera's JPEG"
         case .dynamicRange: return "Develop at DR100, DR200, DR400 and Auto"
         }
@@ -583,8 +583,8 @@ enum CameraTestSummary {
         let names = run.recipes.map(\.name).joined(separator: " and ")
         switch run.caseID {
         case "develop": return names.isEmpty ? "Develop a RAW file" : "Develop with " + names
-        case "testKitchen": return "Test Kitchen comparison" + (names.isEmpty ? "" : " · " + names)
-        case "expandedKitchen": return "Test Kitchen RAW batch" + (names.isEmpty ? "" : " · " + names)
+        case "testKitchen": return "Test Strips comparison" + (names.isEmpty ? "" : " · " + names)
+        case "expandedKitchen": return "Test Strips RAW batch" + (names.isEmpty ? "" : " · " + names)
         default: return dynamicRangeCases.first { $0.0 == run.caseID }?.1 ?? "RAW conversion"
         }
     }

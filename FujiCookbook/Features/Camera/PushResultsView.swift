@@ -149,7 +149,7 @@ struct PushResultsView: View {
     /// The full per-field table, not a summary — this is the artifact that makes a partial write
     /// diagnosable on a body nobody has tested.
     private var report: String {
-        var lines = ["Fuji Cookbook — push results"]
+        var lines = ["Darkslide — push results"]
         for result in results {
             lines.append("")
             lines.append("Slot C\(result.slot): \(result.outcome)")

@@ -46,7 +46,7 @@ final class LocationRecorder: NSObject {
         case .authorizedWhenInUse, .authorizedAlways:
             begin()
         default:
-            lastError = "Location access is off. Enable it for Fuji Cookbook in Settings to record a track."
+            lastError = "Location access is off. Enable it for Darkslide in Settings to record a track."
         }
     }
 

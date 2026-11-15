@@ -45,14 +45,14 @@ struct ShareableReport {
     var subject: String { (fileName as NSString).deletingPathExtension }
 
     static func body(for address: String) -> String {
-        "To: \(address). Fuji Cookbook report attached; add what went wrong below."
+        "To: \(address). Darkslide report attached; add what went wrong below."
     }
 
     /// The feedback variant. The trailing "add what went wrong below" is dropped on purpose: for
     /// feedback the note is already written, and it is in the file rather than the body precisely
     /// because Gmail flattens a multi-line body and would run the paragraphs together.
     static func feedbackBody(for address: String) -> String {
-        "To: \(address). Fuji Cookbook feedback attached."
+        "To: \(address). Darkslide feedback attached."
     }
 }
 
@@ -82,7 +82,7 @@ enum SupportMail {
     static func testResults(text: String, cameraReport: CameraCompatibilityReport?) -> ShareableReport {
         let source = problemReport(text: text, cameraReport: cameraReport)
         return ShareableReport(kind: .test, address: source.address,
-                               body: "To: \(source.address). Fuji Cookbook camera test results attached.",
+                               body: "To: \(source.address). Darkslide camera test results attached.",
                                fileName: source.fileName.replacingOccurrences(of: "problem-report", with: "test-results"),
                                data: source.data, mimeType: source.mimeType, extraFiles: source.extraFiles)
     }

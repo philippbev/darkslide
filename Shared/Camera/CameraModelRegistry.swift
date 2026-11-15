@@ -238,7 +238,7 @@ final class CameraModelRegistry {
                                // the manual sweep and stay unrecorded.
                                documentedSlotCount: id == "X-E3" ? 7 : nil,
                                writeSupport: id == "X-T20"
-                                   ? .blocked(reason: "\(name) doesn't expose custom slots through the bank protocol Fuji Cookbook uses, so its slots aren't read or written. You can still develop RAW files with it in the Kitchen, and recipes authored for it can be pushed to other bodies.")
+                                   ? .blocked(reason: "\(name) doesn't expose custom slots through the bank protocol Darkslide uses, so its slots aren't read or written. You can still develop RAW files with it in the Darkroom, and recipes authored for it can be pushed to other bodies.")
                                    : .untested))
         }
 
@@ -285,7 +285,7 @@ final class CameraModelRegistry {
                                magentaGreenAxis: false,
                                grainSize: false,
                                rawConversion: true, slotProtocol: false,
-                               writeSupport: .blocked(reason: "\(name) doesn't expose custom slots through the bank protocol Fuji Cookbook uses, so its slots aren't read or written. You can still develop RAW files with it in the Kitchen, and recipes authored for it can be pushed to other bodies.")))
+                               writeSupport: .blocked(reason: "\(name) doesn't expose custom slots through the bank protocol Darkslide uses, so its slots aren't read or written. You can still develop RAW files with it in the Darkroom, and recipes authored for it can be pushed to other bodies.")))
         }
 
         // X-Trans IV (late: full gen-IV feature set). Slot read/write enabled on reports for three
@@ -355,7 +355,7 @@ final class CameraModelRegistry {
                            // `rangesToningEighteenWholeStep`.
                            ranges: rangesToningEighteenWholeStep,
                            rawConversion: true, slotProtocol: false,
-                           writeSupport: .blocked(reason: "A published test found custom-slot reads and writes failing on the FUJIFILM X-Pro3 at firmware 2.00, and the cause isn't known yet, so Fuji Cookbook doesn't read or write its slots. You can still develop RAW files with it in the Kitchen, and recipes authored for it can be pushed to other bodies.")))
+                           writeSupport: .blocked(reason: "A published test found custom-slot reads and writes failing on the FUJIFILM X-Pro3 at firmware 2.00, and the cause isn't known yet, so Darkslide doesn't read or write its slots. You can still develop RAW files with it in the Darkroom, and recipes authored for it can be pushed to other bodies.")))
 
         // X-Trans IV sensor, X-Processor 5: the X-T30 III (2025) and X-M5 (2024). Film simulations
         // follow the processor, so both ship REALA ACE and Nostalgic Neg, and both carry the

@@ -171,7 +171,7 @@ struct GuidedIntroStep: View {
     }
 
     var body: some View {
-        GuidedStepLayout(title: "How your camera talks to Fuji Cookbook",
+        GuidedStepLayout(title: "How your camera talks to Darkslide",
                          subtitle: "Every Fujifilm model and firmware handles recipes a little differently. This guided test checks yours, and your results help improve support for everyone who owns one.") {
             if !previousRecoveries.isEmpty {
                 GuidedNoticeCard(title: "Settings from an earlier test", systemImage: "arrow.uturn.backward",
@@ -1151,7 +1151,7 @@ struct GuidedKitchenStep: View {
             } else {
                 Text("Ready to try").font(.caption).foregroundStyle(DSColor.textSecondary)
             }
-            Button(completion == nil ? (id == "testKitchen" || id == "expandedKitchen" ? "Open Test Kitchen" : "Open Develop") : "Try again") {
+            Button(completion == nil ? (id == "testKitchen" || id == "expandedKitchen" ? "Open Test Strips" : "Open Develop") : "Try again") {
                 stopReference()
                 onOpen(id)
             }

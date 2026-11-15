@@ -41,14 +41,14 @@ struct CameraImportView: View {
                 }
 
                 Section {
-                    Toggle("Also save as a Chapter", isOn: $saveAsChapter)
+                    Toggle("Also save as a Roll", isOn: $saveAsChapter)
                     if saveAsChapter {
                         TextField(defaultChapterName, text: $chapterName)
                     }
                 } header: {
-                    Text("Chapter")
+                    Text("Roll")
                 } footer: {
-                    Text("Groups the selected recipes into a chapter in camera-slot order (C1 first). Recipes already in your library are reused, not duplicated. Up to \(Chapter.maxSlots) slots.")
+                    Text("Groups the selected recipes into a roll in camera-slot order (C1 first). Recipes already in your library are reused, not duplicated. Up to \(Chapter.maxSlots) slots.")
                 }
             }
         }
@@ -144,7 +144,7 @@ struct CameraImportView: View {
                                   recipeUUIDs: Array(ordered.prefix(Chapter.maxSlots)))
             modelContext.insert(chapter)
             let count = min(ordered.count, Chapter.maxSlots)
-            summary += "\nSaved chapter “\(chapter.name)” with \(count) recipe\(count == 1 ? "" : "s")."
+            summary += "\nSaved roll “\(chapter.name)” with \(count) recipe\(count == 1 ? "" : "s")."
         }
 
         importSummary = summary

@@ -7,7 +7,7 @@ extension CameraCompatibilityReport {
     /// The same facts as the JSON, laid out for a person. This is what the tester reads before
     /// sending, and what lands in "Report a Problem".
     var textRendering: String {
-        var lines: [String] = ["Fuji Cookbook — camera compatibility report v\(reportVersion)"]
+        var lines: [String] = ["Darkslide — camera compatibility report v\(reportVersion)"]
         let f = ISO8601DateFormatter()
         lines.append("Collection  began \(f.string(from: generatedAt)) · updated \(f.string(from: updatedAt))  (app \(app.version) (\(app.build)) \(app.channel), iOS \(host.systemVersion), \(host.deviceIdentifier))")
         lines.append("")

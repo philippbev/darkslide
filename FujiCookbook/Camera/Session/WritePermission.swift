@@ -68,7 +68,7 @@ struct WritePermission: Equatable {
             case .trustedEntry(let level):
                 return level.pushCaveat
             case .walk:
-                return "Writing is on because this camera's custom slots answered when it connected, not because anyone has reported a write to it. Fuji Cookbook records exactly what the slot held before it writes, and tells you exactly what landed."
+                return "Writing is on because this camera's custom slots answered when it connected, not because anyone has reported a write to it. Darkslide records exactly what the slot held before it writes, and tells you exactly what landed."
             }
         }
 
@@ -79,7 +79,7 @@ struct WritePermission: Equatable {
             case .trustedEntry(let level):
                 return level.testerNote
             case .walk:
-                return "This camera hasn't been tested — writing is on because its custom slots answered when it connected. Fuji Cookbook records exactly what the slot held before it writes, and tells you exactly what landed."
+                return "This camera hasn't been tested — writing is on because its custom slots answered when it connected. Darkslide records exactly what the slot held before it writes, and tells you exactly what landed."
             }
         }
     }
@@ -147,19 +147,19 @@ enum WriteRefusal: Equatable {
         case .blockedByRecord(let reason):
             return reason
         case .noIdentity:
-            return "“\(productName)” isn't a recognized model and didn't identify itself over USB with a product name, serial number and firmware version, so Fuji Cookbook can't be sure which camera it is talking to and won't write recipes to it."
+            return "“\(productName)” isn't a recognized model and didn't identify itself over USB with a product name, serial number and firmware version, so Darkslide can't be sure which camera it is talking to and won't write recipes to it."
         case .noBankBlock:
             return "“\(productName)” answers that it has no custom-slot selector over USB (0x200A), so its slots can't be reached this way. Nothing was written."
         case .selectorUnreadable(let detail):
-            return "“\(productName)” didn't say which custom slot is selected (\(detail)), so Fuji Cookbook can't tell whether its slots are reachable and won't write to it. Reconnect and try again."
+            return "“\(productName)” didn't say which custom slot is selected (\(detail)), so Darkslide can't tell whether its slots are reachable and won't write to it. Reconnect and try again."
         case .walkFailed(let detail):
-            return "Reading “\(productName)”'s custom slots stopped early (\(detail)), so Fuji Cookbook won't write to it. Reconnect to read them again."
+            return "Reading “\(productName)”'s custom slots stopped early (\(detail)), so Darkslide won't write to it. Reconnect to read them again."
         case .selectIgnored(let bank):
-            return "“\(productName)” said OK to selecting slot C\(bank) and stayed where it was, so a write could land in the wrong slot. Fuji Cookbook won't write to it."
+            return "“\(productName)” said OK to selecting slot C\(bank) and stayed where it was, so a write could land in the wrong slot. Darkslide won't write to it."
         case .noBanks:
             return "“\(productName)” accepted no slot select, so there is no slot to write to."
         case .selectorNotRestored:
-            return "After its slots were read, “\(productName)” didn't go back to the slot it was on, so its slot selector can't be trusted and Fuji Cookbook won't write to it."
+            return "After its slots were read, “\(productName)” didn't go back to the slot it was on, so its slot selector can't be trusted and Darkslide won't write to it."
         }
     }
 }

@@ -29,7 +29,7 @@ struct ShareScanView: View {
         switch model.stage {
         case .review(let draft): return draft.isEditing ? "Edit Recipe" : "Recipe Found"
         case .saved(_, let outcome): return outcome == .skipped ? "Skipped" : "Saved"
-        default: return "Fuji Cookbook"
+        default: return "Darkslide"
         }
     }
 
@@ -91,7 +91,7 @@ struct ShareScanView: View {
         case .queued:
             message(title: "Saved for Later",
                     systemImage: "tray.and.arrow.down.fill",
-                    body: "Open Fuji Cookbook and this screenshot will be read then.") {
+                    body: "Open Darkslide and this screenshot will be read then.") {
                 primaryButton("Done", systemImage: nil) { model.finish(saved: true) }
             }
             .task { await dismissAfterConfirmation() }
@@ -114,7 +114,7 @@ struct ShareScanView: View {
                     .font(.subheadline)
                     .foregroundStyle(DSColor.textSecondary)
             }
-            Text("This screenshot is read by \(model.scanProviderName) using your API key. Fuji Cookbook never receives it.")
+            Text("This screenshot is read by \(model.scanProviderName) using your API key. Darkslide never receives it.")
                 .font(.footnote)
                 .foregroundStyle(DSColor.textSecondary)
                 .multilineTextAlignment(.center)

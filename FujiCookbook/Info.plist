@@ -18,7 +18,7 @@
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Fuji Cookbook</string>
+	<string>Darkslide</string>
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
@@ -78,16 +78,16 @@
 	<!-- Required so the app may issue PTP requests to a connected camera via ImageCaptureCore.
 	     Covers both recipe sync (custom slots) and Kitchen RAW conversion (developing RAF files on the camera). -->
 	<key>NSCameraUsageDescription</key>
-	<string>Fuji Cookbook connects to your Fujifilm camera over USB to read and write film simulation recipes in your camera's custom slots, and to develop your RAW (RAF) files using the camera's processor. It never modifies the photos on your camera's card.</string>
+	<string>Darkslide connects to your Fujifilm camera over USB to read and write film simulation recipes in your camera's custom slots, and to develop your RAW (RAF) files using the camera's processor. It never modifies the photos on your camera's card.</string>
 
 	<!-- Lets the user save a Kitchen-converted JPEG, or a Frame & Fit export, into their photo library. -->
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Fuji Cookbook saves the JPEGs it develops from your RAW files, and the photos you frame with Frame &amp; Fit, into your photo library when you choose to save them.</string>
+	<string>Darkslide saves the JPEGs it develops from your RAW files, and the photos you frame with Frame &amp; Fit, into your photo library when you choose to save them.</string>
 
 	<!-- Records a location track while the user takes pictures, so imported photos can be placed.
 	     The track stays on the device. -->
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Fuji Cookbook records where you go while you take pictures, so the photos you import from your camera can show where each was taken. The track stays on this iPhone.</string>
+	<string>Darkslide records where you go while you take pictures, so the photos you import from your camera can show where each was taken. The track stays on this iPhone.</string>
 
 	<!-- Open the user's original file rather than a copy. Without this key iOS copies every opened
 	     recipe into Documents/Inbox and expects the app to delete it afterwards; we never do, so the

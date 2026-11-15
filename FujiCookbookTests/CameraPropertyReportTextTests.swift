@@ -24,7 +24,7 @@ final class CameraPropertyReportTextTests: XCTestCase {
         let text = CameraPropertyReportView.reportText(camera: connected(.exact(try model("X-T50"))),
                                                        read: .init(slot: 3, probes: [grain]))
         let lines = text.components(separatedBy: "\n")
-        XCTAssertEqual(lines[0], "Fuji Cookbook — camera property report")
+        XCTAssertEqual(lines[0], "Darkslide — camera property report")
         XCTAssertEqual(lines[1], "Camera: \(try model("X-T50").displayName) · model X-T50 · firmware 1.32")
         XCTAssertEqual(lines[2], "Slot: C3")
         XCTAssertEqual(lines[3], "")
@@ -45,7 +45,7 @@ final class CameraPropertyReportTextTests: XCTestCase {
             WriteProbeEntry(step: 1, wrote: 2, writeError: "0x201C Invalid DeviceProp Value", readBack: nil),
         ])
         XCTAssertEqual(CameraPropertyReportView.grainProbeText(camera: nil, run: run), """
-            Fuji Cookbook — D195 grain write probe
+            Darkslide — D195 grain write probe
             Slot: C4
             wrote 1: ACCEPTED
             wrote 2: rejected (0x201C Invalid DeviceProp Value)
@@ -59,7 +59,7 @@ final class CameraPropertyReportTextTests: XCTestCase {
         let lines = CameraPropertyReportView.dynamicRangeProbeText(camera: connected(.unknown), run: run)
             .components(separatedBy: "\n")
         XCTAssertEqual(Array(lines.prefix(4)), [
-            "Fuji Cookbook — D190 dynamic range write probe",
+            "Darkslide — D190 dynamic range write probe",
             "Camera: FUJIFILM X-T99",
             "Slot: C2",
             "wrote DR Auto: ACCEPTED",

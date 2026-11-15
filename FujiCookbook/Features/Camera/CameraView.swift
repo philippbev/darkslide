@@ -481,7 +481,7 @@ struct CameraView: View {
     private var unrecognizedCard: some View {
         if let report = camera.reports.report {
             CameraNotice(title: "This camera isn't supported yet", systemImage: "questionmark.diamond") {
-                Text("Fuji Cookbook read everything \(report.camera.productName) would show it and changed nothing. Sharing a report is what gets this camera supported. It contains what the camera says about itself and the recipe settings it currently holds — nothing leaves the phone until you share it.")
+                Text("Darkslide read everything \(report.camera.productName) would show it and changed nothing. Sharing a report is what gets this camera supported. It contains what the camera says about itself and the recipe settings it currently holds — nothing leaves the phone until you share it.")
                 // No share button here: the Camera Test below leads to the fuller report — the same
                 // camera data plus the logs and the answers only a person can give — and two
                 // buttons offering different halves of one thing would make the weaker one look
@@ -505,7 +505,7 @@ struct CameraView: View {
             // No model name in the title: the panel directly above already names the body, and
             // `blockReason` opens with it too — three in a row read as a stutter.
             CameraNotice(title: "No custom slots over USB", systemImage: "lock.fill") {
-                Text("\(model.writeSupport.blockReason ?? "This camera's firmware doesn't expose custom slots over USB.") Fuji Cookbook read everything it would show and changed nothing — it didn't even ask the camera to select a slot.")
+                Text("\(model.writeSupport.blockReason ?? "This camera's firmware doesn't expose custom slots over USB.") Darkslide read everything it would show and changed nothing — it didn't even ask the camera to select a slot.")
                 Text("Sharing a report is what gets this camera's support confirmed. It holds what the camera says about itself and which settings it answered for — nothing leaves the phone until you share it. The Camera Test walks you through producing one.")
             }
         }
@@ -524,8 +524,8 @@ struct CameraView: View {
                          systemImage: "arrow.triangle.2.circlepath") {
                 ForEach(drift) { Text($0.summary + ".") }
                 Text(dial
-                     ? "Fuji Cookbook didn't do this. On the \(camera.session.model?.displayName ?? "camera"), the Film Simulation dial can change a custom slot's film simulation — check that it's on “C”. Push the recipe again to restore it."
-                     : "Fuji Cookbook didn't do this. Push the recipe again to restore it, and if it keeps happening, send a report.")
+                     ? "Darkslide didn't do this. On the \(camera.session.model?.displayName ?? "camera"), the Film Simulation dial can change a custom slot's film simulation — check that it's on “C”. Push the recipe again to restore it."
+                     : "Darkslide didn't do this. Push the recipe again to restore it, and if it keeps happening, send a report.")
                 NavigationLink { DiagnosticsReportView() } label: {
                     Label("Report a Problem", systemImage: "square.and.arrow.up")
                 }
@@ -549,7 +549,7 @@ struct CameraView: View {
             let count = divergentSlots.reduce(0) { $0 + $1.unsupportedFields.count }
             let names = divergentSlots.map(\.label).joined(separator: ", ")
             CameraNotice(title: "Some settings didn't read cleanly", systemImage: "exclamationmark.triangle.fill") {
-                Text("Fuji Cookbook read \(count) value\(count == 1 ? "" : "s") on \(names) that it doesn't recognize on this camera. It left \(count == 1 ? "that setting" : "those settings") blank rather than guessing, so what you see may be incomplete — and that's exactly the kind of fact that gets this camera properly supported.")
+                Text("Darkslide read \(count) value\(count == 1 ? "" : "s") on \(names) that it doesn't recognize on this camera. It left \(count == 1 ? "that setting" : "those settings") blank rather than guessing, so what you see may be incomplete — and that's exactly the kind of fact that gets this camera properly supported.")
                 NavigationLink { DiagnosticsReportView() } label: {
                     Label("Report a Problem", systemImage: "square.and.arrow.up")
                         .frame(maxWidth: .infinity)
@@ -704,7 +704,7 @@ struct CameraView: View {
                     }
                 } else if camera.session.isConnected {
                     cameraTestRow(title: "Help improve camera support",
-                                  subtitle: "A guided Camera Test shows how your \(testedCameraName) works with Fuji Cookbook.",
+                                  subtitle: "A guided Camera Test shows how your \(testedCameraName) works with Darkslide.",
                                   systemImage: "checklist") {
                         cameraTest = CameraTestRequest()
                     }
@@ -827,7 +827,7 @@ struct CameraView: View {
             VStack(spacing: 0) {
                 if SharedContainer.isLocalMacBuild {
                     // See `SharedContainer.isLocalMacBuild`: no USB camera in this build.
-                    Text("This Mac build is signed to run locally, so it can't reach a camera over USB. Recipes, chapters and the Kitchen work; the Demo Camera and Demo Card are under the diagnostic tools.")
+                    Text("This Mac build is signed to run locally, so it can't reach a camera over USB. Recipes, rolls and the Darkroom work; the Demo Camera and Demo Card are under the diagnostic tools.")
                         .font(DSFont.subhead)
                         .foregroundStyle(DSColor.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -862,7 +862,7 @@ struct CameraView: View {
                     // The demo model converts, so the develop step's profile harvest never shows
                     // on it. This one presents as a GFX100 — read, write, no Kitchen — which is the
                     // only way to walk that step without owning such a body.
-                    connectRow(title: "Connect Demo as GFX100 (no Kitchen)", systemImage: "play.circle") {
+                    connectRow(title: "Connect Demo as GFX100 (no Darkroom)", systemImage: "play.circle") {
                         Task { await camera.connector.connectDemo(using: MockCameraTransport(faults: .gfx100WithoutKitchen)) }
                     }
                 }

@@ -60,7 +60,7 @@ struct DiagnosticsReportSnapshot: Codable, Equatable {
         guard !selected.isEmpty else { return "" }
         let formatter = ISO8601DateFormatter()
         var lines = ["— App activity during this test —",
-                     "Bounded camera/Kitchen context from the current app launch, \(formatter.string(from: startedAt)) to \(formatter.string(from: capturedAt)). Earlier buffered or previous-launch activity may be absent. Events are associated by time, not individually identified to a camera."]
+                     "Bounded camera/Darkroom context from the current app launch, \(formatter.string(from: startedAt)) to \(formatter.string(from: capturedAt)). Earlier buffered or previous-launch activity may be absent. Events are associated by time, not individually identified to a camera."]
         lines += selected.map {
             "\(formatter.string(from: $0.timestamp)) [\($0.category.rawValue)] \($0.isError ? "! " : "")\($0.message)"
         }
@@ -189,7 +189,7 @@ struct DiagnosticsReportSnapshot: Codable, Equatable {
                 ? reportText.replacingOccurrences(of: oldRendering, with: technicalCamera.textRendering)
                 : technicalCamera.textRendering
         }
-        var lines = ["Fuji Cookbook — camera test results", "",
+        var lines = ["Darkslide — camera test results", "",
                      "Report captured: \(ISO8601DateFormatter().string(from: capturedAt))", "",
                      "— Test summary —"]
         lines += summary.isEmpty ? ["No check summary is available. See the recorded evidence below; missing checks are not passing checks."] : summary
@@ -426,7 +426,7 @@ struct DiagnosticsReportView: View {
 
     /// Versions, settings and counts — the part every form of the report starts with.
     private var headerLines: [String] {
-        var lines: [String] = [isGuided ? "Fuji Cookbook — camera test diagnostics" : "Fuji Cookbook — problem report", ""]
+        var lines: [String] = [isGuided ? "Darkslide — camera test diagnostics" : "Darkslide — problem report", ""]
         lines += AppIdentity.reportLines
         lines.append("")
         lines.append("Sync         \(syncDescription)")
@@ -434,7 +434,7 @@ struct DiagnosticsReportView: View {
         lines.append("")
         // `fetchCount`, not a `@Query`: the report prints only the numbers.
         lines.append("Recipes      \((try? modelContext.fetchCount(FetchDescriptor<Recipe>())).map(String.init) ?? "unavailable")")
-        lines.append("Chapters     \((try? modelContext.fetchCount(FetchDescriptor<Chapter>())).map(String.init) ?? "unavailable")")
+        lines.append("Rolls        \((try? modelContext.fetchCount(FetchDescriptor<Chapter>())).map(String.init) ?? "unavailable")")
         lines.append("Camera       \(cameraDescription)")
         return lines
     }

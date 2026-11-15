@@ -42,7 +42,7 @@ struct SendFeedbackView: View {
 
     private var header: some View {
         Text([
-            "Write what you want to tell us — what's working, what isn't, what you'd change. Fuji Cookbook attaches nothing else: no logs, no camera report, no settings. Only the four lines below, so a reply knows which build you're on.",
+            "Write what you want to tell us — what's working, what isn't, what you'd change. Darkslide attaches nothing else: no logs, no camera report, no settings. Only the four lines below, so a reply knows which build you're on.",
             "If something went wrong, use Report a Problem instead — it carries the detail that makes a bug findable.",
             "Nothing is sent unless you send it.",
         ].joined(separator: "\n\n"))
@@ -103,6 +103,6 @@ struct SendFeedbackView: View {
     private var metadataLines: [String] { AppIdentity.reportLines }
 
     private var feedbackText: String {
-        (["Fuji Cookbook — feedback", ""] + metadataLines + ["", trimmedNote]).joined(separator: "\n")
+        (["Darkslide — feedback", ""] + metadataLines + ["", trimmedNote]).joined(separator: "\n")
     }
 }

@@ -90,7 +90,7 @@ enum PhotoImportError: LocalizedError, Equatable {
         case .noCamera:
             return "No camera detected. Connect it with a USB data cable. \(Self.cardReaderHint)"
         case .permissionDenied:
-            return "Camera access is off. Enable it for Fuji Cookbook in Settings, then try again."
+            return "Camera access is off. Enable it for Darkslide in Settings, then try again."
         case .noPhotos(let diagnostics):
             let message = "The camera lists no photos. If the card isn't empty, the camera is in another USB mode. \(Self.cardReaderHint)"
             return diagnostics.map { "\(message)\n\nWhat the camera answered: \($0)" } ?? message
@@ -101,7 +101,7 @@ enum PhotoImportError: LocalizedError, Equatable {
         case .downloadFailed(let file, let detail):
             return "Couldn't copy \(file) from the camera: \(detail)"
         case .photoLibraryDenied:
-            return "Photo library access is off. Enable it for Fuji Cookbook in Settings, then try again."
+            return "Photo library access is off. Enable it for Darkslide in Settings, then try again."
         case .destinationUnavailable(let detail):
             return "The destination folder can't be written to: \(detail)"
         case .localMacBuild:

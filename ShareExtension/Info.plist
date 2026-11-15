@@ -19,7 +19,7 @@
 	<string>$(PRODUCT_NAME)</string>
 	<!-- The name shown under the icon in the iOS share sheet. -->
 	<key>CFBundleDisplayName</key>
-	<string>Fuji Cookbook</string>
+	<string>Darkslide</string>
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
