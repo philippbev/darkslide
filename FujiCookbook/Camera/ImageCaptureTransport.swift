@@ -456,6 +456,17 @@ extension ImageCaptureTransport: RawConversionTransport {
         return inData ?? Data()
     }
 
+    /// `GetPartialObject` — up to `maxBytes` of an object from `offset`. Read-only.
+    func getPartialObject(_ handle: UInt32, offset: UInt32, maxBytes: UInt32) async throws -> Data {
+        try ensurePTPCapable()
+        transactionID &+= 1
+        let cmd = FujiPTP.commandContainer(operation: .getPartialObject, transactionID: transactionID,
+                                           parameters: [handle, offset, maxBytes])
+        let (inData, response) = try await sendPTP(cmd, outData: nil)
+        try checkResponse(response)
+        return inData ?? Data()
+    }
+
     /// `GetObject` for a file whose size the camera has stated, timed for that size rather than
     /// the converted JPEG's budget: a RAF from a 40 MP body is over 50 MB. Read-only.
     func getObject(_ handle: UInt32, expectedBytes: Int) async throws -> Data {

@@ -38,8 +38,8 @@ final class PhotoImportModel {
     /// Every frame on the card, in the order taken.
     private(set) var frames: [ImportFrame] = []
     private(set) var thumbnails: [ImportFrame.ID: CGImage] = [:]
-    /// Each frame's film simulation, read from its preview while the diagnostic switch is on
-    /// (`DiagnosticMode.readsImportSimulationKey`); a frame whose preview has none is missing.
+    /// Each frame's film simulation, for the code on its tile; a frame the camera gave none for is
+    /// missing.
     private(set) var simulations: [ImportFrame.ID: FilmSimulation] = [:]
     var selection: Set<ImportFrame.ID> = []
     /// Hide what an earlier import already copied.
@@ -64,7 +64,9 @@ final class PhotoImportModel {
     @ObservationIgnored private var thumbnailRequests: Set<ImportFrame.ID> = []
     @ObservationIgnored private let loadTrackPoints: () -> [GeoPoint]
     @ObservationIgnored private let preferences: UserDefaults
-    @ObservationIgnored let readsSimulation: Bool
+    /// Tiles shown while the first portion was still being listed: their simulations are read
+    /// once it is, so the extra reads don't slow the listing down.
+    @ObservationIgnored private var simulationsWaiting: [ImportFrame] = []
 
     init(source: PhotoSource,
          ledger: PhotoImportLedger = PhotoImportLedger(),
@@ -83,7 +85,6 @@ final class PhotoImportModel {
         self.clockOffset = clockOffset
         self.loadTrackPoints = loadTrackPoints
         self.preferences = preferences
-        self.readsSimulation = preferences.bool(forKey: DiagnosticMode.readsImportSimulationKey)
         self.fileChoice = ImportFileChoice.load(from: preferences)
     }
 
@@ -145,6 +146,7 @@ final class PhotoImportModel {
             receive(files)
             isListing = false
             listingProgress = nil
+            readWaitingSimulations()
             canLoadMore = source.canLoadMore
             // With older files still unread, "nothing new" only means nothing new so far.
             if newFrames.isEmpty, !canLoadMore { showsOnlyNew = false }
@@ -159,6 +161,7 @@ final class PhotoImportModel {
                 // Part of the card is on screen and can still be imported.
                 isListing = false
                 listingProblem = error.localizedDescription
+                readWaitingSimulations()
             }
         }
     }
@@ -249,24 +252,37 @@ final class PhotoImportModel {
 
     // MARK: Thumbnails
 
-    /// Ask for a frame's picture once; the tile shows its placeholder until it arrives. With the
-    /// diagnostic switch on, the simulation follows from the same preview, and the log records
-    /// how long it took and whether the preview had one: the figures that decide whether the
-    /// codes can be on for everyone.
+    /// Ask for a frame's picture once; the tile shows its placeholder until it arrives. Its film
+    /// simulation follows, read from the start of the file (`PhotoSource.filmSimulation`): about
+    /// 0.2 s a frame on an X100VI (2026-11-15), so only for tiles that appear, and only once the
+    /// first portion of the card is listed.
     func loadThumbnail(for frame: ImportFrame) {
         guard thumbnails[frame.id] == nil, thumbnailRequests.insert(frame.id).inserted else { return }
         Task {
-            let clock = ContinuousClock()
-            let start = clock.now
             if let image = await source.thumbnail(for: frame.preview) { thumbnails[frame.id] = image }
-            guard readsSimulation else { return }
-            let thumbnailTime = clock.now - start
-            let simulation = await source.filmSimulation(for: frame.preview)
-            let total = clock.now - start
-            if let simulation { simulations[frame.id] = simulation }
-            AppLog.info(.importExport, "Import simulation: \(frame.preview.name) \(simulation?.dsCode ?? "none")"
-                + "   preview \(Self.milliseconds(thumbnailTime)) ms   total \(Self.milliseconds(total)) ms")
+            if isListing {
+                simulationsWaiting.append(frame)
+            } else {
+                await readSimulation(of: frame)
+            }
         }
+    }
+
+    private func readWaitingSimulations() {
+        let waiting = simulationsWaiting
+        simulationsWaiting = []
+        guard !waiting.isEmpty else { return }
+        Task { for frame in waiting { await readSimulation(of: frame) } }
+    }
+
+    private func readSimulation(of frame: ImportFrame) async {
+        let clock = ContinuousClock()
+        let start = clock.now
+        // The JPEG when the frame has one: its EXIF sits at the very start of the file.
+        let carrier = frame.files.first { $0.kind == .jpeg } ?? frame.preview
+        let simulation = await source.filmSimulation(for: carrier)
+        if let simulation { simulations[frame.id] = simulation }
+        AppLog.info(.importExport, "Import simulation: \(simulation?.dsCode ?? "none") in \(Self.milliseconds(clock.now - start)) ms")
     }
 
     private static func milliseconds(_ duration: Duration) -> Int {

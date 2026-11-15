@@ -15,6 +15,8 @@ protocol PhotoCardTransport: AnyObject {
     func getObjectInfo(_ handle: UInt32) async throws -> FujiPTP.ObjectInfo
     func getThumb(_ handle: UInt32) async throws -> Data
     func getObject(_ handle: UInt32, expectedBytes: Int) async throws -> Data
+    /// The first bytes of a file, for its MakerNote. Read-only.
+    func getPartialObject(_ handle: UInt32, offset: UInt32, maxBytes: UInt32) async throws -> Data
 }
 
 extension ImageCaptureTransport: PhotoCardTransport {}
@@ -233,11 +235,44 @@ final class PTPPhotoSource: PhotoSource {
         return CGImageSourceCreateImageAtIndex(source, 0, nil)
     }
 
-    /// From the preview the thumbnail already fetched, so reading the simulation costs no second
-    /// GetThumb.
+    /// The preview first, which costs nothing more: the tile already fetched it. Fujifilm's
+    /// GetThumb answer is the bare embedded thumbnail, without the MakerNote (X100VI, 2026-11-15:
+    /// no tile got a code), so then the file's own first bytes, where a JPEG's EXIF and a RAF's
+    /// embedded JPEG sit. Both reads only; how each went is noted in the import trace.
     func filmSimulation(for file: ImportFile) async -> FilmSimulation? {
-        guard let data = await previewData(for: file) else { return nil }
-        return PreviewSimulation.read(data, name: file.name)
+        if let preview = await previewData(for: file),
+           let simulation = PreviewSimulation.read(preview, name: file.name) {
+            traceSimulation("from the preview")
+            return simulation
+        }
+        guard let transport, let handle = handles[file.id] else { return nil }
+        let clock = ContinuousClock()
+        let start = clock.now
+        do {
+            let head = try await transport.getPartialObject(handle, offset: 0, maxBytes: Self.headBytes)
+            let simulation = PreviewSimulation.read(head, name: file.name)
+            let elapsed = clock.now - start
+            let milliseconds = elapsed.components.seconds * 1000 + elapsed.components.attoseconds / 1_000_000_000_000_000
+            traceSimulation("from \(head.count / 1024) KB of the file in \(milliseconds) ms: "
+                            + (simulation?.dsCode ?? "no MakerNote found"))
+            return simulation
+        } catch {
+            traceSimulation("GetPartialObject refused: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    /// Enough for a JPEG's EXIF block (at most 64 KB) and for a RAF's header and the start of its
+    /// embedded JPEG.
+    static let headBytes: UInt32 = 160 * 1024
+
+    /// The first dozen reads of a visit go to the trace, which holds counts and timings and no file
+    /// names.
+    private var simulationTraces = 0
+    private func traceSimulation(_ line: String) {
+        guard simulationTraces < 12 else { return }
+        simulationTraces += 1
+        PhotoImportTrace.note("Simulation \(line)")
     }
 
     /// The camera's preview of a file, fetched once (GetThumb, a read).

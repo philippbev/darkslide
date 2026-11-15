@@ -355,7 +355,9 @@ struct PhotoImportView: View {
             DSContactSheetTile(image: model.thumbnails[frame.id].map { Image(decorative: $0, scale: 1) },
                                frameNumber: frame.frameNumber,
                                simulation: model.simulations[frame.id],
-                               format: frame.formatLabel,
+                               // What this import copies, so a RAF+JPG pair reads "JPG" under
+                               // JPEG/HEIF.
+                               format: frame.formatLabel(for: model.fileChoice),
                                isSelected: model.selection.contains(frame.id))
         }
         .buttonStyle(.plain)

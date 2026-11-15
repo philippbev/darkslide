@@ -11,10 +11,4 @@ enum DiagnosticMode {
     /// UserDefaults key. Views gate on it with `@AppStorage(DiagnosticMode.key)`, so flipping the
     /// Settings toggle updates every surface immediately.
     static let key = "diagnostics.enabled"
-
-    /// Whether the photo import reads each frame's film simulation from the camera's preview, to
-    /// show its code on the tile. Off by default and only offered with the diagnostic tools: whether
-    /// a body's previews carry the MakerNote, and how long the extra reads take over USB, is still to
-    /// be measured on hardware (`PhotoImportModel.loadThumbnail`, which logs both).
-    static let readsImportSimulationKey = "diagnostics.photoImport.readsSimulation"
 }

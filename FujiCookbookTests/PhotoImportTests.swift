@@ -129,6 +129,14 @@ final class PhotoImportTests: XCTestCase {
         XCTAssertEqual(frames[1].formatLabel, "JPG")
     }
 
+    /// The tile names what this import copies: a RAF+JPG pair under JPEG/HEIF is a JPG.
+    func testTheTileNamesOnlyTheChosenFiles() throws {
+        let pair = ImportFrame.frames(from: [try file("DSCF1284.RAF", size: 50_000), try file("DSCF1284.JPG", size: 9_000)])[0]
+        XCTAssertEqual(pair.formatLabel(for: .all), "RAF+JPG")
+        XCTAssertEqual(pair.formatLabel(for: .rendered), "JPG")
+        XCTAssertEqual(pair.formatLabel(for: .raw), "RAF")
+    }
+
     func testSameFrameNumberInAnotherFolderIsAnotherFrame() throws {
         let frames = ImportFrame.frames(from: [try file("DSCF0001.JPG", folder: "DCIM/100_FUJI"),
                                                try file("DSCF0001.JPG", folder: "DCIM/101_FUJI")])

@@ -35,7 +35,6 @@ struct SettingsView: View {
 
     /// Opt-in developer/diagnostic surfaces (off by default) — see `DiagnosticMode`.
     @AppStorage(DiagnosticMode.key) private var diagnosticMode = false
-    @AppStorage(DiagnosticMode.readsImportSimulationKey) private var readsImportSimulation = false
 
     /// Light, Dark or System (the default). `FujiCookbookApp` applies it — see `AppearancePreference`.
     @AppStorage(AppearancePreference.key, store: SharedDefaults.suite)
@@ -364,10 +363,6 @@ struct SettingsView: View {
                 } label: {
                     Label("Design System", systemImage: "swatchpalette")
                 }
-                Toggle("Read Film Simulation in Import", isOn: $readsImportSimulation)
-                Text("Reads each photo's film simulation from the camera's preview and shows its code on the tile. The log records how long each read takes, to test on a real camera before this is on for everyone.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
             }
         } header: {
             Text("Diagnostics")
