@@ -102,10 +102,10 @@ enum RecipeExportValidation {
     static func check(_ snapshot: RecipeExportSnapshot, limits: RecipeImportLimits = .standard,
                       progress: ProgressHandler = { _ in }) throws {
         guard snapshot.entries.count <= limits.recipes else {
-            throw tooLarge("This export has more than \(limits.recipes) recipes, more than Fuji Cookbook can import from one file. Export fewer recipes at a time.")
+            throw tooLarge("This export has more than \(limits.recipes) recipes, more than Darkslide can import from one file. Export fewer recipes at a time.")
         }
         guard (snapshot.chapters?.count ?? 0) <= limits.chapters else {
-            throw tooLarge("This export has more than \(limits.chapters) chapters, more than Fuji Cookbook can import from one file.")
+            throw tooLarge("This export has more than \(limits.chapters) rolls, more than Darkslide can import from one file.")
         }
         for entry in snapshot.entries {
             if let field = RecipeSettingsPortabilityValidation.invalidField(in: entry.recipe.settings) {
@@ -117,11 +117,11 @@ enum RecipeExportValidation {
         var encodedPhotoBytes = 0
         for entry in snapshot.entries {
             guard entry.photos.count <= Recipe.maxPhotos else {
-                throw tooLarge("“\(entry.recipe.name)” has more than \(Recipe.maxPhotos) sample photos, more than Fuji Cookbook can import. Remove the extras or export without sample photos.")
+                throw tooLarge("“\(entry.recipe.name)” has more than \(Recipe.maxPhotos) sample photos, more than Darkslide can import. Remove the extras or export without sample photos.")
             }
             for photo in entry.photos {
                 guard photo.count <= limits.photoBytes else {
-                    throw tooLarge("A sample photo in “\(entry.recipe.name)” is larger than Fuji Cookbook can import. Export without sample photos.")
+                    throw tooLarge("A sample photo in “\(entry.recipe.name)” is larger than Darkslide can import. Export without sample photos.")
                 }
                 let encodedBytes = (photo.count + 2) / 3 * 4
                 guard encodedBytes <= limits.fileBytes - encodedPhotoBytes else {
@@ -163,7 +163,7 @@ enum RecipeExportValidation {
     }
 
     private static func fileTooLarge(_ limits: RecipeImportLimits) -> RecipeExportError {
-        tooLarge("This export would be larger than the \(limits.fileBytes / 1_048_576) MiB Fuji Cookbook can import, so it couldn't be opened again. Export fewer recipes at a time, or export without sample photos.")
+        tooLarge("This export would be larger than the \(limits.fileBytes / 1_048_576) MiB Darkslide can import, so it couldn't be opened again. Export fewer recipes at a time, or export without sample photos.")
     }
 
     private static func tooLarge(_ detail: String) -> RecipeExportError {

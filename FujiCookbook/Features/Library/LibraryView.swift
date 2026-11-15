@@ -502,7 +502,7 @@ struct LibraryView: View {
     }
 
     private func exportAll() {
-        startExport(recipes, fileName: "Fuji Cookbook Library")
+        startExport(recipes, fileName: "Darkslide Library")
     }
 
     /// Begin an export: if any recipe carries sample photos, ask whether to embed them; otherwise

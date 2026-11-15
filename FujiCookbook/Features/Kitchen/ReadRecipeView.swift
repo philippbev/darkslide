@@ -190,7 +190,7 @@ struct ReadRecipeView: View {
         case .notAJPEG(let kind) where kind == .heif:
             return "This is a HEIF file, and Read Recipe can only open JPEGs so far. Set the camera's image quality to FINE or NORMAL and shoot it again."
         case .notAJPEG(let kind):
-            return "Read Recipe works on JPEGs from the camera. This is a \(kind.displayName). If you shot RAW, develop it in the Kitchen first and read the JPEG that comes out."
+            return "Read Recipe works on JPEGs from the camera. This is a \(kind.displayName). If you shot RAW, develop it in the Darkroom first and read the JPEG that comes out."
         case .unreadable:
             return "The file couldn't be opened. If it lives in iCloud Drive, download it first and try again."
         case .malformedJPEG:

@@ -46,9 +46,9 @@ struct ChaptersListView: View {
             NavigationStack { ChapterDetailView(chapter: chapter) }
         } else {
             ContentUnavailableView {
-                Label("Select a Chapter", systemImage: "books.vertical")
+                Label("Select a Roll", systemImage: "film")
             } description: {
-                Text("Pick a chapter on the left to see its slots.")
+                Text("Pick a roll on the left to see its slots.")
             }
             .background(DSColor.background.ignoresSafeArea())
         }
@@ -63,11 +63,11 @@ struct ChaptersListView: View {
             }
         }
         .background(DSColor.background.ignoresSafeArea())
-        .navigationTitle("Chapters")
+        .navigationTitle("Rolls")
         .settingsToolbarItem()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { createChapter() } label: { Label("New Chapter", systemImage: "plus") }
+                Button { createChapter() } label: { Label("New Roll", systemImage: "plus") }
             }
         }
         .navigationDestination(for: Chapter.self) { ChapterDetailView(chapter: $0) }
@@ -123,11 +123,11 @@ struct ChaptersListView: View {
 
     private var emptyState: some View {
         ContentUnavailableView {
-            Label("No Chapters Yet", systemImage: "books.vertical")
+            Label("No Rolls Yet", systemImage: "film")
         } description: {
-            Text("A Chapter groups up to \(Chapter.maxSlots) recipes and pushes them to the camera's custom slots C1–C\(Chapter.maxSlots) all at once.")
+            Text("A Roll groups up to \(Chapter.maxSlots) recipes and pushes them to the camera's custom slots C1–C\(Chapter.maxSlots) all at once.")
         } actions: {
-            Button("New Chapter") { createChapter() }
+            Button("New Roll") { createChapter() }
                 .buttonStyle(.borderedProminent)
                 .disabled(recipes.isEmpty)
             if recipes.isEmpty {
@@ -138,7 +138,7 @@ struct ChaptersListView: View {
     }
 
     private func createChapter() {
-        let chapter = Chapter(name: "New Chapter")
+        let chapter = Chapter(name: "New Roll")
         modelContext.insert(chapter)
         editTarget = Identified(value: chapter)
     }

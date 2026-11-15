@@ -170,7 +170,7 @@ struct RecipeDetailView: View {
     private var tags: some View {
         if !chapters.isEmpty || !recipe.tags.isEmpty {
             DSFlowLayout {
-                ForEach(chapters) { DSTag(text: $0.name, systemImage: "books.vertical") }
+                ForEach(chapters) { DSTag(text: $0.name, systemImage: "film") }
                 ForEach(recipe.tags, id: \.self) { DSTag(text: "#\($0)") }
             }
         }
@@ -218,7 +218,7 @@ struct RecipeDetailView: View {
                     Text(value.displayString).font(DSFont.valueMono).foregroundStyle(DSColor.textPrimary)
                 }
             }
-            Label("These came from another camera or app version, or from a camera that reported a value Fuji Cookbook doesn't recognize. Either way they're kept intact and re-exported unchanged, so nothing is silently lost — but they can't be shown properly or pushed back to a camera.",
+            Label("These came from another camera or app version, or from a camera that reported a value Darkslide doesn't recognize. Either way they're kept intact and re-exported unchanged, so nothing is silently lost — but they can't be shown properly or pushed back to a camera.",
                   systemImage: "exclamationmark.triangle")
                 .font(DSFont.subhead)
                 .foregroundStyle(DSColor.textSecondary)

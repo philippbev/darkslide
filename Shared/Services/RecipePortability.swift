@@ -17,7 +17,7 @@ enum RecipeFileError: LocalizedError, Equatable {
         case .notJSON:
             return "This file isn't valid JSON, so it can't be read as a recipe."
         case .wrongSchema(let found):
-            return "This file is JSON but isn't a Fuji Cookbook recipe (schema “\(found)”). Nothing was imported."
+            return "This file is JSON but isn't a Darkslide recipe (schema “\(found)”). Nothing was imported."
         case .unsupportedVersion(let found, let supported):
             return "This recipe file uses format version \(found), which is newer than this app supports (up to \(supported)). Update the app to import it. Nothing was changed."
         case .empty:

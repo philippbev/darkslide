@@ -25,7 +25,7 @@ enum RecipeDetailArchive {
     static func sideFields(slot: String?, chapterNames: [String], createdAt: Date,
                            calendar: Calendar = .current) -> [DSDataField] {
         [DSDataField(label: "Slot", value: slot ?? "—"),
-         DSDataField(label: "Chapter", value: chapterValue(chapterNames)),
+         DSDataField(label: "Roll", value: chapterValue(chapterNames)),
          DSDataField(label: "Created", value: created(createdAt, calendar: calendar))]
     }
 

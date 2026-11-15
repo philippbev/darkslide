@@ -95,7 +95,7 @@ struct ImageSaver {
     private static let genericError = NSError(domain: "FujiCookbook.ImageSaver", code: -1,
         userInfo: [NSLocalizedDescriptionKey: "The photo couldn't be saved."])
     private static let deniedError = NSError(domain: "FujiCookbook.ImageSaver", code: -2,
-        userInfo: [NSLocalizedDescriptionKey: "Photo library access is off. Enable it for Fuji Cookbook in Settings, then try again."])
+        userInfo: [NSLocalizedDescriptionKey: "Photo library access is off. Enable it for Darkslide in Settings, then try again."])
 }
 
 /// `UIActivityViewController` for SwiftUI, for shares whose outcome nothing records: recipes,

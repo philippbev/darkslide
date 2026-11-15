@@ -35,13 +35,13 @@ struct ChapterEditorView: View {
             return "All \(Chapter.maxSlots) slots are full. Swipe a recipe away to make room."
         }
         if allRecipes.isEmpty { return "Your library has no recipes to add yet." }
-        if availableRecipes.isEmpty { return "Every recipe in your library is already in this chapter." }
+        if availableRecipes.isEmpty { return "Every recipe in your library is already in this roll." }
         return nil
     }
 
     var body: some View {
         Form {
-            Section { TextField("Chapter Name", text: $draft.name) }
+            Section { TextField("Roll Name", text: $draft.name) }
 
             Section {
                 if draft.recipeUUIDs.isEmpty {
@@ -73,7 +73,7 @@ struct ChapterEditorView: View {
                 Text("Order is the slot order: the first recipe pushes to C1, the second to C2, and so on. Drag to reorder, swipe to remove.")
             }
         }
-        .navigationTitle(isNew ? "New Chapter" : "Edit Chapter")
+        .navigationTitle(isNew ? "New Roll" : "Edit Roll")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -100,7 +100,7 @@ struct ChapterEditorView: View {
             RecipePickerSheet(title: "Add Recipe",
                               choices: availableRecipes.map(RecipeChoice.init),
                               mode: .single,
-                              emptyMessage: "Every recipe is already in this chapter.") { picked in
+                              emptyMessage: "Every recipe is already in this roll.") { picked in
                 guard case .library(let uuid)? = picked.first else { return }
                 if draft.recipeUUIDs.count < Chapter.maxSlots { draft.recipeUUIDs.append(uuid) }
             }

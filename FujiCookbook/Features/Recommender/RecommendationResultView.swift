@@ -56,19 +56,19 @@ struct RecommendationResultView: View {
         }
         .navigationTitle(recommendation.title)
         .navigationBarTitleDisplayMode(.inline)
-        .alert("Save as Chapter", isPresented: $showingChapterNamePrompt) {
-            TextField("Chapter Name", text: $chapterName)
+        .alert("Save as Roll", isPresented: $showingChapterNamePrompt) {
+            TextField("Roll Name", text: $chapterName)
             Button("Save") { saveChapter() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Groups these \(availableRecipes.count) recipes as a chapter, ready to push to slots C1–C\(availableRecipes.count).")
+            Text("Groups these \(availableRecipes.count) recipes as a roll, ready to push to slots C1–C\(availableRecipes.count).")
         }
         .confirmationDialog("Update “\(sourceChapter?.name ?? "")”?",
                             isPresented: $showingUpdateConfirm, titleVisibility: .visible) {
             Button("Replace Slots") { updateSourceChapter() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Replaces that chapter's slots with these \(availableRecipes.count) recipes, in this order. The recipes themselves aren't changed.")
+            Text("Replaces that roll's slots with these \(availableRecipes.count) recipes, in this order. The recipes themselves aren't changed.")
         }
         .alert("Done", isPresented: Binding(isPresent: $statusMessage)) {
             Button("OK", role: .cancel) {}
@@ -120,7 +120,7 @@ struct RecommendationResultView: View {
                 }
             }
         } header: {
-            Text("The Chapter (\(recommendation.picks.count) slot\(recommendation.picks.count == 1 ? "" : "s"))")
+            Text("The Roll (\(recommendation.picks.count) slot\(recommendation.picks.count == 1 ? "" : "s"))")
         } footer: {
             if recommendation.wasBuiltAroundAnchors {
                 Label("Pinned by you — the model kept these and built the rest around them.",
@@ -200,10 +200,10 @@ struct RecommendationResultView: View {
                 chapterName = recommendation.title
                 showingChapterNamePrompt = true
             } label: {
-                Label("Save as New Chapter…", systemImage: "books.vertical")
+                Label("Save as New Roll…", systemImage: "film")
             }
         } footer: {
-            Text("The chapter references these library recipes — nothing is copied or duplicated.")
+            Text("The roll references these library recipes — nothing is copied or duplicated.")
         }
     }
 
@@ -227,7 +227,7 @@ struct RecommendationResultView: View {
         let uuids = availableRecipes.prefix(Chapter.maxSlots).map(\.uuid)
         guard !uuids.isEmpty else { return }
         modelContext.insert(Chapter(name: finalName, recipeUUIDs: Array(uuids)))
-        statusMessage = "“\(finalName)” is in your Chapters tab."
+        statusMessage = "“\(finalName)” is in your Rolls tab."
     }
 
     private func updateSourceChapter() {

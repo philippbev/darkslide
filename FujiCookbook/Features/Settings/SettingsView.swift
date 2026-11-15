@@ -343,8 +343,8 @@ struct SettingsView: View {
             Text("About")
         } footer: {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Created by Zachary Grimshaw and open source under the Apache License 2.0. The App Store version is published by Grove House Studio LLC.")
-                Text("Fuji Cookbook is not affiliated with, endorsed by, or sponsored by FUJIFILM Corporation.")
+                Text("Darkslide is an independent fork of Fuji Cookbook, created by Zachary Grimshaw and open source under the Apache License 2.0. It is not affiliated with Fuji Cookbook's authors or Grove House Studio LLC.")
+                Text("Darkslide is not affiliated with, endorsed by, or sponsored by FUJIFILM Corporation.")
             }
         }
     }
@@ -354,7 +354,7 @@ struct SettingsView: View {
         Section {
             Toggle("Show Diagnostic Tools", isOn: $diagnosticMode)
             if diagnosticMode {
-                Label("Diagnostic tools are on the Camera and Kitchen tabs. Turning this off disconnects the Demo Camera.",
+                Label("Diagnostic tools are on the Camera and Darkroom tabs. Turning this off disconnects the Demo Camera.",
                       systemImage: "wrench.and.screwdriver")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -490,13 +490,13 @@ struct SettingsView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("AI features send your data, including recipe screenshots shared from other apps, to your chosen provider (Anthropic or OpenAI) using your own API key. Your provider’s terms apply.\n\nEntering a key or switching providers may send that provider’s key to load available models. Fuji Cookbook never receives any of it.")
+                Text("AI features send your data, including recipe screenshots shared from other apps, to your chosen provider (Anthropic or OpenAI) using your own API key. Your provider’s terms apply.\n\nEntering a key or switching providers may send that provider’s key to load available models. Darkslide never receives any of it.")
             }
     }
 
     private func presentingExport(_ content: some View) -> some View {
         content
-            .confirmationDialog("Export Recipes and Chapters", isPresented: $showingBackupPhotoChoice, titleVisibility: .visible) {
+            .confirmationDialog("Export Recipes and Rolls", isPresented: $showingBackupPhotoChoice, titleVisibility: .visible) {
                 Button("Include Sample Photos") { performBackup(includePhotos: true) }
                 Button("Without Sample Photos") { performBackup(includePhotos: false) }
                 Button("Cancel", role: .cancel) {}
@@ -517,7 +517,7 @@ struct SettingsView: View {
         let files = recoveryBackups.map(\.exportFile)
         guard let first = files.first else { return }
         let report = ShareableReport(kind: .backup, address: "",
-                                    body: "Fuji Cookbook original camera backups. Save these files before clearing recovery data.",
+                                    body: "Darkslide original camera backups. Save these files before clearing recovery data.",
                                     fileName: first.fileName, data: first.data,
                                     mimeType: "application/json", extraFiles: Array(files.dropFirst()))
         do {
@@ -636,13 +636,13 @@ struct SettingsView: View {
                 Text("Your library has no recipes to export yet.").foregroundStyle(.secondary)
             } else {
                 Button { startBackup() } label: {
-                    Label("Export Recipes and Chapters…", systemImage: "square.and.arrow.up.on.square")
+                    Label("Export Recipes and Rolls…", systemImage: "square.and.arrow.up.on.square")
                 }
             }
         } header: {
             Text("Export")
         } footer: {
-            Text("Save \(recipeCount) recipe\(recipeCount == 1 ? "" : "s") and \(chapterCount) chapter\(chapterCount == 1 ? "" : "s") in one file to restore later or on another device. Kitchen photos aren’t included.")
+            Text("Save \(recipeCount) recipe\(recipeCount == 1 ? "" : "s") and \(chapterCount) roll\(chapterCount == 1 ? "" : "s") in one file to restore later or on another device. Darkroom photos aren’t included.")
         }
     }
 
@@ -674,7 +674,7 @@ struct SettingsView: View {
             let (recipes, chapters) = try fetchLibrary()
             let snapshot = RecipeExportSnapshot.backup(recipes: recipes, chapters: chapters,
                                                        includePhotos: includePhotos)
-            backupRunner.start(snapshot, named: "Fuji Cookbook Backup") { result in
+            backupRunner.start(snapshot, named: "Darkslide Backup") { result in
                 switch result {
                 case .success(let url): backupShareItem = ShareItem(url: url)
                 case .failure(let error): backupError = error.localizedDescription

@@ -42,7 +42,7 @@ struct SavedComparisonsView: View {
         return List {
             if photos.isEmpty {
                 ContentUnavailableView("No Results Yet", systemImage: "photo.stack",
-                                       description: Text("Photos you develop in the Kitchen are kept here."))
+                                       description: Text("Photos you develop in the Darkroom are kept here."))
             } else if scopedToBatch {
                 Section { rows(photos) }
             } else {

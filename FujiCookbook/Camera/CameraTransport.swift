@@ -60,15 +60,15 @@ enum CameraError: LocalizedError, Equatable {
         case .noDeviceConnected:
             return "No camera detected. Connect your Fujifilm camera with a USB data cable and set it to “USB RAW Conv./Backup Restore” mode."
         case .permissionDenied:
-            return "Fuji Cookbook needs permission to communicate with your camera. Allow camera access when iOS asks, or enable it in Settings, then reconnect."
+            return "Darkslide needs permission to communicate with your camera. Allow camera access when iOS asks, or enable it in Settings, then reconnect."
         case .contentsAccessUnavailable:
-            return "iOS is refusing Fuji Cookbook access to your camera's contents. That is a second permission, separate from Camera: Settings → Privacy & Security → Files and Folders → Fuji Cookbook. If that switch is off and won't stay on, iOS has a stuck record for this app on this device that reinstalling doesn't clear. Send a report from Settings → Help & Feedback → Report a Problem; the log inside it carries what iOS returned."
+            return "iOS is refusing Darkslide access to your camera's contents. That is a second permission, separate from Camera: Settings → Privacy & Security → Files and Folders → Darkslide. If that switch is off and won't stay on, iOS has a stuck record for this app on this device that reinstalling doesn't clear. Send a report from Settings → Help & Feedback → Report a Problem; the log inside it carries what iOS returned."
         case .wrongUSBMode:
             return "The camera is connected but isn't in the right USB mode. On the camera, set Connection Setting → USB Mode to “USB RAW Conv./Backup Restore” (or your model's equivalent), then reconnect."
         case .chargeOnlyCableOrAdapter:
             return "The camera was seen but no data connection was established. This is usually a charge-only cable or an unpowered/non-Apple adapter. Use a USB data cable (the one that shipped with the camera is a safe choice)."
         case .unsupportedModel(let name):
-            return "“\(name)” isn't a recognized model and didn't identify itself over USB with a product name, serial number and firmware version, so Fuji Cookbook won't write recipes to it."
+            return "“\(name)” isn't a recognized model and didn't identify itself over USB with a product name, serial number and firmware version, so Darkslide won't write recipes to it."
         case .writeBlocked(let reason):
             return reason.isEmpty ? "Writing to this camera isn't enabled yet." : reason
         case .slotSelectIgnored(let asked, let got):
@@ -96,7 +96,7 @@ enum CameraError: LocalizedError, Equatable {
         case .noOutputProduced:
             return "The conversion finished but no JPEG came back from the camera. Nothing was saved."
         case .conversionProfileMismatch(let detail):
-            return "This camera's conversion profile doesn't match the layout Fuji Cookbook understands (\(detail)). To protect the conversion, no recipe was applied."
+            return "This camera's conversion profile doesn't match the layout Darkslide understands (\(detail)). To protect the conversion, no recipe was applied."
         case .rafFromDifferentBody(let filename):
             return "The camera accepted “\(filename)” but returned no conversion profile for it (General Error 0x2002), so no recipe was applied. A RAW file shot on another camera is a known cause: Fujifilm cameras only develop their own RAW files, and even another camera of the same model won't work."
         case .rafShotOnAnotherBody(let filename, let shotOn, let connected):

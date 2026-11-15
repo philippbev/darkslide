@@ -361,7 +361,7 @@ final class SlotReader {
             }
             let drift = FilmSimulationDrift(slot: slot.index, wrote: sim(wroteHex), holds: sim(nowHex), pushedAt: push.at)
             found.append(drift)
-            CameraLog.error("Drift: \(drift.summary) — Fuji Cookbook did not write this; most likely the film simulation was changed on the camera while it was on this bank and not saved, which the USB block reflects")
+            CameraLog.error("Drift: \(drift.summary) — Darkslide did not write this; most likely the film simulation was changed on the camera while it was on this bank and not saved, which the USB block reflects")
             reports.note("drift: \(drift.summary) (wrote \(wroteHex), holds \(nowHex))")
         }
         filmSimulationDrift = found

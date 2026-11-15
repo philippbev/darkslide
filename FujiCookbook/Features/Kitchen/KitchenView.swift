@@ -68,7 +68,7 @@ struct KitchenView: View {
                 .padding(.bottom, 24)
             }
             .background(DSColor.background.ignoresSafeArea())
-            .navigationTitle("Kitchen")
+            .navigationTitle("Darkroom")
             .settingsToolbarItem()
             .navigationDestination(for: Destination.self) { destination in
                 switch destination {
@@ -130,7 +130,7 @@ struct KitchenView: View {
                 PathwayRow(icon: "square.grid.2x2",
                            tint: DSColor.signal,
                            tintSoft: DSColor.panel,
-                           title: "Test Kitchen",
+                           title: "Test Strips",
                            subtitle: "Compare up to 3 recipes, side by side.",
                            nested: true)
             }

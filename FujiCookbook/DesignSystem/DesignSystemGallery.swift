@@ -258,7 +258,7 @@ struct DesignSystemGallery: View {
                 DSArchiveCard {
                     DSArchiveHeader(objectNumber: "034",
                                     fields: [DSDataField(label: "Slot", value: "C3"),
-                                             DSDataField(label: "Chapter", value: "Street"),
+                                             DSDataField(label: "Roll", value: "Street"),
                                              DSDataField(label: "Created", value: "2026-11-14")])
                     DSRule()
                     DSArchiveTitle(title: "Lua de Mel", description: "Warm and soft, for late light.")

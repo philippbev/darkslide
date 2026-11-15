@@ -118,7 +118,7 @@ struct RestoreView: View {
     private var sourceExplanation: String {
         switch source {
         case .lastPush:
-            return "These are the settings C\(slot) held immediately before Fuji Cookbook last wrote to it. They're remembered on this phone until you use Clear Diagnostics, which erases them — an exported backup is the copy that lasts."
+            return "These are the settings C\(slot) held immediately before Darkslide last wrote to it. They're remembered on this phone until you use Clear Diagnostics, which erases them — an exported backup is the copy that lasts."
         case .backup:
             return "These are the settings C\(slot) held when you saved this backup."
         }
@@ -131,7 +131,7 @@ struct RestoreView: View {
             Label("Restore verification notes", systemImage: "exclamationmark.triangle.fill")
                 .font(.subheadline.weight(.semibold)).foregroundStyle(DSColor.textPrimary)
             if !fidelity.reEncoded.isEmpty {
-                Text("\(fidelity.reEncoded.joined(separator: ", ")): this body has no verified sequence for restoring the saved bytes, so Fuji Cookbook restores the visible setting. Remembered values may differ; the final comparison reports that as a partial restoration.")
+                Text("\(fidelity.reEncoded.joined(separator: ", ")): this body has no verified sequence for restoring the saved bytes, so Darkslide restores the visible setting. Remembered values may differ; the final comparison reports that as a partial restoration.")
                     .font(.caption).foregroundStyle(DSColor.textSecondary)
             }
             if !fidelity.notWritable.isEmpty {
@@ -143,7 +143,7 @@ struct RestoreView: View {
                     .font(.caption).foregroundStyle(DSColor.textSecondary)
             }
             if !fidelity.restoredWhileActive.isEmpty {
-                Text("\(fidelity.restoredWhileActive.joined(separator: ", ")): the original settings hide these values, but C\(slot) currently exposes them and the camera accepts the write. Fuji Cookbook puts them back first, then restores the setting that hides them, so the slot's stored values match the original.")
+                Text("\(fidelity.restoredWhileActive.joined(separator: ", ")): the original settings hide these values, but C\(slot) currently exposes them and the camera accepts the write. Darkslide puts them back first, then restores the setting that hides them, so the slot's stored values match the original.")
                     .font(.caption).foregroundStyle(DSColor.textSecondary)
             }
         }

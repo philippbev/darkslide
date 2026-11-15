@@ -123,7 +123,7 @@ enum VerificationLevel: Equatable, Hashable {
     /// and read-back cover what remains.
     var pushCaveat: String? {
         guard self == .inferred else { return nil }
-        return "Writing is on because this camera shares its processor and protocol with cameras that have been tested. Fuji Cookbook records exactly what the slot held before it writes, and tells you exactly what landed."
+        return "Writing is on because this camera shares its processor and protocol with cameras that have been tested. Darkslide records exactly what the slot held before it writes, and tells you exactly what landed."
     }
 
     /// What the Camera Test tells a tester about the evidence their report adds to. Nil for
@@ -133,11 +133,11 @@ enum VerificationLevel: Equatable, Hashable {
         case .hardware:
             return nil
         case .ownerReport:
-            return "This camera was checked end to end by one of its owners — written to, switched off and on, and compared against the camera's own menu — but it hasn't been tested on hardware here. Fuji Cookbook records exactly what the slot held before it writes, and tells you exactly what landed."
+            return "This camera was checked end to end by one of its owners — written to, switched off and on, and compared against the camera's own menu — but it hasn't been tested on hardware here. Darkslide records exactly what the slot held before it writes, and tells you exactly what landed."
         case .community:
-            return "This camera is listed as working by other owners, but no report from Fuji Cookbook has confirmed it and it hasn't been tested on hardware here. Fuji Cookbook records exactly what the slot held before it writes, and tells you exactly what landed."
+            return "This camera is listed as working by other owners, but no report from Darkslide has confirmed it and it hasn't been tested on hardware here. Darkslide records exactly what the slot held before it writes, and tells you exactly what landed."
         case .inferred:
-            return "This camera hasn't been tested on hardware — it's enabled because it shares its processor and protocol with bodies that were. Fuji Cookbook records exactly what the slot held before it writes, and tells you exactly what landed."
+            return "This camera hasn't been tested on hardware — it's enabled because it shares its processor and protocol with bodies that were. Darkslide records exactly what the slot held before it writes, and tells you exactly what landed."
         }
     }
 

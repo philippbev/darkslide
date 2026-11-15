@@ -20,13 +20,13 @@ final class SupportMailTests: XCTestCase {
 
     func testProblemReportSharesTheTextNamedForTheCamera() async {
         let r = await cameraReport()
-        let share = SupportMail.problemReport(text: "Fuji Cookbook — problem report\nApp 1.0\n" + r.textRendering, cameraReport: r)
+        let share = SupportMail.problemReport(text: "Darkslide — problem report\nApp 1.0\n" + r.textRendering, cameraReport: r)
         XCTAssertEqual(share.kind, .problem)
         XCTAssertTrue(share.fileName.hasPrefix("fuji-cookbook-problem-report-DEMO-"), share.fileName)
         XCTAssertTrue(share.fileName.hasSuffix(".txt"))
         XCTAssertEqual(share.mimeType, "text/plain")
         let text = String(decoding: share.data, as: UTF8.self)
-        XCTAssertTrue(text.hasPrefix("Fuji Cookbook — problem report"))
+        XCTAssertTrue(text.hasPrefix("Darkslide — problem report"))
         XCTAssertTrue(text.contains("camera compatibility report v\(CameraCompatibilityReport.currentVersion)"), "the camera report rides inside the text")
         XCTAssertEqual(share.body, ShareableReport.body(for: SupportContact.address))
 

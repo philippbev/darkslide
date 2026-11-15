@@ -273,7 +273,7 @@ struct CookStatusSection: View {
                           systemImage: "lock.fill")
                         .foregroundStyle(DSColor.caution)
                 } footer: {
-                    Text("The Kitchen can't develop RAW files with this camera yet. Camera Test can collect information to help us add support. You can still use the app's other available features.")
+                    Text("The Darkroom can't develop RAW files with this camera yet. Camera Test can collect information to help us add support. You can still use the app's other available features.")
                 }
             }
         }

@@ -236,9 +236,9 @@ enum CameraBackupError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .wrongSchema(let found):
-            return "That isn't a Fuji Cookbook camera backup (it says “\(found)”). A recipe file won't work here — a backup holds the camera's own settings for every slot."
+            return "That isn't a Darkslide camera backup (it says “\(found)”). A recipe file won't work here — a backup holds the camera's own settings for every slot."
         case .tooNew(let version):
-            return "That backup was written by a newer version of Fuji Cookbook (format \(version)). Update the app to restore from it."
+            return "That backup was written by a newer version of Darkslide (format \(version)). Update the app to restore from it."
         case .invalidContents(let detail):
             return "That backup cannot be restored. " + detail + " Nothing was written."
         case .slotEmptyInBackup(let slot):

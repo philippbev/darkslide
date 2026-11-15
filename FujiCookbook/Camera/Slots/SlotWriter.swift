@@ -54,7 +54,7 @@ final class SlotWriter {
     var pushBlockReason: String? {
         guard session.canPush else { return session.pushBlockReason }
         guard slotReader.walk == .failed else { return nil }
-        return "The camera's slots couldn't be read, so Fuji Cookbook doesn't know which ones it has. Pull down on the Camera tab to read them again, or reconnect."
+        return "The camera's slots couldn't be read, so Darkslide doesn't know which ones it has. Pull down on the Camera tab to read them again, or reconnect."
     }
 
     func reset() {
