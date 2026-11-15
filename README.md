@@ -9,6 +9,21 @@ camera's custom slots, and importing photos from the memory card, on iPhone and 
 
 Darkslide is not on the App Store. You can only build it from source.
 
+![Darkslide on iPhone: Recipes, a recipe card, the Camera tab's custom slots, the Darkroom and the Light Table](docs/screenshots/overview.png)
+
+<details>
+<summary>Single screens</summary>
+
+| | |
+|---|---|
+| ![Recipes](docs/screenshots/01-recipes.png) | ![Recipe card](docs/screenshots/02-recipe.png) |
+| ![Camera](docs/screenshots/03-camera.png) | ![Darkroom](docs/screenshots/04-darkroom.png) |
+| ![Light Table](docs/screenshots/05-lighttable.png) | |
+
+Taken in the Simulator with the starter library and the Demo Camera; `scripts/frame-screenshots.py`
+frames them.
+</details>
+
 ## Features
 
 - **Recipes.** Collect film-simulation recipes: type one in, import a
