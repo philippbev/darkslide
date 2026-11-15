@@ -189,7 +189,7 @@ struct CameraBackup: Codable, Equatable, Identifiable {
         formatter.dateFormat = "yyyyMMdd-HHmm"
         let body = (camera.modelID ?? camera.productName)
             .replacingOccurrences(of: " ", with: "-")
-        return "fuji-cookbook-slots-\(body)-\(formatter.string(from: capturedAt)).json"
+        return "darkslide-slots-\(body)-\(formatter.string(from: capturedAt)).json"
     }
 }
 

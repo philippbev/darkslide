@@ -26,7 +26,7 @@ final class FeedbackShareTests: XCTestCase {
         let share = SupportMail.feedback(text: "x")
         XCTAssertEqual(share.kind, .feedback)
         XCTAssertEqual(share.address, SupportContact.address)
-        XCTAssertTrue(share.fileName.hasPrefix("fuji-cookbook-feedback-"), share.fileName)
+        XCTAssertTrue(share.fileName.hasPrefix("darkslide-feedback-"), share.fileName)
         XCTAssertTrue(share.fileName.hasSuffix(".txt"))
         XCTAssertEqual(share.mimeType, "text/plain")
         XCTAssertEqual(share.subject, (share.fileName as NSString).deletingPathExtension)
