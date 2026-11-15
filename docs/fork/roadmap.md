@@ -18,7 +18,7 @@ Ein persönlicher Fork, der Fuji Cookbook zur All-in-One-App für den Fuji-Workf
 | # | Phase | Status | Notizen |
 |---|---|---|---|
 | 0 | Fork & Setup | ✅ erledigt | `CLAUDE.md`, Roadmap, Rebranding-Checkliste (`docs/fork/rebranding.md`), Signing fürs eigene iPhone |
-| 0b | Repo-Pflege & Rebranding Stufe A | ⏭ als Nächstes | Repo → `philippbev/darkslide`, README und Meta-Dateien neu, Kontakt `hello@bevier.cloud`, Berichte/Feedback ausgeblendet, eigene Datenschutzerklärung. Briefing: `claude/briefing-repo-cleanup.md` |
+| 0b | Repo-Pflege & Rebranding Stufe A | ✅ erledigt (PR #13, Merge `5d3c1d9`) | Repo → `philippbev/darkslide`, README und Meta-Dateien neu, Kontakt `hello@bevier.cloud`, Berichte/Feedback ausgeblendet, eigene Datenschutzerklärung. Briefing: `claude/briefing-repo-cleanup.md` |
 | 1 | Design-System | ✅ erledigt | Tokens + Komponenten + Galerie in main (`feature/design-system-v2`, Merge `1a33819`); v1 ist ersetzt |
 | 2 | Chapter-Export & Share | ✅ erledigt | Einzelnes Chapter als `.fujirecipe` teilen. Wird mit den Rolls zum Teilen einer Roll |
 | 3 | USB-Import + Geotagging Stufe A | 🟡 gebaut, Gerätetest offen | Import von der Speicherkarte über PTP (neueste zuerst), Track-Aufzeichnung, Standort per Zeitstempel. Mit X100VI und iPhone durchtesten |
@@ -30,7 +30,7 @@ Ein persönlicher Fork, der Fuji Cookbook zur All-in-One-App für den Fuji-Workf
 ## Nächste Schritte
 1. ~~`feature/design-system-v2` in main mergen~~ – erledigt (`1a33819`).
 2. ~~**App-Icon einbinden**~~ – erledigt mit PR #10 (`feature/darkslide-naming`), zusammen mit Anzeigename „Darkslide“, vier Tabs und den Laborbegriffen in der Oberfläche. Ergebnisse unten.
-3. **Phase 0b – Repo-Pflege & Rebranding Stufe A** (entschieden, siehe unten; Briefing `claude/briefing-repo-cleanup.md`). Kommt vor allen weiteren Phasen.
+3. ~~**Phase 0b – Repo-Pflege & Rebranding Stufe A**~~ – erledigt mit PR #13.
 4. Phase 3 auf dem iPhone mit der X100VI testen: Import-Modus der Kamera, Geschwindigkeit, Zuordnung der Standorte, RAF-Sidecars.
 5. Rolls spezifizieren (Datenmodell, Migration der Chapters, Laden auf C1–C7, Teilen).
 6. Phase 5 starten, ein Screen pro Branch, nach jedem Screen Freigabe.
