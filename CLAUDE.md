@@ -1,6 +1,6 @@
-# Fuji Cookbook Fork
+# Darkslide
 
-Persönlicher Fork von zgrimz/fuji-cookbook für Philipp (Fujifilm X100VI). Native SwiftUI-App für iPhone und iPad; macOS ist on hold. Roadmap: `docs/fork/roadmap.md` (Kopie aus dem claude.ai-Projekt „fuji-cookbook fork“, dort ist die führende Version).
+Persönlicher Fork von zgrimz/fuji-cookbook für Philipp (Fujifilm X100VI), Name **Darkslide**. Repo: https://github.com/philippbev/darkslide (bis 15.11.2026 `philippbev/fuji-cookbook`). Projekt, Targets und Ordner heißen noch `FujiCookbook` (Umbenennung in Stufe C, eigener Branch). Native SwiftUI-App für iPhone und iPad; macOS ist on hold. Roadmap: `docs/fork/roadmap.md` (Kopie aus dem claude.ai-Projekt „fuji-cookbook fork“, dort ist die führende Version).
 
 ## Mobile first (verbindlich)
 - iPhone und iPad haben Vorrang. macOS ist on hold.
@@ -29,6 +29,11 @@ Persönlicher Fork von zgrimz/fuji-cookbook für Philipp (Fujifilm X100VI). Nati
 - `FujiCookbook/Camera/` – PTP-Protokoll, Session, Slots lesen/schreiben, RAW-Konvertierung, Diagnose
 - `FujiCookbook/Features/` – UI: Library, Editor, Chapters, Camera, Kitchen, Recommender, ImportExport, Settings
 - `FujiCookbook/Support/` – EXIF/MakerNote, RAF-Header, Rendering, Feature Flags
+
+## Feature Flags (`FujiCookbook/Support/FeatureFlags.swift`)
+- `ideasEnabled = false`: Ideas-Tab aus; Einschalten ist ein Datenschutz-Gate (siehe Doc-Kommentar).
+- `reportsEnabled = false`: Darkslide sammelt keine Berichte/kein Feedback. Ausgeblendet: Send Feedback, Teilen und Support-Adresse im Diagnose-Screen, „Report a Problem“-Hinweise in Camera/Darkroom, der Camera Test. Welche View was zeigt, steht zentral in `ReportSurfaces` – Views lesen `ReportSurfaces.current`, nicht das Flag. Der Diagnosebericht bleibt unter Settings lesbar und kopierbar. Wiedereinschalten nur zusammen mit `docs/privacy-policy.md`.
+- Kontakt: `SupportContact.address` = `hello@bevier.cloud`. Datenschutzerklärung: `docs/privacy-policy.md`, in der App auf GitHub verlinkt.
 - `ShareExtension/` – KI-Scan aus Screenshots
 - `docs/` – Protokoll, Rezeptformat, Kameras, CloudKit, Rebranding
 
@@ -45,14 +50,14 @@ Persönlicher Fork von zgrimz/fuji-cookbook für Philipp (Fujifilm X100VI). Nati
 - Jede Verhaltensänderung braucht einen Test.
 
 ## Design-System
-- Spezifikation: `docs/fork/design-system.md` (v2.3: Hardware-Instrument + technisches Archiv, Signalfarbe Klein-Blau). Vor jeder UI-Arbeit lesen. Referenz-PNGs folgen in `docs/fork/design/`.
+- Spezifikation: `docs/fork/design-system.md` (v2.6: Hardware-Instrument + technisches Archiv, Signalfarbe Klein-Blau, Begriffe aus dem Fotolabor). Vor jeder UI-Arbeit lesen. Referenz-PNGs folgen in `docs/fork/design/`.
 - Code mit Präfix `DS`: Tokens in `Shared/DesignSystem/` (auch für die Share Extension), Komponenten in `FujiCookbook/DesignSystem/Components/`:
   - Tokens: `DSColor` (`DSColors.swift`), Simulationsfarben als Extension `FilmSimulation.dsStyle`/`dsCode`/`dsFill`/`dsText` (`DSSimulationColors.swift`), `DSFont` + Modifier `dsObjectNumber`/`dsFieldLabel`/`dsMetaMono`/`dsKeyLabel` (feste Größen skalieren über `@ScaledMetric`), `DSSpacing`, `DSRadius`, `DSLine`, `DSSize` (`DSMetrics.swift`), Navigationsleiste `DSAppearance` und `DSSectionLabel` (`DSAppearance.swift`).
   - Komponenten unter `Components/`: `DSHardwareKeyStyle` (`.dsPrimary`, `.dsSecondary`, `DSIconKey`, `DSTextKey`), `DSLED`, `DSSlotKey`, `DSKnob`, `DSHardwareSwitchStyle` (`.dsHardware`, `.dsHardwareSwitchOnly`), `DSDevicePanel`, `DSArchiveCard` + Teile, `DSDataFieldRow`, `DSRecipeRow`/`DSArchiveList`, `DSBarcode`, `DSContactSheetTile`/`DSContactSheetGrid`, `DSTag`, `DSFloatingActionBar`, `DSStepHeader`, `DSFlowLayout`, `DSArchiveSection`. Komponenten bekommen Daten nur als Parameter.
   - Vorschau: Settings ▸ Diagnostics ▸ Show Diagnostic Tools ▸ Design System, plus `#Preview` in jeder Komponenten-Datei.
 - Neue UI nur über diese Tokens und Komponenten – keine hartkodierten `Color(...)`/Font-Werte mehr in Views.
-- Phase 5 ist ausgerollt: alle Views nutzen DS-Tokens. `AccentColor` ist Signal-Blau, die Navigationsleiste nutzt `DSAppearance` (keine Serif mehr).
-- `Theme` ist entfernt. Hinweise, was die App nicht lesen/schreiben/prüfen konnte, nutzen `DSColor.caution`/`cautionSoft` (Spezifikation v2.3). Ältere gemeinsame Views (`themedCard`, `FilterChip`, `ParamChip`, `SettingsTable`, `OutlineButtonStyle` …) liegen in `Shared/Support/CommonViews.swift` und zeichnen mit DS-Tokens; neue UI nimmt die DS-Komponenten.
+- Token-Umstellung ist durch: alle Views nutzen DS-Tokens, `AccentColor` ist Signal-Blau, die Navigationsleiste nutzt `DSAppearance` (keine Serif mehr). Offen ist Phase 5 der Roadmap: die Layouts nach v2.6, Screen für Screen.
+- `Theme` ist entfernt. Hinweise, was die App nicht lesen/schreiben/prüfen konnte, nutzen `DSColor.caution`/`cautionSoft` (im Code; in Spezifikation v2.6 nicht aufgeführt). Ältere gemeinsame Views (`themedCard`, `FilterChip`, `ParamChip`, `SettingsTable`, `OutlineButtonStyle` …) liegen in `Shared/Support/CommonViews.swift` und zeichnen mit DS-Tokens; neue UI nimmt die DS-Komponenten.
 - Feste Farben nur noch für Foto-Overlays (Schwarz hinter Bildern, Hilfslinien). Frame & Fit und die Share Cards (`CardPalette`) sind seit 15.11.2026 entfernt.
 
 ## Git
