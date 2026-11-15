@@ -85,7 +85,7 @@ struct RecipeEditorView: View {
                 .textInputAutocapitalization(.words)
             Toggle(isOn: $draft.isFavorite) { Label("Favorite", systemImage: "star") }
         } footer: {
-            Text("Who the recipe is by — a photographer, a blog, a YouTube channel. Shown on the recipe, on share cards, and in exported files. Leave blank for your own recipes.")
+            Text("Who the recipe is by — a photographer, a blog, a YouTube channel. Shown on the recipe and in exported files. Leave blank for your own recipes.")
         }
     }
 

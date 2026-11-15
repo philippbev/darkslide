@@ -53,7 +53,7 @@ Persönlicher Fork von zgrimz/fuji-cookbook für Philipp (Fujifilm X100VI). Nati
 - Neue UI nur über diese Tokens und Komponenten – keine hartkodierten `Color(...)`/Font-Werte mehr in Views.
 - Phase 5 ist ausgerollt: alle Views nutzen DS-Tokens. `AccentColor` ist Signal-Blau, die Navigationsleiste nutzt `DSAppearance` (keine Serif mehr).
 - `Theme` ist entfernt. Hinweise, was die App nicht lesen/schreiben/prüfen konnte, nutzen `DSColor.caution`/`cautionSoft` (Spezifikation v2.3). Ältere gemeinsame Views (`themedCard`, `FilterChip`, `ParamChip`, `SettingsTable`, `OutlineButtonStyle` …) liegen in `Shared/Support/CommonViews.swift` und zeichnen mit DS-Tokens; neue UI nimmt die DS-Komponenten.
-- Feste Farben nur noch für Foto-Overlays (Schwarz hinter Bildern, Hilfslinien) und `CardPalette` (Share Cards).
+- Feste Farben nur noch für Foto-Overlays (Schwarz hinter Bildern, Hilfslinien). Frame & Fit und die Share Cards (`CardPalette`) sind seit 15.11.2026 entfernt.
 
 ## Git
 - Ein Branch pro Feature (`feature/chapter-share`, `feature/usb-import`, …), PR gegen `main` des Forks.

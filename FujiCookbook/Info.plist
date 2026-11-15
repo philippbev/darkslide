@@ -32,18 +32,18 @@
 	     export-compliance question on every upload. Revisit if the app ever ships its own crypto. -->
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<!-- Branded launch screen: the app icon's mark above the wordmark, on the icon's field colour, so
-	     the icon's zoom on launch lands on the same colour. A static UILaunchScreen only centres an
-	     image at its natural size, so LaunchMark is the whole group pre-rendered at each scale (the
-	     wordmark outlined, since the app bundles no Source Serif), with a transparent margin that
-	     sets the group 30 pt above the screen's centre. LaunchMark and LaunchBackground each carry a
-	     dark-appearance variant. -->
+	<!-- Launch screen: the app icon's card in its tank on the icon's field colour (#E8E7E3, dark
+	     #0F0F0F), so the icon's zoom on launch lands on the same colour. A static UILaunchScreen only
+	     centres an image at its natural size, so DarkslideLaunchMark is the artwork pre-rendered from the
+	     AppIcon.icon layers at each scale, with no wordmark. Both assets carry a dark variant.
+	     They have new names on purpose: iOS keeps a launch screen it rendered before, even across
+	     restarts, until the UILaunchScreen entries change (simulator, iOS 26, 2026-11-15). -->
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIImageName</key>
-		<string>LaunchMark</string>
+		<string>DarkslideLaunchMark</string>
 		<key>UIColorName</key>
-		<string>LaunchBackground</string>
+		<string>DarkslideLaunchBackground</string>
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
@@ -80,9 +80,9 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Darkslide connects to your Fujifilm camera over USB to read and write film simulation recipes in your camera's custom slots, and to develop your RAW (RAF) files using the camera's processor. It never modifies the photos on your camera's card.</string>
 
-	<!-- Lets the user save a Kitchen-converted JPEG, or a Frame & Fit export, into their photo library. -->
+	<!-- Lets the user save a JPEG developed in the Darkroom into their photo library. -->
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Darkslide saves the JPEGs it develops from your RAW files, and the photos you frame with Frame &amp; Fit, into your photo library when you choose to save them.</string>
+	<string>Darkslide saves the JPEGs it develops from your RAW files into your photo library when you choose to save them.</string>
 
 	<!-- Records a location track while the user takes pictures, so imported photos can be placed.
 	     The track stays on the device. -->

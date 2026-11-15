@@ -52,10 +52,17 @@ Ein persönlicher Fork, der Fuji Cookbook zur All-in-One-App für den Fuji-Workf
 - **Lokalisierung:** keine Strings-Dateien vorhanden.
 - **Tests:** 1421 grün (iPhone 17 Pro), Catalyst baut.
 
+**Nachtrag nach dem ersten Gerätetest (15.11.2026, `feature/darkslide-polish`):**
+- **Ladescreen:** zeigte noch das alte grüne Icon mit „Fuji Cookbook“. Neu: Karte im Tank aus den `AppIcon.icon`-Ebenen (`DarkslideLaunchMark`, erzeugt mit `scripts/render-launch-mark.swift`) auf `#E8E7E3` bzw. `#0F0F0F` (`DarkslideLaunchBackground`). iOS behält einen einmal erzeugten Ladescreen auch über Neustarts, bis sich die `UILaunchScreen`-Einträge ändern – deshalb die neuen Asset-Namen. Bei künftigen Änderungen am Ladescreen wieder umbenennen.
+- **Rolls auf dem iPad:** Die Auswahl war ein abgerundeter Rahmen auf der eckigen Archivkarte; jetzt eckig (`DSRadius.archive`).
+- **Frame & Fit und Share Cards entfernt** (Philipp braucht sie nicht): Darkroom-Kachel, Menüpunkt „Share Card…“ im Rezept-Detail, `FrameAndFitView`, `FrameRenderer`, `ShareCard/` und 27 Tests. `pixelSize(of:)` lebt jetzt in `ImageDownsampler`. Damit entfallen auch `BrandMark`/`CardWordmark` aus Stufe C.
+- **Gespeicherte Namen:** Bestehende Rolls heißen in den Daten noch „Chapter 1“ o. Ä. Umbenennen gehört in den Rolls-Branch (Migration), neue Rolls heißen „New Roll“.
+- **Offen für Phase 5 (Rolls-Layout):** Die Rezeptnamen in der Roll-Karte sind noch mit „·“ getrennt, die Detailansicht nutzt noch Systemlisten mit runden Ecken.
+
 **Noch auf das Original verweisend (Restliste):**
 - **Stufe A, dringend:** Support-Adresse `fujicookbook@grovehouse.xyz` (`SupportContact.swift`) – Berichte und Feedback aus Darkslide landen sonst beim Autor des Originals. Datenschutz-URL `fujicookbook.grovehouse.xyz` (`SettingsView.swift`).
 - **Stufe B:** Dokumenttyp `xyz.grovehouse.fujicookbook.recipe` und Beschreibung „Fuji Recipe“; CloudKit-Container `iCloud.xyz.grovehouse.fujicookbookapp`.
-- **Stufe C:** `LaunchMark`, `BrandMark` der Share Cards, Beispielfotos in „Lua de Mel“; Projekt-, Target-, Schema- und Ordnername `FujiCookbook`, `CFBundleName`, Bundle-ID in `Config/Base.xcconfig`, Entitlements, `scripts/run-mac.sh`; README, `docs/`, CONTRIBUTING, SECURITY, `.github`.
+- **Stufe C:** Beispielfotos in „Lua de Mel“; Projekt-, Target-, Schema- und Ordnername `FujiCookbook`, `CFBundleName`, Bundle-ID in `Config/Base.xcconfig`, Entitlements, `scripts/run-mac.sh`; README, `docs/`, CONTRIBUTING, SECURITY, `.github`.
 - **Bleibt:** `NOTICE`, `TRADEMARKS.md`, Quellenangaben in Kommentaren, Fixture eines alten Berichts in `SerialHashTests`.
 
 ## Phase 3 – Details und offene Prüfpunkte

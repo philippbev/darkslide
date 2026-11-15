@@ -3,8 +3,8 @@ import Foundation
 /// Whether a control applies to a recipe at all — on a given body, under that recipe's own
 /// settings. The one place that answers it.
 ///
-/// The editor filters its form with it, `RecipeSettingsFormatter` annotates the read-only table,
-/// `RecipeCompatibility` warns before a push, and the share card drops rows — four surfaces that
+/// The editor filters its form with it, `RecipeSettingsFormatter` annotates the read-only table, and
+/// `RecipeCompatibility` warns before a push — three surfaces that
 /// must agree. A screen that hides a control the camera *does* show, or shows one it will silently
 /// ignore, is a lie about the hardware, and copies of a rule drift.
 ///

@@ -33,14 +33,6 @@ struct IdeaSeed: Equatable {
     }
 }
 
-/// A pre-filled request for Frame & Fit. The recipe screen hands the Kitchen a recipe to build a
-/// share card from, the same way `IdeaSeed` hands the Ideas tab a starting point; `FrameAndFitView`
-/// applies it once and clears it.
-struct FrameSeed: Equatable {
-    /// The recipe the card should start on.
-    var recipeUUID: UUID
-}
-
 /// Shared navigation state for cross-tab deep-linking. `RootView` binds the `TabView`'s selection to
 /// `selectedTab`; feature views read it from the environment and set it to jump between tabs.
 @MainActor
@@ -51,10 +43,6 @@ final class AppRouter {
     /// A pending pre-filled Ideas request. Set alongside `selectedTab = .ideas`; the Ideas tab
     /// consumes it once and sets it back to nil.
     var ideaSeed: IdeaSeed?
-
-    /// A pending pre-filled Frame & Fit request. Set alongside `selectedTab = .kitchen`; Frame & Fit
-    /// consumes it once and sets it back to nil.
-    var frameSeed: FrameSeed?
 
     /// A photo import asked for from outside the Camera tab — the menu bar's Import Photos. Set
     /// alongside `selectedTab = .camera`; the Camera tab presents it and sets it back to nil.

@@ -49,7 +49,7 @@ final class Recipe {
     /// Who this recipe is by — the photographer, blog, or channel it came from.
     /// Free text on purpose: attribution in this hobby is a person's name as often as a publication,
     /// and a recipe you wrote yourself simply has none. Nil/empty means unattributed, and every
-    /// surface that shows it (detail screen, share card, exported file) drops the line entirely
+    /// surface that shows it (detail screen, exported file) drops the line entirely
     /// rather than printing a placeholder.
     var credit: String?
 
