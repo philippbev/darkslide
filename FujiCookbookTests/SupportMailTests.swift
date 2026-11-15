@@ -15,14 +15,14 @@ final class SupportMailTests: XCTestCase {
     }
 
     func testSupportAddressIsConfigured() {
-        XCTAssertEqual(SupportContact.address, "fujicookbook@grovehouse.xyz")
+        XCTAssertEqual(SupportContact.address, "hello@bevier.cloud")
     }
 
     func testProblemReportSharesTheTextNamedForTheCamera() async {
         let r = await cameraReport()
         let share = SupportMail.problemReport(text: "Darkslide — problem report\nApp 1.0\n" + r.textRendering, cameraReport: r)
         XCTAssertEqual(share.kind, .problem)
-        XCTAssertTrue(share.fileName.hasPrefix("fuji-cookbook-problem-report-DEMO-"), share.fileName)
+        XCTAssertTrue(share.fileName.hasPrefix("darkslide-problem-report-DEMO-"), share.fileName)
         XCTAssertTrue(share.fileName.hasSuffix(".txt"))
         XCTAssertEqual(share.mimeType, "text/plain")
         let text = String(decoding: share.data, as: UTF8.self)
@@ -31,7 +31,7 @@ final class SupportMailTests: XCTestCase {
         XCTAssertEqual(share.body, ShareableReport.body(for: SupportContact.address))
 
         let bare = SupportMail.problemReport(text: "x", cameraReport: nil)
-        XCTAssertTrue(bare.fileName.hasPrefix("fuji-cookbook-problem-report-app-"), bare.fileName)
+        XCTAssertTrue(bare.fileName.hasPrefix("darkslide-problem-report-app-"), bare.fileName)
     }
 
     func testCurrentLaunchTextComesFromTheFileWhenThereIsOne() {
@@ -55,7 +55,7 @@ final class SupportMailTests: XCTestCase {
 
         XCTAssertEqual(share.extraFiles.count, 1)
         XCTAssertEqual(share.extraFiles.first?.fileName, r.suggestedFilename)
-        XCTAssertTrue(r.suggestedFilename.hasPrefix("fuji-cookbook-camera-report-DEMO-"), r.suggestedFilename)
+        XCTAssertTrue(r.suggestedFilename.hasPrefix("darkslide-camera-report-DEMO-"), r.suggestedFilename)
         XCTAssertTrue(r.suggestedFilename.hasSuffix(".json"))
         XCTAssertEqual(try CameraCompatibilityReport.decode(share.extraFiles[0].data).camera.productName,
                        r.camera.productName, "the attachment is the report itself, not a summary")
@@ -81,7 +81,7 @@ final class SupportMailTests: XCTestCase {
         let camera = await cameraReport()
         let report = SupportMail.testResults(text: "Reading: passed\nDevelop: not checked", cameraReport: camera)
         XCTAssertEqual(report.kind, .test)
-        XCTAssertTrue(report.fileName.hasPrefix("fuji-cookbook-test-results-"))
+        XCTAssertTrue(report.fileName.hasPrefix("darkslide-test-results-"))
         XCTAssertFalse(report.subject.contains("problem"))
         XCTAssertFalse(report.body.contains("what went wrong"))
         XCTAssertEqual(report.address, SupportContact.address)

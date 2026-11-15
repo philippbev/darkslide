@@ -1391,7 +1391,7 @@ struct GuidedRecoveryRecord: Codable, Equatable, Identifiable {
     /// What Settings exports before Clear Diagnostics erases this record: the original backup, which
     /// Restore a Slot reads back, `forSharing`. The record itself keeps an unkeyed hash, for `matches`.
     var exportFile: (fileName: String, data: Data) {
-        ("fuji-cookbook-recovery-\(sessionID).json", backup.forSharing.json)
+        ("darkslide-recovery-\(sessionID).json", backup.forSharing.json)
     }
 }
 

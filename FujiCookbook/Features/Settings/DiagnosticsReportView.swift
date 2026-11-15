@@ -241,7 +241,7 @@ struct DiagnosticsReportView: View {
             VStack(alignment: .leading, spacing: 16) {
                 header
                 if isGuided, let note { noteEditor(note) }
-                sendButton.disabled(!hasLoaded)
+                if ReportSurfaces.current.showsShareOnReport { sendButton.disabled(!hasLoaded) }
                 if isGuided {
                     guidedTestFooter
                     summaryCard
@@ -259,7 +259,7 @@ struct DiagnosticsReportView: View {
             .padding(18)
         }
         .background(DSColor.background.ignoresSafeArea())
-        .navigationTitle(isGuided ? "Review & Share Test Results" : "Report a Problem")
+        .navigationTitle(isGuided ? "Review & Share Test Results" : ReportSurfaces.current.diagnosticsTitle)
         .navigationBarTitleDisplayMode(.inline)
         .task { captureReport() }
     }
@@ -327,7 +327,29 @@ struct DiagnosticsReportView: View {
     }
 
     private var header: some View {
-        Text([
+        Text(ReportSurfaces.current.showsShareOnReport ? sharingHeaderText : localHeaderText)
+            .font(.subheadline)
+            .foregroundStyle(DSColor.textSecondary)
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .themedCard(cornerRadius: 16)
+    }
+
+    /// The header while reports are off: what the report holds, and that it stays here.
+    private var localHeaderText: String {
+        [
+            "This report shows app and device details, settings, and recent activity.",
+            cameraReport.map {
+                $0.slots.reads.isEmpty
+                    ? "It includes what your camera reported about itself and which film simulation was last written to each slot; its serial number is hashed."
+                    : "It includes what your camera reported about itself and the recipes in its custom slots; its serial number is hashed."
+            },
+            "It stays on this device. Copy puts the text on the clipboard.",
+        ].compactMap { $0 }.joined(separator: " ")
+    }
+
+    private var sharingHeaderText: String {
+        [
             isGuided ? "Share your results even if everything worked: a clean run is as useful as one that finds a problem."
                      : "Read the report below, then share it with a note about what went wrong.",
             isGuided ? nil : "Includes app and device details, settings, and recent activity.",
@@ -339,12 +361,7 @@ struct DiagnosticsReportView: View {
             isGuided ? "The report includes your answers, note, camera settings, app and device details, and camera activity. The camera’s serial number is coded; photos and file names are not attached." : nil,
             cameraReport == nil ? nil : (isGuided ? "Share both files: the text report and camera data (JSON)." : "Sharing includes readable text and a JSON copy of the camera evidence."),
             isGuided ? "Choose an app or Save to Files when the share sheet opens." : "Nothing is sent unless you send it.",
-        ].compactMap { $0 }.joined(separator: " "))
-            .font(.subheadline)
-            .foregroundStyle(DSColor.textSecondary)
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .themedCard(cornerRadius: 16)
+        ].compactMap { $0 }.joined(separator: " ")
     }
 
     private var sendButton: some View {

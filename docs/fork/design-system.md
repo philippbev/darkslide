@@ -134,7 +134,7 @@ Alle Komponenten und Dateien tragen das Präfix **DS** (z. B. `DSHardwareKey`, `
 **Konzept:** Die Rezeptkarte der App (Archivkarte mit Nummernfeld, Datenzeilen und Strichcode) steckt in einem Entwicklertank und wird im Klein-blauen Bad „entwickelt“ – so wie die App Rezepte auf die Kamera bringt. Eine runde Lasche mit Loch oben an der Karte. Die Flüssigkeit ist durchscheinend: Der eingetauchte Teil der Karte bleibt sichtbar.
 
 **Dateien:**
-- **Endprodukt:** `docs/fork/design/app-icon/AppIcon.icon` (Icon Composer, iOS Only). Wird in den App-Ordner kopiert und dem App-Target zugeordnet (siehe unten).
+- **Endprodukt:** `docs/fork/design/app-icon/AppIcon.icon` (Icon Composer, iOS Only). Eingebunden als `FujiCookbook/AppIcon.icon` im App-Target (PR #10).
 - **Quelle der Form:** Figma „Darkslide – App Icon“ (`https://www.figma.com/design/qkORPBcI3u7AgiUcpxgns0`), Seite „App Icon“: Komponente „Darkslide App Icon“ mit Variablen-Sammlung „Darkslide Icon“ (Modi Default/Dark/Mono, iOS-Code-Syntax `DSIcon.*`), Fläche „Preview“ (Maske, Größen 360–29 pt), Fläche „Icon Composer Export“ (acht SVG-Ebenen).
 - Skizzen und verworfene Varianten (A–I): Design-Fläche „Darkslide – App-Icon Skizzen“ (claude.ai). Das Dumpling-Icon aus v2.3 ist verworfen; die Datei „Fuji Cookbook – App Icon“ ist nur noch Archiv.
 
@@ -183,4 +183,4 @@ Hinweis: Die Figma-Variable `icon/ink` steht in Dark noch auf `#3A3A38` für all
 - Komponenten als `ButtonStyle`, `ToggleStyle`, `ViewModifier` und kleine Views; keine hartkodierten Farben/Fonts in Views.
 - Simulationsfarben an das bestehende Filmsimulations-Enum hängen (eine Quelle der Wahrheit).
 - **Phase 1 = Fundament + Komponenten + Galerie-Screen** (unter Settings ▸ Diagnostics), hell und dunkel, plus SwiftUI-Previews. Views, die schon v1 nutzen (`PhotoImportView`, `LocationTrackView`), nur so weit anpassen, dass sie mit v2 kompilieren – neue Tokens und Komponenten, kein neues Layout. Alle anderen Views erst in Phase 5.
-- `CardPalette` (Share Cards) vorerst unverändert.
+- Share Cards samt `CardPalette` sind entfernt (PR #11).

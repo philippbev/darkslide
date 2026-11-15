@@ -1353,7 +1353,7 @@ struct CameraCompatibilityReport: Codable, Equatable {
             .trimmingCharacters(in: .whitespaces)
             .replacingOccurrences(of: " ", with: "-")
         let f = DateFormatter(); f.locale = Locale(identifier: "en_US_POSIX"); f.dateFormat = "yyyyMMdd-HHmm"
-        return "fuji-cookbook-camera-report-\(subject.isEmpty ? "camera" : subject)-\(f.string(from: generatedAt)).json"
+        return "darkslide-camera-report-\(subject.isEmpty ? "camera" : subject)-\(f.string(from: generatedAt)).json"
     }
 
 }

@@ -5,14 +5,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Camera Compatibility Reports and the Connection Log are welcome here. A report replaces the
-        camera's serial number with a hash keyed to your phone, which nobody else can turn back into
-        the serial. Read a report before you post it: it shows your custom-slot names and recipe
-        settings, and anything you typed into a Camera Test, and this issue is public.
-
-        If the serial hash line in the text report doesn't end in "(keyed to this phone)", the report
-        came from an older version of the app. Update the app and share it again, or email it to
-        fujicookbook@grovehouse.xyz instead.
+        This issue is public. Leave out anything you wouldn't want posted, such as custom-slot
+        names or recipe settings; if it matters, email it to hello@bevier.cloud instead.
   - type: textarea
     id: what-happened
     attributes:

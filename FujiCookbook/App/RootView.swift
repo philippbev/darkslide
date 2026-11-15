@@ -84,11 +84,13 @@ struct RootView: View {
                 Label("The last session ended unexpectedly", systemImage: "exclamationmark.triangle.fill")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(DSColor.textPrimary)
-                Text("Darkslide closed on its own while you were using it. Its log was kept, and a report is the only way this gets fixed.")
+                Text(ReportSurfaces.current.reportsEnabled
+                     ? "Darkslide closed on its own while you were using it. Its log was kept, and a report is the only way this gets fixed."
+                     : "Darkslide closed on its own while you were using it. Its log was kept in the diagnostics report.")
                     .font(.caption)
                     .foregroundStyle(DSColor.textSecondary)
                 HStack(spacing: 16) {
-                    Button("Report a Problem") {
+                    Button(ReportSurfaces.current.unexpectedExitAction) {
                         showingUnexpectedExitReport = true
                         showUnexpectedExit = false
                         SessionTermination.acknowledge()

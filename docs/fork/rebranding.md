@@ -1,6 +1,6 @@
 # Rebranding-Liste
 
-Stand: 15.11.2026 (Abhaken nach PR #10/#11) · Erstfassung 13.11.2026 · Quelle: [`docs/rebranding-a-fork.md`](../rebranding-a-fork.md) und [`TRADEMARKS.md`](../../TRADEMARKS.md), gegen den Stand `923d86e` geprüft.
+Stand: 15.11.2026 (Abhaken nach PR #10/#11 und Stufe A mit PR #13) · Erstfassung 13.11.2026 · Quelle: [`docs/rebranding-a-fork.md`](../rebranding-a-fork.md) und [`TRADEMARKS.md`](../../TRADEMARKS.md), gegen den Stand `923d86e` geprüft.
 
 ## Wann was nötig ist
 
@@ -17,8 +17,8 @@ Daraus ergeben sich drei Stufen:
 | Erledigt | Was | Wo | Warum schon jetzt |
 |---|---|---|---|
 | ✅ | `APP_IDENTIFIER_BASE`, `DEVELOPMENT_TEAM` | `Config/Local.xcconfig` (nicht `Base.xcconfig`, solange nichts verteilt wird) | Bundle-IDs, App Group, iCloud-Container und Keychain-Gruppe leiten sich daraus ab |
-| ☐ | Support-Adresse `fujicookbook@grovehouse.xyz` | `FujiCookbook/Support/SupportContact.swift:5` | Problem- und Feedback-Berichte aus dem Fork gingen sonst an den Upstream-Autor, mit Fehlern aus Code, den er nicht kennt |
-| ☐ | Datenschutz-URL `https://fujicookbook.grovehouse.xyz/app-privacy/` | `FujiCookbook/Features/Settings/SettingsView.swift:101` | Beschreibt die Original-App; neue Funktionen (Standort-Track, Foto-Import) deckt sie nicht ab |
+| ✅ | Support-Adresse `fujicookbook@grovehouse.xyz` → `hello@bevier.cloud`; Berichte und Feedback ausgeblendet (`FeatureFlags.reportsEnabled`, PR #13) | `FujiCookbook/Support/SupportContact.swift:6` | Problem- und Feedback-Berichte aus dem Fork gingen sonst an den Upstream-Autor, mit Fehlern aus Code, den er nicht kennt |
+| ✅ | Datenschutz-URL → `docs/privacy-policy.md` auf GitHub, eigene Fassung (PR #13) | `FujiCookbook/Features/Settings/SettingsView.swift:102` | Beschreibt die Original-App; neue Funktionen (Standort-Track, Foto-Import) deckt sie nicht ab |
 
 Tests, die mitziehen müssen: `SupportMailTests`, `ReportSharingTests`.
 
@@ -44,7 +44,7 @@ Offen dabei: Soll der Fork `.fujirecipe`-Dateien des Originals weiter öffnen k�
 | ✅ | Entfällt: Share Cards samt `BrandMark`/`CardWordmark` entfernt (PR #11) | `FujiCookbook/Features/Library/ShareCard/ShareCardTypography.swift` |
 | ☐ | Die fünf Beispielfotos: `photos`-Schlüssel löschen oder eigene Fotos einsetzen | `FujiCookbook/Resources/Lua de Mel.fujirecipe` |
 | ☐ | `APP_IDENTIFIER_BASE` und `DEVELOPMENT_TEAM` dauerhaft | `Config/Base.xcconfig` |
-| ☐ | Wortmarke und Screenshots der Doku | `docs/images/` |
+| ✅ | Wortmarke und Screenshots der Doku gelöscht (PR #13); neue Bilder nach Phase 5 | `docs/images/` |
 
 Tests, die mitziehen müssen: `StarterRecipeTests` (prüft Credit und die fünf Fotos) sowie die sechs Testdateien, die den App-Namen in Berichts- und Feedback-Texten abgleichen.
 
@@ -57,4 +57,5 @@ Tests, die mitziehen müssen: `StarterRecipeTests` (prüft Credit und die fünf 
 ## Hängt an offenen Entscheidungen
 
 - ~~**Name des Forks**~~ – entschieden: **Darkslide** (15.11.2026). Offen bleibt die neue Dokumenttyp-Kennung in Stufe B.
-- **Support-Adresse und Datenschutz-URL** für Stufe A: eigene Adresse, oder beides im Fork vorerst ausblenden.
+- ~~**Support-Adresse und Datenschutz-URL**~~ – entschieden: `hello@bevier.cloud`, Berichte vorerst ausgeblendet, eigene Datenschutzerklärung (PR #13).
+- **Repo-Doku** (README, CONTRIBUTING, SECURITY, `.github`) aus Stufe C ist mit PR #13 erledigt; Repo heißt `philippbev/darkslide`.

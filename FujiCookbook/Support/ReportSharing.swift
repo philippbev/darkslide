@@ -72,7 +72,7 @@ enum SupportMail {
         let extras = cameraReport.map { [($0.suggestedFilename, $0.json)] } ?? []
         return ShareableReport(kind: .problem, address: SupportContact.address,
                                body: ShareableReport.body(for: SupportContact.address),
-                               fileName: "fuji-cookbook-problem-report-\(subject.isEmpty ? "app" : subject)-\(stamp).txt",
+                               fileName: "darkslide-problem-report-\(subject.isEmpty ? "app" : subject)-\(stamp).txt",
                                data: Data(text.utf8), mimeType: "text/plain",
                                extraFiles: extras)
     }
@@ -93,7 +93,7 @@ enum SupportMail {
     static func feedback(text: String) -> ShareableReport {
         ShareableReport(kind: .feedback, address: SupportContact.address,
                         body: ShareableReport.feedbackBody(for: SupportContact.address),
-                        fileName: "fuji-cookbook-feedback-\(stamp).txt",
+                        fileName: "darkslide-feedback-\(stamp).txt",
                         data: Data(text.utf8), mimeType: "text/plain")
     }
 }
@@ -452,7 +452,9 @@ struct ReportProblemRow: View {
     static let kitchenPrompt = "A develop failed, or the photo doesn't match the recipe?"
 
     var body: some View {
-        if let action {
+        if !ReportSurfaces.current.showsReportPrompts {
+            EmptyView()
+        } else if let action {
             Button(action: action) { label }
                 .buttonStyle(.plain)
         } else {

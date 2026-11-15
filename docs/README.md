@@ -1,4 +1,8 @@
-# Fuji Cookbook docs
+# Darkslide docs
+
+The technical documents here (protocol, recipe format, cameras, CloudKit) come from the original
+[Fuji Cookbook](https://github.com/zgrimz/fuji-cookbook) and stay as reference; they still use its
+name. Plans and specifications for this fork are in [`fork/`](fork/) (German).
 
 These documents aren't all the same kind of thing, so each row says which kind it is.
 
@@ -17,7 +21,7 @@ These documents aren't all the same kind of thing, so each row says which kind i
 | [rebranding-a-fork.md](rebranding-a-fork.md) | Reference | The identifiers, names, artwork and addresses to change before distributing a fork as an app. |
 | [cloudkit-schema.md](cloudkit-schema.md) | Reference | Initializing the shipping CloudKit container's schema from a Debug build and deploying it to Production. |
 | [recipe-compare-engine.md](recipe-compare-engine.md) | Reference | Compare Settings: the setting-by-setting comparison of two recipes, its rows, statuses and applicability rules, and what isn't built. |
-| [privacy-policy.md](privacy-policy.md) | Policy | The source of the app's published privacy policy. |
+| [privacy-policy.md](privacy-policy.md) | Policy | Darkslide's privacy policy, linked from Settings ▸ About. |
 
 [`sample-recipes.fujirecipe`](sample-recipes.fujirecipe) is a small example file in the format above;
 open it on a device or in the Simulator to import three recipes.

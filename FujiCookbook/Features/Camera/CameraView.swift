@@ -141,7 +141,7 @@ struct CameraView: View {
                                 .foregroundStyle(DSColor.textSecondary)
                         }
                         backupRow
-                        if camera.session.model != nil { reportProblemRow }
+                        if camera.session.model != nil, ReportSurfaces.current.showsReportPrompts { reportProblemRow }
                     } else {
                         offlinePanel
                         connectCard
@@ -276,8 +276,10 @@ struct CameraView: View {
                     // the app can say least about by itself — it has the two permission states
                     // and the stage that failed, and nothing that separates a charge-only cable
                     // from the wrong USB mode. That part has to be asked.
-                    Button("Tell Us What Happened") {
-                        cameraTest = CameraTestRequest(entry: .noCamera)
+                    if ReportSurfaces.current.showsCameraTest {
+                        Button("Tell Us What Happened") {
+                            cameraTest = CameraTestRequest(entry: .noCamera)
+                        }
                     }
                 }
                 .buttonStyle(.dsTextKey(isActive: false))
@@ -481,7 +483,9 @@ struct CameraView: View {
     private var unrecognizedCard: some View {
         if let report = camera.reports.report {
             CameraNotice(title: "This camera isn't supported yet", systemImage: "questionmark.diamond") {
-                Text("Darkslide read everything \(report.camera.productName) would show it and changed nothing. Sharing a report is what gets this camera supported. It contains what the camera says about itself and the recipe settings it currently holds — nothing leaves the phone until you share it.")
+                Text(ReportSurfaces.current.showsCameraTest
+                     ? "Darkslide read everything \(report.camera.productName) would show it and changed nothing. Sharing a report is what gets this camera supported. It contains what the camera says about itself and the recipe settings it currently holds — nothing leaves the phone until you share it."
+                     : "Darkslide read everything \(report.camera.productName) would show it and changed nothing.")
                 // No share button here: the Camera Test below leads to the fuller report — the same
                 // camera data plus the logs and the answers only a person can give — and two
                 // buttons offering different halves of one thing would make the weaker one look
@@ -506,7 +510,9 @@ struct CameraView: View {
             // `blockReason` opens with it too — three in a row read as a stutter.
             CameraNotice(title: "No custom slots over USB", systemImage: "lock.fill") {
                 Text("\(model.writeSupport.blockReason ?? "This camera's firmware doesn't expose custom slots over USB.") Darkslide read everything it would show and changed nothing — it didn't even ask the camera to select a slot.")
-                Text("Sharing a report is what gets this camera's support confirmed. It holds what the camera says about itself and which settings it answered for — nothing leaves the phone until you share it. The Camera Test walks you through producing one.")
+                if ReportSurfaces.current.showsCameraTest {
+                    Text("Sharing a report is what gets this camera's support confirmed. It holds what the camera says about itself and which settings it answered for — nothing leaves the phone until you share it. The Camera Test walks you through producing one.")
+                }
             }
         }
     }
@@ -525,11 +531,15 @@ struct CameraView: View {
                 ForEach(drift) { Text($0.summary + ".") }
                 Text(dial
                      ? "Darkslide didn't do this. On the \(camera.session.model?.displayName ?? "camera"), the Film Simulation dial can change a custom slot's film simulation — check that it's on “C”. Push the recipe again to restore it."
-                     : "Darkslide didn't do this. Push the recipe again to restore it, and if it keeps happening, send a report.")
-                NavigationLink { DiagnosticsReportView() } label: {
-                    Label("Report a Problem", systemImage: "square.and.arrow.up")
+                     : ReportSurfaces.current.showsReportPrompts
+                        ? "Darkslide didn't do this. Push the recipe again to restore it, and if it keeps happening, send a report."
+                        : "Darkslide didn't do this. Push the recipe again to restore it.")
+                if ReportSurfaces.current.showsReportPrompts {
+                    NavigationLink { DiagnosticsReportView() } label: {
+                        Label("Report a Problem", systemImage: "square.and.arrow.up")
+                    }
+                    .buttonStyle(.dsTextKey(isActive: false))
                 }
-                .buttonStyle(.dsTextKey(isActive: false))
             }
         }
     }
@@ -549,12 +559,14 @@ struct CameraView: View {
             let count = divergentSlots.reduce(0) { $0 + $1.unsupportedFields.count }
             let names = divergentSlots.map(\.label).joined(separator: ", ")
             CameraNotice(title: "Some settings didn't read cleanly", systemImage: "exclamationmark.triangle.fill") {
-                Text("Darkslide read \(count) value\(count == 1 ? "" : "s") on \(names) that it doesn't recognize on this camera. It left \(count == 1 ? "that setting" : "those settings") blank rather than guessing, so what you see may be incomplete — and that's exactly the kind of fact that gets this camera properly supported.")
-                NavigationLink { DiagnosticsReportView() } label: {
-                    Label("Report a Problem", systemImage: "square.and.arrow.up")
-                        .frame(maxWidth: .infinity)
+                Text("Darkslide read \(count) value\(count == 1 ? "" : "s") on \(names) that it doesn't recognize on this camera. It left \(count == 1 ? "that setting" : "those settings") blank rather than guessing, so what you see may be incomplete\(ReportSurfaces.current.showsReportPrompts ? " — and that's exactly the kind of fact that gets this camera properly supported" : "").")
+                if ReportSurfaces.current.showsReportPrompts {
+                    NavigationLink { DiagnosticsReportView() } label: {
+                        Label("Report a Problem", systemImage: "square.and.arrow.up")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.dsPrimary)
                 }
-                .buttonStyle(.dsPrimary)
             }
         }
     }
@@ -691,10 +703,12 @@ struct CameraView: View {
     /// camera's own menu, and whether a pushed recipe survives a power cycle, take a person to answer.
     @ViewBuilder
     private var cameraTestSection: some View {
-        let session = testRecords.live
-        let latest = testRecords.latest
+        // With the Camera Test hidden, only recovery stays: it puts back slots a past test changed.
+        let showsTest = ReportSurfaces.current.showsCameraTest
+        let session = showsTest ? testRecords.live : nil
+        let latest = showsTest ? testRecords.latest : nil
         let recoveries = testRecords.recoveries
-        if session != nil || camera.session.isConnected || latest != nil || !recoveries.isEmpty {
+        if session != nil || (showsTest && camera.session.isConnected) || latest != nil || !recoveries.isEmpty {
             VStack(alignment: .leading, spacing: DSSpacing.s) {
                 if let session {
                     cameraTestRow(title: "Camera Test in progress",
@@ -702,7 +716,7 @@ struct CameraView: View {
                                   systemImage: "arrow.right.circle") {
                         cameraTest = CameraTestRequest(wave: session.wave)
                     }
-                } else if camera.session.isConnected {
+                } else if showsTest, camera.session.isConnected {
                     cameraTestRow(title: "Help improve camera support",
                                   subtitle: "A guided Camera Test shows how your \(testedCameraName) works with Darkslide.",
                                   systemImage: "checklist") {
