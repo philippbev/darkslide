@@ -6,7 +6,7 @@ including permission to retain them in source forks used for development and con
 distribute a fork as an app, change:
 
 - `APP_IDENTIFIER_BASE` and `DEVELOPMENT_TEAM` in `Config/Base.xcconfig`;
-- the display name (`CFBundleDisplayName` in `FujiCookbook/Info.plist` and `ShareExtension/Info.plist`),
+- the display name (`CFBundleDisplayName` in `FujiCookbook/Info.plist`),
   and the name everywhere else it reaches users: the camera and photo-library permission prompts in
   `FujiCookbook/Info.plist`, and the user-facing strings in the Swift sources that say
   "Fuji Cookbook", which include export and report file names (search the sources for the name);
