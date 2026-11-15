@@ -167,7 +167,7 @@ struct KitchenResultView: View {
         for result in successes where images[result.id] == nil {
             guard let jpeg = try? await CookStore.developedJPEG(for: result, in: modelContext) else { continue }
             let proxy = await Task.detached(priority: .userInitiated) {
-                FrameRenderer.proxy(from: jpeg, maxLongEdge: Self.proxyLongEdge)
+                ImageDownsampler.downsample(jpeg, maxLongEdge: Self.proxyLongEdge)
             }.value
             if let proxy { images[result.id] = proxy }
         }

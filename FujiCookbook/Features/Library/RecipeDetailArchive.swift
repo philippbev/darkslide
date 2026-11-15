@@ -51,7 +51,7 @@ enum RecipeDetailArchive {
 
     /// The formatter's value as the archive writes it: parts apart by space alone, never by "·" or
     /// ",", and zero without a sign ("0", not "+0"). The shared formatter keeps its own form for
-    /// export and share cards.
+    /// export.
     static func spaced(_ value: String) -> String {
         let parts = value.replacingOccurrences(of: " · ", with: "   ")
             .replacingOccurrences(of: ", ", with: "  ")

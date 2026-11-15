@@ -179,7 +179,8 @@ enum PhotoRecipeReader {
             rawTags: rawTags,
             preservedMetadata: preservedMetadata,
             recordedWBShifts: recordedWBShifts,
-            proxy: FrameRenderer.proxy(from: data)
+            // 1600 px on the long edge is enough for the Read Recipe preview.
+            proxy: ImageDownsampler.downsample(data, maxLongEdge: 1600)
         )
     }
 
@@ -435,7 +436,7 @@ enum PhotoRecipeReader {
 
     private static func cameraSnapshot(from data: Data, make: String?, model: String?) -> CameraSnapshot {
         var snapshot = CameraSnapshot(make: make, model: model)
-        if let pixelSize = FrameRenderer.pixelSize(of: data) {
+        if let pixelSize = ImageDownsampler.pixelSize(of: data) {
             snapshot.pixelWidth = Int(pixelSize.width)
             snapshot.pixelHeight = Int(pixelSize.height)
         }

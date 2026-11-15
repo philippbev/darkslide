@@ -27,7 +27,7 @@ public enum AppLog {
         case app
         /// The USB/PTP connection layer. Everything `CameraLog` writes.
         case camera
-        /// RAW conversion, Test Kitchen, Frame & Fit.
+        /// RAW conversion and Test Strips (the Darkroom).
         case kitchen
         /// Recipe scanning and the provider clients.
         case ai

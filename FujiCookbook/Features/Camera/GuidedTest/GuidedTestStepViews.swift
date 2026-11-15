@@ -915,7 +915,7 @@ struct GuidedDevelopStep: View {
                       photoLibrary: .shared())
         .onChange(of: photoSelection) { _, items in
             guard !items.isEmpty else { return }
-            photoSelection = []   // clear immediately so the picker dismisses cleanly, per FrameAndFitView
+            photoSelection = []   // clear immediately so the picker dismisses cleanly
             runHarvest(items)
         }
         .alert(photoProblem?.title ?? "", isPresented: Binding(isPresent: $photoProblem)) {

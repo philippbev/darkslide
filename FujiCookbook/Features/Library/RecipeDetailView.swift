@@ -76,10 +76,6 @@ struct RecipeDetailView: View {
                     Button { showingCompare = true } label: {
                         Label("Compare Settings…", systemImage: "arrow.left.arrow.right")
                     }
-                    // The two sharing actions read as a pair: the visual card, then the file.
-                    Button { openShareCard() } label: {
-                        Label("Share Card…", systemImage: "photo.on.rectangle.angled")
-                    }
                     Button { initiateShare() } label: { Label("Share / Export", systemImage: "square.and.arrow.up") }
                     Divider()
                     Button(role: .destructive) { showingDeleteConfirm = true } label: {
@@ -275,14 +271,6 @@ struct RecipeDetailView: View {
                 .foregroundStyle(DSColor.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-    }
-
-    /// Hand Frame & Fit this recipe and switch to the Kitchen. The photographs are picked there:
-    /// a share card is framed like any other post, so it gets the same canvases, crops and carousel
-    /// tiles as the rest of the tool rather than a second, weaker copy of them.
-    private func openShareCard() {
-        router.frameSeed = FrameSeed(recipeUUID: recipe.uuid)
-        router.selectedTab = .kitchen
     }
 
     private func duplicate() {

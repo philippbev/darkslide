@@ -1,15 +1,15 @@
 import SwiftUI
 import SwiftData
 
-/// The **Kitchen** hub: a launcher, but one that states its own structure.
+/// The **Darkroom** hub (`KitchenView` keeps its old type name): a launcher that states its own
+/// structure.
 ///
-/// Develop is the main pathway; Test Kitchen is a variant of it and Recent Results is its output;
-/// Frame & Fit and Read Recipe have nothing to do with RAW, the camera, or cooking at all. Four
-/// cards of near-identical weight would flatten those three relationships into one list of peers.
+/// Develop is the main pathway; Test Strips is a variant of it and Recent Results is its output;
+/// Read Recipe has nothing to do with RAW or the camera at all.
 ///
 /// So: two zones. **Develop** holds the pathway with its variant and its results nested beneath it,
-/// and **No camera needed** holds the two on-device tools, said once as a promise about a group
-/// instead of twice as a caveat on individual cards.
+/// and **No camera needed** holds the on-device tool, said once as a promise about the zone
+/// instead of as a caveat on the card.
 ///
 /// The hub carries no camera *controls* — connecting, the not-connected banner and connection help
 /// live in `DevelopView` and `TestKitchenView`, which are the only pathways that need a camera. It
@@ -18,7 +18,6 @@ import SwiftData
 /// first news of a missing camera an orange warning triangle on the next screen.
 struct KitchenView: View {
     @Environment(CameraServices.self) private var camera
-    @Environment(AppRouter.self) private var router
 
     @Environment(\.modelContext) private var modelContext
 
@@ -41,19 +40,13 @@ struct KitchenView: View {
     /// non-empty history, so a full library never flashes the "nothing developed yet" copy.
     @State private var cookedCount: Int?
 
-    /// Every push out of this hub, as values.
-    ///
-    /// Two independent entries for Frame & Fit — a `NavigationLink` on its card *and* a
-    /// `navigationDestination(isPresented:)` for the share-card deep link — would stack a second
-    /// copy when a deep link arrives while it is already pushed. A single `isPresented` flag is
-    /// worse: an `isPresented` destination and a destination-form `NavigationLink` share one
-    /// presentation slot per stack, so pushing Read Recipe and then leaving and re-entering the tab
-    /// re-resolves that slot and puts **Frame & Fit** on screen instead. A typed path has neither
-    /// failure: pushes are values, and the deep link assigns rather than appends.
+    /// Every push out of this hub, as values. A typed path, not `isPresented` flags: an
+    /// `isPresented` destination and a destination-form `NavigationLink` share one presentation slot
+    /// per stack, so leaving and re-entering the tab can re-resolve that slot to the wrong screen.
     @State private var path: [Destination] = []
 
     private enum Destination: Hashable {
-        case develop, testKitchen, recentResults, frameAndFit, readRecipe
+        case develop, testKitchen, recentResults, readRecipe
     }
 
     var body: some View {
@@ -75,28 +68,13 @@ struct KitchenView: View {
                 case .develop: DevelopView()
                 case .testKitchen: TestKitchenView()
                 case .recentResults: SavedComparisonsView()
-                case .frameAndFit: FrameAndFitView()
                 case .readRecipe: ReadRecipeView()
                 }
             }
-            // The hub steps out of the way when a recipe asks for a share card: `onAppear` catches a
-            // cold tab switch, `onChange` a warm one. `FrameAndFitView.applySeed` clears the seed.
             .onAppear {
                 cookedCount = try? modelContext.fetchCount(FetchDescriptor<CookedPhoto>())
-                if router.frameSeed != nil { openFrameAndFit() }
-            }
-            .onChange(of: router.frameSeed) { _, seed in
-                if seed != nil { openFrameAndFit() }
             }
         }
-    }
-
-    /// Land on Frame & Fit, replacing whatever the hub was showing rather than stacking onto it.
-    /// The guard keeps a seed arriving while Frame & Fit is already open from rebuilding it and
-    /// throwing away an in-progress composition.
-    private func openFrameAndFit() {
-        guard path.last != .frameAndFit else { return }
-        path = [.frameAndFit]
     }
 
     private func zone<Content: View>(_ title: String,
@@ -193,13 +171,6 @@ struct KitchenView: View {
 
     private var toolTiles: some View {
         HStack(spacing: 10) {
-            NavigationLink(value: Destination.frameAndFit) {
-                ToolTile(icon: "square.on.square.dashed",
-                         title: "Frame & Fit",
-                         subtitle: "Borders, grids and carousels")
-            }
-            .buttonStyle(.plain)
-
             NavigationLink(value: Destination.readRecipe) {
                 ToolTile(icon: "doc.text.magnifyingglass",
                          title: "Read Recipe",
@@ -305,8 +276,7 @@ private struct PathwayRow: View {
     }
 }
 
-/// One of the no-camera tools. Squarer and more prominent than a text row: Frame & Fit is the
-/// largest thing in the Kitchen, and a text row would undersell it.
+/// A no-camera tool. A tile rather than a text row, so it reads as its own zone.
 private struct ToolTile: View {
     let icon: String
     let title: String

@@ -357,7 +357,7 @@ enum ComparisonMode: String, CaseIterable, Identifiable {
 /// Decoding `UIImage(data: version.imageData)` inside `body` puts the full developed JPEG on the
 /// main actor on every body pass — survivable while exactly one is on screen, and not once three
 /// are. Each version is decoded once, off the main actor, straight to display size by ImageIO
-/// (`FrameRenderer.proxy`) rather than by materialising the full bitmap and throwing most of it
+/// (`ImageDownsampler.downsample`) rather than by materialising the full bitmap and throwing most of it
 /// away. The inline 240px thumbnail stands in until the proxy lands.
 @Observable
 @MainActor
@@ -392,7 +392,7 @@ final class ComparisonImageStore {
             prepared.insert(id)
             guard !data.isEmpty else { continue }
             let proxy = await Task.detached(priority: .userInitiated) {
-                FrameRenderer.proxy(from: data, maxLongEdge: Self.proxyLongEdge)
+                ImageDownsampler.downsample(data, maxLongEdge: Self.proxyLongEdge)
             }.value
             if let proxy { images[id] = proxy }
         }

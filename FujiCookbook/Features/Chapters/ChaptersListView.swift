@@ -99,7 +99,7 @@ struct ChaptersListView: View {
     }
 
     /// One chapter card row — stack layout navigates via a hidden link; split layout selects into
-    /// the detail pane with an accent ring on the chosen card.
+    /// the detail pane with a square signal frame on the chosen card.
     @ViewBuilder
     private func chapterCard(for chapter: Chapter, recipesByUUID: [UUID: Recipe]) -> some View {
         if isSplit {
@@ -108,8 +108,9 @@ struct ChaptersListView: View {
             }
             .buttonStyle(.plain)
             .overlay {
+                // Square like the archive card it sits on (DSRadius.archive), drawn over its rule.
                 if splitSelection == chapter.persistentModelID {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: DSRadius.archive)
                         .strokeBorder(DSColor.signal, lineWidth: 2)
                 }
             }

@@ -11,8 +11,8 @@ import PhotosUI
 /// picture of somebody else's recipe card to an LLM and guesses. This reads what the camera
 /// recorded in the file, preserving ambiguities when the original recipe choice isn't recoverable.
 ///
-/// No camera needed — like Frame & Fit, this is entirely on-device, which is why the Kitchen lists
-/// it under that zone rather than with the cook pathways.
+/// No camera needed — this is entirely on-device, which is why the Darkroom lists it under that
+/// zone rather than with the develop pathways.
 struct ReadRecipeView: View {
     private enum Stage {
         case empty

@@ -3,7 +3,7 @@ import XCTest
 
 /// A scanned recipe is nearly always someone else's — that is what makes the scanner worth having —
 /// and `credit` is first-class everywhere else in the app: the editor writes it, `RecipePortability`
-/// carries it through sharing, and the share cards print "Recipe by …". So the scanner reads it too.
+/// carries it through sharing. So the scanner reads it too.
 ///
 /// The hard part isn't finding a name, it's knowing whether the name is the *author's*. A handle
 /// sitting at the top of an Instagram screenshot belongs to whoever posted it, and a repost looks
