@@ -31,7 +31,7 @@ Ein persönlicher Fork, der Fuji Cookbook zur All-in-One-App für den Fuji-Workf
 1. ~~`feature/design-system-v2` in main mergen~~ – erledigt (`1a33819`).
 2. ~~**App-Icon einbinden**~~ – erledigt mit PR #10 (`feature/darkslide-naming`), zusammen mit Anzeigename „Darkslide“, vier Tabs und den Laborbegriffen in der Oberfläche. Ergebnisse unten.
 3. ~~**Phase 0b – Repo-Pflege & Rebranding Stufe A**~~ – erledigt mit PR #13.
-4. Phase 3 auf dem iPhone mit der X100VI testen: Import-Modus der Kamera, Geschwindigkeit, Zuordnung der Standorte, RAF-Sidecars.
+4. Phase 3 auf dem iPhone mit der X100VI testen: Import-Modus der Kamera, Geschwindigkeit, Zuordnung der Standorte, RAF-Sidecars. Protokoll: `docs/fork/phase-3-testprotokoll.md`.
 5. Rolls spezifizieren (Datenmodell, Migration der Chapters, Laden auf C1–C7, Teilen).
 6. Phase 5 starten, ein Screen pro Branch, nach jedem Screen Freigabe.
 
