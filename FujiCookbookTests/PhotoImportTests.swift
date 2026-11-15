@@ -152,7 +152,7 @@ final class PhotoImportTests: XCTestCase {
         XCTAssertEqual(frames.map(\.frameNumber), ["0001", "0002", "0009"])
     }
 
-    func testDaysRunNewestFirst() throws {
+    func testDaysAndTheirFramesRunNewestFirst() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "UTC")!
         let undated = try XCTUnwrap(ImportFile(id: "u", name: "DSCF0009.JPG", folder: "DCIM/100_FUJI",
@@ -161,7 +161,8 @@ final class PhotoImportTests: XCTestCase {
                                                try file("DSCF0002.JPG", at: noon), try file("DSCF0003.JPG", at: noon.addingTimeInterval(60)),
                                                undated])
         let days = ImportDay.days(from: frames, calendar: calendar)
-        XCTAssertEqual(days.map { $0.frames.map(\.frameNumber) }, [["0002", "0003"], ["0001"], ["0009"]])
+        XCTAssertEqual(days.map { $0.frames.map(\.frameNumber) }, [["0003", "0002"], ["0001"], ["0009"]],
+                       "newest day first, and within a day the last frame taken on top")
         XCTAssertNil(days.last?.day)
     }
 
@@ -263,7 +264,7 @@ final class PhotoImportTests: XCTestCase {
         first.selectAll()
         await runImport(first)
 
-        XCTAssertEqual(first.phase, .finished(.init(imported: 2)))
+        XCTAssertEqual(first.phase, .finished(.init(imported: 2, files: 3)))
         XCTAssertEqual(writer.frames, [["DSCF0001.JPG", "DSCF0001.RAF"], ["DSCF0002.JPG"]])
         XCTAssertTrue(writer.filesExisted, "the files are on disk while the destination takes them")
         first.acknowledgeSummary()
@@ -326,6 +327,7 @@ final class PhotoImportTests: XCTestCase {
     func testRecipeConnectionIsNotOpenedOver() async throws {
         let source = FakePhotoSource(files: [try file("DSCF0001.JPG")])
         let model = model(source)
+        XCTAssertTrue(model.keepsScreenAwake, "opening reads the card")
         await model.open(recipeSessionActive: true)
         XCTAssertEqual(model.phase, .failed(PhotoImportError.recipeSessionActive.localizedDescription))
         XCTAssertEqual(source.openCount, 0, "the two share one device; opening would take the recipe session away")
@@ -464,6 +466,7 @@ final class PhotoImportTests: XCTestCase {
         await waitUntil { model.phase == .ready }
 
         XCTAssertTrue(model.isListing)
+        XCTAssertTrue(model.keepsScreenAwake, "the card is still being read")
         XCTAssertEqual(model.frames.map(\.frameNumber), ["0002"], "the newest day, before the card is listed")
         XCTAssertNotNil(model.listingProgress)
         model.toggle(model.frames[0])
@@ -471,6 +474,7 @@ final class PhotoImportTests: XCTestCase {
         source.release()
         await opening.value
         XCTAssertFalse(model.isListing)
+        XCTAssertFalse(model.keepsScreenAwake, "idle on the contact sheet, the phone may lock")
         XCTAssertEqual(model.frames.map(\.frameNumber), ["0001", "0002"])
         XCTAssertEqual(model.selectedFrames.map(\.frameNumber), ["0002"], "the rest arriving keeps the selection")
     }
@@ -563,5 +567,18 @@ final class PhotoImportTests: XCTestCase {
         XCTAssertTrue(text.contains("Nothing on the card was changed"))
         XCTAssertTrue(text.contains("cancelled"))
         XCTAssertTrue(text.contains("DSCF0002.JPG"))
+    }
+
+    func testSummaryNamesTheFilesWhenPairsCountOnce() {
+        let pairs = PhotoImportView.text(for: .init(imported: 1, files: 2), destination: .photoLibrary)
+        XCTAssertTrue(pairs.contains("1 photo (2 files) copied"), "a RAW+JPEG pair lands as two files")
+        let singles = PhotoImportView.text(for: .init(imported: 3, files: 3), destination: .photoLibrary)
+        XCTAssertTrue(singles.contains("3 photos copied"))
+        XCTAssertFalse(singles.contains("files)"))
+    }
+
+    func testStuckOpeningNamesTheUSBMode() {
+        XCTAssertTrue(PhotoImportView.stuckNote.contains("USB Card Reader"),
+                      "a camera in the recipe mode never lists its card")
     }
 }

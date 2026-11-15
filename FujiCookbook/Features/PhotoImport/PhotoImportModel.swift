@@ -8,7 +8,10 @@ import Observation
 @Observable
 final class PhotoImportModel {
     struct Summary: Equatable {
+        /// Frames copied: a RAW+JPEG pair counts once.
         var imported: Int
+        /// Files copied, the RAF and the JPEG of a pair each counting.
+        var files = 0
         /// Frames given a position. Nil when the import didn't add locations.
         var located: Int? = nil
         var failed: [String] = []
@@ -99,6 +102,14 @@ final class PhotoImportModel {
     var days: [ImportDay] { ImportDay.days(from: visibleFrames) }
     var selectedFrames: [ImportFrame] { visibleFrames.filter { selection.contains($0.id) } }
     var isImporting: Bool { if case .importing = phase { return true } else { return false } }
+
+    /// While the camera reads its card or files are copied: a full card takes minutes, and an
+    /// auto-lock in between leaves the screen waiting with the phone asleep (device test,
+    /// 2026-11-15). Idle on the contact sheet, the phone locks as usual.
+    var keepsScreenAwake: Bool {
+        if case .opening = phase { return true }
+        return isListing || isLoadingMore || isImporting
+    }
 
     func isAlreadyImported(_ frame: ImportFrame) -> Bool { ledger.contains(frame, choice: fileChoice) }
 
@@ -348,6 +359,7 @@ final class PhotoImportModel {
                 if position != nil { summary.located? += 1 }
                 selection.remove(frame.id)
                 summary.imported += 1
+                summary.files += chosen.count
             } catch is CancellationError {
                 summary.cancelled = true
             } catch {

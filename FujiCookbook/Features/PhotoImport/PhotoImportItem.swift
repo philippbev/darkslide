@@ -125,11 +125,12 @@ struct ImportDay: Identifiable, Equatable {
 
     var id: Date { day ?? .distantPast }
 
-    /// Newest day first, the way a card is read after a trip; within a day, in the order taken.
-    /// Undated frames come last.
+    /// Newest first, the way a card is read after a trip: the latest day on top, and within a day
+    /// the last frame taken. Undated frames come last. `frames` arrive in the order taken
+    /// (`ImportFrame.frames(from:)`), and `Dictionary(grouping:)` keeps that order per day.
     static func days(from frames: [ImportFrame], calendar: Calendar = .current) -> [ImportDay] {
         let grouped = Dictionary(grouping: frames) { $0.captureDate.map(calendar.startOfDay(for:)) }
-        return grouped.map { ImportDay(day: $0.key, frames: $0.value) }
+        return grouped.map { ImportDay(day: $0.key, frames: $0.value.reversed()) }
             .sorted { left, right in
                 switch (left.day, right.day) {
                 case let (a?, b?): return a > b

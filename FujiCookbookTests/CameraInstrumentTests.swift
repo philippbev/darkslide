@@ -40,6 +40,12 @@ final class CameraInstrumentTests: XCTestCase {
         XCTAssertEqual(Instrument.panelLEDs(isLive: true, canWrite: true).map(\.label), ["Link", "R/W"])
     }
 
+    func testACardReaderIsLinkedButNotWritable() {
+        XCTAssertEqual(Instrument.cardReaderLEDs().map(\.isOn), [true, false],
+                       "plugged in and open, but the slots aren't reachable in that mode")
+        XCTAssertTrue(Instrument.cardReaderMeta.contains("Card Reader"))
+    }
+
     // MARK: Selection
 
     func testWithNoChoiceTheFirstSetSlotIsShown() {

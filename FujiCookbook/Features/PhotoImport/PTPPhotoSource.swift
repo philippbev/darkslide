@@ -1,6 +1,7 @@
 import CoreGraphics
 import Foundation
 import ImageIO
+import Observation
 
 /// The PTP operations reading a camera's card needs. `ImageCaptureTransport` provides them; tests
 /// supply their own.
@@ -25,12 +26,16 @@ extension ImageCaptureTransport: PhotoCardTransport {}
 /// and the metadata already read. Opening a session makes the camera index its card again, which
 /// took about a minute on an X100VI with 2,000 frames; a second visit through the same session
 /// lists at once. Unplugging the camera, or the recipe connection taking the device, ends it.
+///
+/// Observable so the Camera tab can show a camera that is attached as a card reader: there is no
+/// recipe session then, yet the camera is plugged in and its card open (`CameraInstrument`).
 @MainActor
+@Observable
 final class PTPCardCache {
     static let shared = PTPCardCache()
 
     fileprivate(set) var transport: PhotoCardTransport?
-    var infos: [UInt32: FujiPTP.ObjectInfo] = [:]
+    @ObservationIgnored var infos: [UInt32: FujiPTP.ObjectInfo] = [:]
 
     func adopt(_ transport: PhotoCardTransport) {
         self.transport = transport
@@ -346,6 +351,12 @@ final class CameraCardSource: PhotoSource {
             throw CancellationError()
         } catch let error as PhotoImportError where error == .noCamera || error == .permissionDenied {
             // No camera is no camera either way; the catalog would only wait to say so again.
+            throw error
+        } catch let error as PhotoImportError where error.isNoPhotos {
+            // The session opened and the camera answered with nothing: an empty card, or the body
+            // is in “USB RAW Conv./Backup Restore”. The catalog doesn't list more; in that mode it
+            // never finishes, which left the screen waiting with no word on the USB mode (X100VI
+            // fw 1.31, iPhone, 2026-11-15).
             throw error
         } catch {
             CameraLog.error("PhotoImport: PTP listing failed, using the catalog — \(AppLog.bounded(error))")

@@ -55,6 +55,13 @@ enum CameraError: LocalizedError, Equatable {
 
     var errorDescription: String? { message }
 
+    /// Where the diagnostics report is, and what to do with it. With reports off there is no
+    /// "Report a Problem" to send, only a report to read and copy (`ReportSurfaces`).
+    static func diagnosticsRoute(_ surfaces: ReportSurfaces) -> String {
+        let path = "Settings → \(surfaces.helpSectionTitle) → \(surfaces.diagnosticsTitle)"
+        return surfaces.reportsEnabled ? "Send a report from \(path)" : "Copy the report from \(path)"
+    }
+
     var message: String {
         switch self {
         case .noDeviceConnected:
@@ -62,7 +69,7 @@ enum CameraError: LocalizedError, Equatable {
         case .permissionDenied:
             return "Darkslide needs permission to communicate with your camera. Allow camera access when iOS asks, or enable it in Settings, then reconnect."
         case .contentsAccessUnavailable:
-            return "iOS is refusing Darkslide access to your camera's contents. That is a second permission, separate from Camera: Settings → Privacy & Security → Files and Folders → Darkslide. If that switch is off and won't stay on, iOS has a stuck record for this app on this device that reinstalling doesn't clear. Send a report from Settings → Help & Feedback → Report a Problem; the log inside it carries what iOS returned."
+            return "iOS is refusing Darkslide access to your camera's contents. That is a second permission, separate from Camera: Settings → Privacy & Security → Files and Folders → Darkslide. If that switch is off and won't stay on, iOS has a stuck record for this app on this device that reinstalling doesn't clear. \(Self.diagnosticsRoute(ReportSurfaces.current)); the log inside it carries what iOS returned."
         case .wrongUSBMode:
             return "The camera is connected but isn't in the right USB mode. On the camera, set Connection Setting → USB Mode to “USB RAW Conv./Backup Restore” (or your model's equivalent), then reconnect."
         case .chargeOnlyCableOrAdapter:

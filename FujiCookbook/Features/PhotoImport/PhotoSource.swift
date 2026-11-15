@@ -73,6 +73,11 @@ enum PhotoImportError: LocalizedError, Equatable {
     /// card.
     /// `diagnostics`: what the camera answered, shown beneath the message.
     case noPhotos(diagnostics: String? = nil)
+
+    var isNoPhotos: Bool {
+        if case .noPhotos = self { return true }
+        return false
+    }
     case catalogTimedOut
     case sourceFailed(String)
     case downloadFailed(file: String, detail: String)
