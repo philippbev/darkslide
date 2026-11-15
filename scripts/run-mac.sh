@@ -16,10 +16,6 @@ group=$(/usr/libexec/PlistBuddy -c "Print :FCAppGroupIdentifier" "$app/Contents/
 entitlements=$(mktemp -t fujicookbook-entitlements)
 sed "s/\$(APP_GROUP_IDENTIFIER)/$group/" Config/LocalMac.entitlements > "$entitlements"
 
-# The extension first: signing the app seals what it contains.
-for extension in "$app"/Contents/PlugIns/*.appex(N); do
-    codesign --force --sign - --entitlements "$entitlements" "$extension"
-done
 codesign --force --sign - --entitlements "$entitlements" "$app"
 rm -f "$entitlements"
 

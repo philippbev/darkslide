@@ -31,13 +31,13 @@ final class LogRedactionTests: XCTestCase {
                       "the code says how — that is the half worth keeping")
     }
 
-    /// A URL error quotes the whole URL, which for an AI request carries the provider and endpoint.
+    /// A URL error quotes the whole URL, host and path included.
     func testBoundedDropsTheURL() {
         let error = URLError(.timedOut,
-                             userInfo: [NSURLErrorFailingURLStringErrorKey: "https://api.anthropic.com/v1/messages"])
+                             userInfo: [NSURLErrorFailingURLStringErrorKey: "https://api.example.com/v1/messages"])
         let bounded = AppLog.bounded(error)
 
-        XCTAssertFalse(bounded.contains("anthropic.com"), "the endpoint does not belong in the log")
+        XCTAssertFalse(bounded.contains("example.com"), "the endpoint does not belong in the log")
         XCTAssertTrue(bounded.contains("\(URLError.Code.timedOut.rawValue)"), "the code survives")
     }
 

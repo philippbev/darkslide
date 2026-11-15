@@ -1,15 +1,13 @@
 import SwiftUI
 import SwiftData
 
-/// Top-level tab layout: Recipes, Rolls, Ideas (behind a flag), Darkroom and Camera. The labels follow
+/// Top-level tab layout: Recipes, Rolls, Darkroom and Camera. The labels follow
 /// the darkroom vocabulary (design system v2.6); the types behind them keep their old names for now.
 struct RootView: View {
     @Environment(ImportCoordinator.self) private var importCoordinator
-    @Environment(AISettings.self) private var aiSettings
     @Environment(CameraServices.self) private var camera
     @Environment(OwnedCameras.self) private var ownedCameras
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.scenePhase) private var scenePhase
     @State private var router = AppRouter()
     /// Seeded from the launch-time detection. The banner's buttons also `acknowledge()` it, so a
     /// window opened later doesn't show the banner again.
@@ -41,22 +39,9 @@ struct RootView: View {
         } message: {
             Text(coordinator.importError ?? "")
         }
-        // The Share Extension can't open the app, so its work is picked up here, on launch and on
-        // each return to the foreground: recipes it saved to the store, then screenshots it queued.
         .task {
-            ShareExtensionSaves.adopt(into: modelContext)
-            // After the extension's work is adopted, so a recipe it saved counts as a library in use.
             await StarterRecipe.seedIfNeeded(into: modelContext)
-            await importCoordinator.processSharedScreenshots(using: aiSettings)
         }
-        .onChange(of: scenePhase) { _, phase in
-            guard phase == .active else { return }
-            // Before the inbox drain, not after: the extension may have saved a recipe while we were
-            // backgrounded, and this context still has the library as it was before that.
-            ShareExtensionSaves.adopt(into: modelContext)
-            importCoordinator.startSharedScreenshotScan(using: aiSettings)
-        }
-        .blockingProgress("Reading shared screenshot…", isPresented: coordinator.isScanningSharedScreenshots)
         .overlay {
             if coordinator.isPreparingImport {
                 CancellableProgressOverlay(
@@ -126,11 +111,6 @@ struct RootView: View {
                 Tab("Rolls", systemImage: "film", value: AppTab.chapters) {
                     ChaptersListView()
                 }
-                if FeatureFlags.ideasEnabled {
-                    Tab("Ideas", systemImage: "sparkles", value: AppTab.ideas) {
-                        RecommenderView()
-                    }
-                }
                 Tab("Darkroom", systemImage: "camera.filters", value: AppTab.kitchen) {
                     KitchenView()
                 }
@@ -148,12 +128,6 @@ struct RootView: View {
                 ChaptersListView()
                     .tabItem { Label("Rolls", systemImage: "film") }
                     .tag(AppTab.chapters)
-
-                if FeatureFlags.ideasEnabled {
-                    RecommenderView()
-                        .tabItem { Label("Ideas", systemImage: "sparkles") }
-                        .tag(AppTab.ideas)
-                }
 
                 KitchenView()
                     .tabItem { Label("Darkroom", systemImage: "camera.filters") }

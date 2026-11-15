@@ -1,7 +1,7 @@
 import Foundation
 
 /// Each numeric field's range across every supported body: what the editor offers under Generic
-/// (no camera selected), and the bounds of the Share Extension's editor and the AI recipe schema.
+/// (no camera selected).
 enum DefaultRanges {
     static func range(for field: RecipeField) -> NumericRange {
         switch field {

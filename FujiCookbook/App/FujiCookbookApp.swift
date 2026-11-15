@@ -15,7 +15,6 @@ struct FujiCookbookApp: App {
 
     @State private var camera = CameraServices()
     @State private var importCoordinator = ImportCoordinator()
-    @State private var aiSettings = AISettings()
     @State private var ownedCameras = OwnedCameras()
 
     /// Light, Dark or System, from Settings ▸ Display — applied to every window below.
@@ -50,12 +49,9 @@ struct FujiCookbookApp: App {
         AppLog.flushNow()
         DSAppearance.apply()
         PickedRAFStore.purge()
-        AISettings.purgeRetiredProviderData()
-        let dropped = ScreenshotInbox.purgeStale()
-        if dropped > 0 { AppLog.info(.share, "Dropped \(dropped) stale shared screenshot(s)") }
-        // The store lives in the App Group so the Share Extension can write recipes straight into
-        // the library — see `SharedModelStore`, the single definition of both the schema and the
-        // configuration, so the two processes cannot drift apart.
+        RetiredAIData.purge()
+        // The store lives in the App Group — see `SharedModelStore`, the single definition of both
+        // the schema and the configuration.
         // The store configuration is fixed when it's created here, so toggling the preference only
         // takes effect on the next launch.
         // A locally signed Mac build has no App Group and no iCloud entitlement (`SharedContainer`).
@@ -71,7 +67,6 @@ struct FujiCookbookApp: App {
         }
         modelContainer = opened.store
         cloudStoreState = opened.state
-        ScanConfiguration.publishStoreMode(cloudKit: opened.state.isCloudKit)
     }
 
     var body: some Scene {
@@ -87,7 +82,6 @@ struct FujiCookbookApp: App {
                 }
                 .environment(camera)
                 .environment(importCoordinator)
-                .environment(aiSettings)
                 .environment(ownedCameras)
                 .environment(\.cloudStoreState, cloudStoreState)
                 // Open .fujirecipe / .json files from Files, Mail, Messages, the share sheet.

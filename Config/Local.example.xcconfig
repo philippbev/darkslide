@@ -12,4 +12,3 @@ APP_IDENTIFIER_BASE = com.example.fujicookbook
 // build has no iCloud sync; everything else works.
 // DEVELOPMENT_TEAM = ABCDE12345
 // FC_APP_ENTITLEMENTS = Config/PersonalTeam-App.entitlements
-// FC_EXTENSION_ENTITLEMENTS = Config/PersonalTeam-Extension.entitlements

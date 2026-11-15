@@ -3,25 +3,23 @@
 // The defaults are the shipping app's. To build under your own Apple developer team, copy
 // Local.example.xcconfig to Local.xcconfig (git-ignored) and override what you need there.
 //
-// APP_IDENTIFIER_BASE names the bundle ids, the App Group, the iCloud container and the shared
-// Keychain group. Changing it for an existing install relocates the library, the logs, the
-// settings and the stored API keys, so the shipping value never changes.
+// APP_IDENTIFIER_BASE names the bundle id, the App Group, the iCloud container and the Keychain
+// group. Changing it for an existing install relocates the library, the logs, the settings and the
+// stored secrets, so the shipping value never changes.
 
 DEVELOPMENT_TEAM = MWW68W9GDA
 
-// The version every target ships with. App Store Connect refuses an upload whose app and Share
-// Extension disagree, so both read the two numbers from here rather than from per-target settings.
+// The version the app ships with, kept here rather than in per-target settings.
 MARKETING_VERSION = 1.1
 CURRENT_PROJECT_VERSION = 17
 APP_IDENTIFIER_BASE = xyz.grovehouse.fujicookbookapp
 APP_GROUP_IDENTIFIER = group.$(APP_IDENTIFIER_BASE)
 ICLOUD_CONTAINER_IDENTIFIER = iCloud.$(APP_IDENTIFIER_BASE)
 
-// The entitlements each target signs with. A personal team (a free Apple ID) can't sign iCloud
-// or push, so Local.xcconfig points these at Config/PersonalTeam-*.entitlements for a build on
-// your own iPhone; see Local.example.xcconfig.
+// The entitlements the app signs with. A personal team (a free Apple ID) can't sign iCloud or
+// push, so Local.xcconfig points this at Config/PersonalTeam-App.entitlements for a build on your
+// own iPhone; see Local.example.xcconfig.
 FC_APP_ENTITLEMENTS = FujiCookbook/FujiCookbook.entitlements
-FC_EXTENSION_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements
 
 // Every target also builds for the Mac through Mac Catalyst. iOS builds are unaffected.
 SUPPORTS_MACCATALYST = YES

@@ -39,16 +39,6 @@ final class LegacyNoiseReductionTests: XCTestCase {
         XCTAssertNil(settings.noiseReduction)
     }
 
-    /// The scanner's payload keeps a `noiseReduction` property for a model that answers under the
-    /// older name whether or not the schema offers it.
-    func testAScannedNoiseReductionBecomesHighISONR() throws {
-        let payload = try JSONDecoder().decode(AIRecipePayload.self,
-                                               from: Data(#"{"noiseReduction": -2}"#.utf8))
-        let settings = payload.toPortable(fallbackName: "Scanned").settings
-        XCTAssertEqual(settings.highISONR, -2)
-        XCTAssertNil(settings.noiseReduction)
-    }
-
     /// What the fold is for: the value reaches the camera as `0xD1A1`, where before the push skipped
     /// it as a setting no body has.
     func testAPushWritesTheValueAsHighISONR() async throws {

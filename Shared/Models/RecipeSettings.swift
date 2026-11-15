@@ -92,7 +92,7 @@ struct RecipeSettings: Codable, Equatable, Hashable {
     /// Decoding is spelled out because SwiftData persists this struct as a *composite attribute*:
     /// it flattens the nested `GrainEffect` / `WhiteBalance` into sibling columns and keeps no
     /// marker for "the nested struct itself was nil". A recipe saved with `grain == nil` (the AI
-    /// scanner and the editor both produce that — see `AIRecipePayload.toPortable` and
+    /// screenshot scanner of earlier builds and the editor both produce that — see
     /// `RecipeDraft.assembleSettings`) therefore reads back as a *present* grain with every column
     /// null. A synthesized decoder throws on that, on every launch, for as long as such a recipe is
     /// in the library.

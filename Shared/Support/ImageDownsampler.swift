@@ -4,10 +4,9 @@ import UIKit
 
 /// Decode an image straight to the size it's needed at, without ever materialising the full bitmap.
 ///
-/// Reachable from the Share Extension: an extension's memory budget is far tighter than the app's,
-/// and a 40MP share decoded through `UIImage(data:)` allocates ~160MB of backing store before
-/// anything resizes it — enough to get jetsammed before the scan begins. ImageIO reads the header,
-/// decodes at the requested size, and never holds the full image.
+/// A 40MP photo decoded through `UIImage(data:)` allocates ~160MB of backing store before anything
+/// resizes it. ImageIO reads the header, decodes at the requested size, and never holds the full
+/// image.
 enum ImageDownsampler {
 
     /// A downsampled, orientation-corrected copy. ImageIO never upscales, so an image already

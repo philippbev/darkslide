@@ -1,10 +1,11 @@
 import Foundation
 import SwiftData
 
-/// A saved set of AI recipe recommendations, so the user can refer back to past results without
-/// re-sending the query. Picks reference library recipes by their stable `Recipe.uuid` (the same
-/// pattern as ``Chapter``), so a result degrades gracefully when a recommended recipe is later
-/// deleted — the row simply shows as missing.
+/// A saved set of recipe recommendations from the removed Ideas feature.
+///
+/// Nothing creates or shows these any more. The model stays in ``SharedModelStore/modelTypes`` only
+/// so the store and its CloudKit schema keep the shape existing installs already have: dropping an
+/// entity is a migration, and rows an older build saved should not stop the store from opening.
 ///
 /// Defaults on every attribute satisfy CloudKit's optional-or-defaulted rule; `init` sets real values.
 @Model
@@ -16,8 +17,7 @@ final class Recommendation {
     var title: String = ""
     /// The model's 1–2 sentence overview of how the set works together.
     var summary: String?
-    /// The model id that produced this set (provenance, shown in the result view). Resolved for
-    /// display through ``AIModelCatalog``, which searches every provider.
+    /// The model id that produced this set (provenance).
     var modelID: String = ""
     var createdAt: Date = Date()
     /// Encoded `[RecipePick]`.

@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import PhotosUI
 
 /// The recipe inventory — fully usable with no camera connected.
 ///
@@ -15,7 +14,6 @@ struct LibraryView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(ImportCoordinator.self) private var importCoordinator
-    @Environment(AISettings.self) private var aiSettings
     @Environment(OwnedCameras.self) private var ownedCameras
     @Environment(CameraServices.self) private var camera
     /// The camera's slots as last read, and which camera that was (`CameraSlotSnapshot`).
@@ -52,13 +50,7 @@ struct LibraryView: View {
     @State private var isAddingStarter = false
     @State private var starterError: String?
 
-    // AI screenshot scanning
     @State private var showingSettings = false
-    @State private var showingScanPicker = false
-    @State private var scanPickerItem: PhotosPickerItem?
-    @State private var isScanning = false
-    @State private var scanError: String?
-    @State private var showingAISetupPrompt = false
 
     private var isSplit: Bool { horizontalSizeClass == .regular }
 
@@ -162,7 +154,7 @@ struct LibraryView: View {
         .onChange(of: starterCopyCount, initial: true) { _, count in
             if count > 1 { collapseStarterCopies() }
         }
-        // Every way a recipe arrives (new, import, scan, camera, sync) shows up here as an
+        // Every way a recipe arrives (new, import, camera, sync) shows up here as an
         // unnumbered row; a recipe in the new-recipe editor waits until the sheet closes, so a
         // cancel doesn't use up a number.
         .onChange(of: numberingState, initial: true) { _, state in
@@ -170,21 +162,6 @@ struct LibraryView: View {
         }
         .onChange(of: editTarget?.value.uuid) { _, open in
             if open == nil { numberRecipes() }
-        }
-        .photosPicker(isPresented: $showingScanPicker, selection: $scanPickerItem, matching: .images)
-        .onChange(of: scanPickerItem) { _, item in
-            guard let item else { return }
-            Task { await runScan(item) }
-        }
-        .blockingProgress("Sending to \(aiSettings.provider.displayName) with your key…", isPresented: isScanning)
-        .alert("Scan Failed", isPresented: Binding(isPresent: $scanError)) {
-            Button("OK", role: .cancel) {}
-        } message: { Text(scanError ?? "") }
-        .alert("AI Scanning Isn't Set Up", isPresented: $showingAISetupPrompt) {
-            Button("Open Settings") { showingSettings = true }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Turn on AI Features in Settings, add your \(aiSettings.provider.displayName) API key, and pick a model for scanning.")
         }
     }
 
@@ -390,7 +367,6 @@ struct LibraryView: View {
             Menu {
                 Button { createRecipe() } label: { Label("New Recipe", systemImage: "plus") }
                 Button { showingImporter = true } label: { Label("Import from File", systemImage: "square.and.arrow.down") }
-                Button { startScan() } label: { Label("Scan Screenshot (AI)", systemImage: "text.viewfinder") }
             } label: {
                 Image(systemName: "plus")
             }
@@ -434,37 +410,6 @@ struct LibraryView: View {
             try StarterRecipe.collapseCopies(in: modelContext)
         } catch {
             AppLog.error(.data, "Collapsing starter recipe copies failed — \(AppLog.bounded(error))")
-        }
-    }
-
-    /// Entry point for AI screenshot import: gate on configuration, then present the photo picker.
-    private func startScan() {
-        if aiSettings.isConfigured { showingScanPicker = true }
-        else { showingAISetupPrompt = true }
-    }
-
-    /// Load the picked screenshot, extract a recipe via the selected AI provider, and open it in
-    /// the editor for review.
-    @MainActor
-    private func runScan(_ item: PhotosPickerItem) async {
-        defer { scanPickerItem = nil }
-        isScanning = true
-        defer { isScanning = false }
-
-        guard let data = try? await item.loadTransferable(type: Data.self) else {
-            scanError = "That image couldn't be read."
-            return
-        }
-        do {
-            let portable = try await RecipeScanner.scan(imageData: data,
-                                                        provider: aiSettings.provider,
-                                                        apiKey: aiSettings.apiKey,
-                                                        modelID: aiSettings.modelID)
-            let recipe = RecipePortability.makeRecipe(from: portable)
-            modelContext.insert(recipe)
-            editTarget = Identified(value: recipe)   // present editor for review (cancel discards)
-        } catch {
-            scanError = error.localizedDescription
         }
     }
 

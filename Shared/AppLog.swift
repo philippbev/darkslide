@@ -29,14 +29,10 @@ public enum AppLog {
         case camera
         /// RAW conversion and Test Strips (the Darkroom).
         case kitchen
-        /// Recipe scanning and the provider clients.
-        case ai
         /// SwiftData, decoding, the recipe store.
         case data
         /// `.fujirecipe` import/export and the file pickers.
         case importExport = "import"
-        /// The Share Extension and the shared-screenshot inbox.
-        case share
 
         /// The logger built for this category in `loggers`, so a log call doesn't build one.
         fileprivate var logger: Logger { AppLog.loggers[self] ?? Logger(subsystem: AppLog.subsystem, category: rawValue) }
@@ -282,7 +278,7 @@ public enum AppLog {
     private static var unflushed: [Entry] = []
 
     /// One lock over both arrays. `AppLog` is called from `@MainActor` views and from detached
-    /// scanning tasks, so it can't be actor-isolated without forcing `await` onto every `catch`
+    /// tasks, so it can't be actor-isolated without forcing `await` onto every `catch`
     /// block in the app.
     private static let lock = NSLock()
 
@@ -352,9 +348,7 @@ public enum AppLog {
         try? combined.write(to: url, options: .atomic)
     }
 
-    /// Shared with the Share Extension, so both processes' lines land in one report. They interleave
-    /// by append order rather than by timestamp, which is fine: the extension runs when the app is
-    /// backgrounded, so in practice they don't overlap.
+    /// In the App Group container, next to the library (see `SharedContainer`).
     private static var containerURL: URL? {
         SharedContainer.url?
             .appendingPathComponent("Logs", isDirectory: true)

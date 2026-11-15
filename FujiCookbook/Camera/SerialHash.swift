@@ -20,7 +20,7 @@ enum SerialHash {
     /// leaves the device.
     static let keyedScheme = "hmac-sha256"
 
-    /// Its own account, and no `AIProvider`'s: Delete API Keys walks `AIProvider.allCases`, and
+    /// Its own account, apart from the retired AI key accounts `RetiredAIData` deletes at launch:
     /// erasing this key would make every camera the app has met look like a stranger.
     static let keychainAccount = "camera.serialHashKey"
 

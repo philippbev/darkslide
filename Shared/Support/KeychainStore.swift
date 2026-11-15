@@ -1,8 +1,8 @@
 import Foundation
 import Security
 
-/// Minimal Keychain wrapper for storing secrets — one API key per AI provider, keyed by
-/// `AIProvider.keychainAccount`, and the device secret `SerialHash` keys camera serials with.
+/// Minimal Keychain wrapper for storing secrets: the device secret `SerialHash` keys camera serials
+/// with. Earlier builds also kept AI provider API keys here; `RetiredAIData` deletes those.
 ///
 /// Secrets must not live in `UserDefaults` (plain-text, backed up, readable). The Keychain keeps them
 /// encrypted, and every item here is stored `ThisDeviceOnly`: never synced, and never restored to
@@ -11,17 +11,17 @@ import Security
 /// **Do not add `kSecAttrService` to these queries.** Generic-password identity is
 /// (service, account, access group); every key this app has ever written was stored with no service,
 /// so a service-qualified query would match none of them and every existing user's key would
-/// silently disappear. Distinct account strings already keep each provider's key apart.
+/// silently disappear. Distinct account strings already keep the items apart.
 enum KeychainStore {
-    /// Shared Keychain group, declared in both targets' entitlements so the Share Extension can read
-    /// the key the app stores.
+    /// The app's Keychain group. It was shared with a Share Extension in earlier builds and keeps
+    /// its name, because the items already stored live in it.
     ///
     /// The entitlements spell it `$(AppIdentifierPrefix)$(APP_IDENTIFIER_BASE)`, which Xcode
     /// expands at build time into `TEAMID.<base>` — and `kSecAttrAccessGroup` is matched
     /// *literally* against that expanded string. Nothing prepends the team prefix on our behalf, so
     /// passing the bare group name names a group the app is not entitled to and every write comes
-    /// back `errSecMissingEntitlement`: the key looks saved, because the typed value lives in
-    /// `AISettings` for the rest of the session, and is gone by the next launch.
+    /// back `errSecMissingEntitlement`: the item looks saved for the rest of the session and is
+    /// gone by the next launch.
     private static let groupName = AppIdentifiers.base
 
     private static let accessGroups = AccessGroupResolver(groupName: groupName, teamPrefix: teamPrefix)
@@ -60,8 +60,7 @@ enum KeychainStore {
     /// Ask the Keychain which group it files our items in by default, and take the leading component.
     ///
     /// Read at runtime rather than hardcoded: the team prefix is one more string that, if it ever
-    /// changed, would cost every user their key with no visible failure. The probe works from either
-    /// target — the extension's default group differs from the app's, but the prefix is the same.
+    /// changed, would cost every user their stored secret with no visible failure.
     private static func teamPrefix() -> String? {
         let probe: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -190,7 +189,7 @@ enum KeychainStore {
 
     /// The same item, named without a group. For reads and deletes this spans every entitled group,
     /// so it is a superset of `query(for:in:)` — never use it to *write*, or the item lands in whichever
-    /// group the Keychain picks by default rather than the one the extension reads.
+    /// group the Keychain picks by default rather than the app's group.
     private static func unscopedQuery(for key: String) -> [String: Any] {
         [
             kSecClass as String: kSecClassGenericPassword,

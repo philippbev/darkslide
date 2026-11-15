@@ -83,8 +83,7 @@ extension RecipeChoice {
 
 /// The app's one recipe-picking sheet.
 ///
-/// Serves Develop, Test Kitchen, Compare With, the Chapters editor and the Ideas "build around"
-/// list, in single- or capped-multi-select, over a mixed list of library recipes and programmed
+/// Serves Develop, Test Kitchen, Compare With and the Chapters editor, in single- or capped-multi-select, over a mixed list of library recipes and programmed
 /// camera slots. It filters: a flat menu of every name stops being usable once a library runs to
 /// dozens.
 struct RecipePickerSheet: View {
