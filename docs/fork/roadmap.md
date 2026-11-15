@@ -82,4 +82,9 @@ Ein persönlicher Fork, der Fuji Cookbook zur All-in-One-App für den Fuji-Workf
 - Rolls: Migration bestehender Chapters mit mehr als sieben Rezepten; Dateiendung beim Teilen (`.fujirecipe` umbenennen?)
 - Suche als eigener Tab (iOS-26-Muster)?
 - Layout der Screens Rolls und Darkroom
-- Rebranding im Code: Anzeigename und sichtbare Texte erledigt (PR #10); Rest (Bundle-ID, Projekt-/Target-Namen, Support-Adresse, Datenschutz-URL, Dokumenttyp, Launch-Mark) nach Checkliste `docs/fork/rebranding.md`
+- Rebranding im Code: Anzeigename, sichtbare Texte, App-Icon und Ladescreen erledigt (PR #10, #11). Rest nach Checkliste `docs/fork/rebranding.md`: Support-Adresse und Datenschutz-URL (Stufe A), Dokumenttyp und CloudKit-Container (B), Beispielfotos, Bundle-ID, Projekt-/Target-Namen, Doku (C)
+- **Auf dem iPhone prüfen (Philipp):** neuer Ladescreen statt „Fuji Cookbook“ (hell und dunkel), dunkles Icon (Homescreen ▸ Customize ▸ Dark), eckige Roll-Auswahl auf dem iPad, Darkroom ohne Frame & Fit
+- Aufräumen: `AppIconLegacy.appiconset` löschen, sobald das neue Icon auf dem Gerät bestätigt ist
+- Aufräumen: Warnung `ImplicitStrongCapture` in `PhotoImportModel.swift:199` (bestand schon vor dem Darkslide-Naming)
+- Design-System-Spezifikation (claude.ai): Satz „`CardPalette` (Share Cards) vorerst unverändert“ streichen – Share Cards sind entfernt
+- Rolls-Migration: gespeicherte Namen wie „Chapter 1“ / „New Chapter“ mit umbenennen? (Entscheidung offen)

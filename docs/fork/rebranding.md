@@ -1,6 +1,6 @@
 # Rebranding-Liste
 
-Stand: 13.11.2026 · Quelle: [`docs/rebranding-a-fork.md`](../rebranding-a-fork.md) und [`TRADEMARKS.md`](../../TRADEMARKS.md), gegen den Stand `923d86e` geprüft.
+Stand: 15.11.2026 (Abhaken nach PR #10/#11) · Erstfassung 13.11.2026 · Quelle: [`docs/rebranding-a-fork.md`](../rebranding-a-fork.md) und [`TRADEMARKS.md`](../../TRADEMARKS.md), gegen den Stand `923d86e` geprüft.
 
 ## Wann was nötig ist
 
@@ -37,11 +37,11 @@ Offen dabei: Soll der Fork `.fujirecipe`-Dateien des Originals weiter öffnen k�
 
 | Erledigt | Was | Wo |
 |---|---|---|
-| ☐ | Anzeigename `CFBundleDisplayName` | `FujiCookbook/Info.plist:20`, `ShareExtension/Info.plist:21` |
-| ☐ | Name in den Berechtigungsdialogen (Kamera, Fotos hinzufügen) | `FujiCookbook/Info.plist:77`, `:81` |
-| ☐ | Name in den Swift-Quellen: 68 Treffer für „Fuji Cookbook“ in 28 Dateien, darunter Export- und Berichts-Dateinamen | `FujiCookbook/`, `Shared/`, `ShareExtension/` |
-| ☐ | App-Icon und `LaunchMark` | `FujiCookbook/Assets.xcassets` |
-| ☐ | Signatur, Marke und Name der Share Cards (`BrandMark`, `CardWordmark`) | `FujiCookbook/Features/Library/ShareCard/ShareCardTypography.swift` |
+| ✅ | Anzeigename `CFBundleDisplayName` – „Darkslide“ (PR #10) | `FujiCookbook/Info.plist:20`, `ShareExtension/Info.plist:21` |
+| ✅ | Name in den Berechtigungsdialogen (Kamera, Fotos hinzufügen) (PR #10) | `FujiCookbook/Info.plist:77`, `:81` |
+| ✅ | (PR #10, sichtbare Texte; Kommentare und Typnamen bleiben) Name in den Swift-Quellen: 68 Treffer für „Fuji Cookbook“ in 28 Dateien, darunter Export- und Berichts-Dateinamen | `FujiCookbook/`, `Shared/`, `ShareExtension/` |
+| ✅ | App-Icon (`AppIcon.icon`, PR #10) und Ladescreen (`DarkslideLaunchMark`, PR #11) | `FujiCookbook/Assets.xcassets` |
+| ✅ | Entfällt: Share Cards samt `BrandMark`/`CardWordmark` entfernt (PR #11) | `FujiCookbook/Features/Library/ShareCard/ShareCardTypography.swift` |
 | ☐ | Die fünf Beispielfotos: `photos`-Schlüssel löschen oder eigene Fotos einsetzen | `FujiCookbook/Resources/Lua de Mel.fujirecipe` |
 | ☐ | `APP_IDENTIFIER_BASE` und `DEVELOPMENT_TEAM` dauerhaft | `Config/Base.xcconfig` |
 | ☐ | Wortmarke und Screenshots der Doku | `docs/images/` |
@@ -56,5 +56,5 @@ Tests, die mitziehen müssen: `StarterRecipeTests` (prüft Credit und die fünf 
 
 ## Hängt an offenen Entscheidungen
 
-- **Name des Forks** blockiert Stufe C komplett und die Wahl der neuen Dokumenttyp-Kennung in Stufe B.
+- ~~**Name des Forks**~~ – entschieden: **Darkslide** (15.11.2026). Offen bleibt die neue Dokumenttyp-Kennung in Stufe B.
 - **Support-Adresse und Datenschutz-URL** für Stufe A: eigene Adresse, oder beides im Fork vorerst ausblenden.
