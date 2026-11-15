@@ -23,6 +23,14 @@ enum CameraInstrument {
         [("Link", isLive), ("R/W", isLive && canWrite)]
     }
 
+    /// A camera attached in “USB Card Reader” mode, its card kept open by the Light Table: linked,
+    /// but nothing to write, so R/W stays dark. The line says what the link is good for.
+    static let cardReaderMeta = "USB Card Reader   Photos Only"
+
+    static func cardReaderLEDs() -> [(label: String, isOn: Bool)] {
+        panelLEDs(isLive: true, canWrite: false)
+    }
+
     // MARK: Slots
 
     /// The slot to show when none is chosen, or the chosen one is gone: the first that holds a

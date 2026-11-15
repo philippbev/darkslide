@@ -327,6 +327,7 @@ final class PhotoImportTests: XCTestCase {
     func testRecipeConnectionIsNotOpenedOver() async throws {
         let source = FakePhotoSource(files: [try file("DSCF0001.JPG")])
         let model = model(source)
+        XCTAssertTrue(model.keepsScreenAwake, "opening reads the card")
         await model.open(recipeSessionActive: true)
         XCTAssertEqual(model.phase, .failed(PhotoImportError.recipeSessionActive.localizedDescription))
         XCTAssertEqual(source.openCount, 0, "the two share one device; opening would take the recipe session away")
@@ -465,6 +466,7 @@ final class PhotoImportTests: XCTestCase {
         await waitUntil { model.phase == .ready }
 
         XCTAssertTrue(model.isListing)
+        XCTAssertTrue(model.keepsScreenAwake, "the card is still being read")
         XCTAssertEqual(model.frames.map(\.frameNumber), ["0002"], "the newest day, before the card is listed")
         XCTAssertNotNil(model.listingProgress)
         model.toggle(model.frames[0])
@@ -472,6 +474,7 @@ final class PhotoImportTests: XCTestCase {
         source.release()
         await opening.value
         XCTAssertFalse(model.isListing)
+        XCTAssertFalse(model.keepsScreenAwake, "idle on the contact sheet, the phone may lock")
         XCTAssertEqual(model.frames.map(\.frameNumber), ["0001", "0002"])
         XCTAssertEqual(model.selectedFrames.map(\.frameNumber), ["0002"], "the rest arriving keeps the selection")
     }

@@ -1,6 +1,7 @@
 import CoreGraphics
 import Foundation
 import ImageIO
+import Observation
 
 /// The PTP operations reading a camera's card needs. `ImageCaptureTransport` provides them; tests
 /// supply their own.
@@ -25,12 +26,16 @@ extension ImageCaptureTransport: PhotoCardTransport {}
 /// and the metadata already read. Opening a session makes the camera index its card again, which
 /// took about a minute on an X100VI with 2,000 frames; a second visit through the same session
 /// lists at once. Unplugging the camera, or the recipe connection taking the device, ends it.
+///
+/// Observable so the Camera tab can show a camera that is attached as a card reader: there is no
+/// recipe session then, yet the camera is plugged in and its card open (`CameraInstrument`).
 @MainActor
+@Observable
 final class PTPCardCache {
     static let shared = PTPCardCache()
 
     fileprivate(set) var transport: PhotoCardTransport?
-    var infos: [UInt32: FujiPTP.ObjectInfo] = [:]
+    @ObservationIgnored var infos: [UInt32: FujiPTP.ObjectInfo] = [:]
 
     func adopt(_ transport: PhotoCardTransport) {
         self.transport = transport

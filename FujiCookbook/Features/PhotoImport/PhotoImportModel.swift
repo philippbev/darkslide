@@ -103,6 +103,14 @@ final class PhotoImportModel {
     var selectedFrames: [ImportFrame] { visibleFrames.filter { selection.contains($0.id) } }
     var isImporting: Bool { if case .importing = phase { return true } else { return false } }
 
+    /// While the camera reads its card or files are copied: a full card takes minutes, and an
+    /// auto-lock in between leaves the screen waiting with the phone asleep (device test,
+    /// 2026-11-15). Idle on the contact sheet, the phone locks as usual.
+    var keepsScreenAwake: Bool {
+        if case .opening = phase { return true }
+        return isListing || isLoadingMore || isImporting
+    }
+
     func isAlreadyImported(_ frame: ImportFrame) -> Bool { ledger.contains(frame, choice: fileChoice) }
 
     /// The first and last day on the card, for choosing a period.

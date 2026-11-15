@@ -57,7 +57,13 @@ struct PhotoImportView: View {
             }
             .interactiveDismissDisabled(model.isImporting)
             .task { await model.open(recipeSessionActive: camera.session.isConnected) }
-            .onDisappear { Task { await model.close() } }
+            .onChange(of: model.keepsScreenAwake, initial: true) { _, awake in
+                UIApplication.shared.isIdleTimerDisabled = awake
+            }
+            .onDisappear {
+                UIApplication.shared.isIdleTimerDisabled = false
+                Task { await model.close() }
+            }
             .fileImporter(isPresented: $choosingFolder, allowedContentTypes: [.folder]) { result in
                 guard case .success(let url) = result else { return }
                 PhotoImportFolderBookmark.save(url)

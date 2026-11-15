@@ -143,7 +143,11 @@ struct CameraView: View {
                         backupRow
                         if camera.session.model != nil, ReportSurfaces.current.showsReportPrompts { reportProblemRow }
                     } else {
-                        offlinePanel
+                        if let cardReader = PTPCardCache.shared.transport {
+                            cardReaderPanel(cardReader.productName)
+                        } else {
+                            offlinePanel
+                        }
                         connectCard
                     }
                     helpButton
@@ -325,6 +329,16 @@ struct CameraView: View {
             .animation(.easeInOut(duration: 0.25), value: state)
             .accessibilityElement(children: .combine)
         }
+    }
+
+    /// Plugged in as a card reader, with no recipe session: shown as linked rather than offline
+    /// (device test, 2026-11-15: both LEDs dark read as "not connected"), with R/W dark because
+    /// that mode can't reach the slots.
+    private func cardReaderPanel(_ productName: String) -> some View {
+        DSDevicePanel(title: productName, meta: CameraInstrument.cardReaderMeta) {
+            DSPanelLEDs(indicators: CameraInstrument.cardReaderLEDs())
+        }
+        .accessibilityElement(children: .combine)
     }
 
     /// Nothing connected: the camera last read, dark, with the day of that read.
@@ -847,7 +861,9 @@ struct CameraView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(DSSpacing.m)
                 } else {
-                    connectRow(title: "Connect Camera (USB)", systemImage: "cable.connector") {
+                    connectRow(title: "Connect Camera (USB)",
+                               subtitle: "Read and write recipes and rolls in the custom slots",
+                               systemImage: "cable.connector") {
                         Task { await camera.connector.connectHardware() }
                     }
                     DSSeparator()
@@ -861,7 +877,9 @@ struct CameraView: View {
                 // Recorded on the walk, so on the phone that goes along: not on the Mac.
                 if !ProcessInfo.processInfo.isMacCatalystApp {
                     DSSeparator()
+                    // Not yet walked on the device (phase 3 test, 2026-11-15): said so until it has.
                     connectRow(title: LocationRecorder.shared.isRecording ? "Location Track (Recording)" : "Location Track",
+                               subtitle: "Untested: records your route to place photos on a map",
                                systemImage: "location") {
                         showingLocationTrack = true
                     }
