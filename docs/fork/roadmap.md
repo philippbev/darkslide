@@ -18,7 +18,7 @@ Ein persönlicher Fork, der Fuji Cookbook zur All-in-One-App für den Fuji-Workf
 | # | Phase | Status | Notizen |
 |---|---|---|---|
 | 0 | Fork & Setup | ✅ erledigt | `CLAUDE.md`, Roadmap, Rebranding-Checkliste (`docs/fork/rebranding.md`), Signing fürs eigene iPhone |
-| 1 | Design-System | 🟡 v2.1 gebaut, nicht gemergt | Tokens + Komponenten + Galerie auf `feature/design-system-v2` (Klein-Blau, Instrument + Archiv). v1 liegt noch in main und wird ersetzt |
+| 1 | Design-System | ✅ erledigt | Tokens + Komponenten + Galerie in main (`feature/design-system-v2`, Merge `1a33819`); v1 ist ersetzt |
 | 2 | Chapter-Export & Share | ✅ erledigt | Einzelnes Chapter als `.fujirecipe` teilen. Wird mit den Rolls zum Teilen einer Roll |
 | 3 | USB-Import + Geotagging Stufe A | 🟡 gebaut, Gerätetest offen | Import von der Speicherkarte über PTP (neueste zuerst), Track-Aufzeichnung, Standort per Zeitstempel. Mit X100VI und iPhone durchtesten |
 | 4 | macOS | ⏸ on hold | Catalyst-Basis vorhanden (`feature/macos` gemergt). Ruht bis nach Phase 5 |
@@ -27,8 +27,8 @@ Ein persönlicher Fork, der Fuji Cookbook zur All-in-One-App für den Fuji-Workf
 | 7 | Live-Standort per Bluetooth (Stufe B) | experimentell | Siehe Risiken |
 
 ## Nächste Schritte
-1. `feature/design-system-v2` prüfen (Galerie: Einstellungen ▸ Diagnostics ▸ Design System) und in main mergen.
-2. **App-Icon einbinden:** `AppIcon.icon` (fertig, liegt unter `docs/fork/design/app-icon/AppIcon.icon`) in den App-Ordner kopieren, dem App-Target zuordnen, Feld „App Icon“ = `AppIcon`. Details im Design-System v2.6.
+1. ~~`feature/design-system-v2` in main mergen~~ – erledigt (`1a33819`).
+2. ~~**App-Icon einbinden**~~ – erledigt auf `feature/darkslide-naming` (zusammen mit Anzeigename „Darkslide“, vier Tabs und den Laborbegriffen in der Oberfläche).
 3. Phase 3 auf dem iPhone mit der X100VI testen: Import-Modus der Kamera, Geschwindigkeit, Zuordnung der Standorte, RAF-Sidecars.
 4. Rolls spezifizieren (Datenmodell, Migration der Chapters, Laden auf C1–C7, Teilen).
 5. Phase 5 starten, ein Screen pro Branch, nach jedem Screen Freigabe.
@@ -57,4 +57,4 @@ Ein persönlicher Fork, der Fuji Cookbook zur All-in-One-App für den Fuji-Workf
 - Rolls: Migration bestehender Chapters mit mehr als sieben Rezepten; Dateiendung beim Teilen (`.fujirecipe` umbenennen?)
 - Suche als eigener Tab (iOS-26-Muster)?
 - Layout der Screens Rolls und Darkroom
-- Rebranding im Code (App-Name, Bundle-Anzeigename, Texte) nach Checkliste `docs/fork/rebranding.md`
+- Rebranding im Code: Anzeigename und sichtbare Texte erledigt (`feature/darkslide-naming`); Rest (Bundle-ID, Projekt-/Target-Namen, Support-Adresse, Datenschutz-URL, Dokumenttyp, Launch-Mark) nach Checkliste `docs/fork/rebranding.md`
