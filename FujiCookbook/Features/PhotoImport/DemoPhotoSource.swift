@@ -48,7 +48,7 @@ final class DemoPhotoSource: PhotoSource {
     }
 
     /// The demo's JPEGs carry no MakerNote, so the demo names a simulation by frame: enough to
-    /// see the tiles' codes and the diagnostic log without a camera.
+    /// see the tiles' codes without a camera.
     func filmSimulation(for file: ImportFile) async -> FilmSimulation? {
         guard pictures[file.id] != nil else { return nil }
         let stems = [FilmSimulation.classicChrome, .acros, .velvia, .classicNeg, .eterna, .provia]
