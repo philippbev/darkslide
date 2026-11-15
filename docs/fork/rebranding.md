@@ -40,7 +40,7 @@ Offen dabei: Soll der Fork `.fujirecipe`-Dateien des Originals weiter öffnen k�
 | ✅ | Anzeigename `CFBundleDisplayName` – „Darkslide“ (PR #10) | `FujiCookbook/Info.plist:20`, `ShareExtension/Info.plist:21` |
 | ✅ | Name in den Berechtigungsdialogen (Kamera, Fotos hinzufügen) (PR #10) | `FujiCookbook/Info.plist:77`, `:81` |
 | ✅ | (PR #10, sichtbare Texte; Kommentare und Typnamen bleiben) Name in den Swift-Quellen: 68 Treffer für „Fuji Cookbook“ in 28 Dateien, darunter Export- und Berichts-Dateinamen | `FujiCookbook/`, `Shared/`, `ShareExtension/` |
-| ✅ | App-Icon (`AppIcon.icon`, PR #10) und Ladescreen (`DarkslideLaunchMark`, PR #11). App-Icon v3 „Lichtnetz“ (Design-System v2.7) ersetzt v2.6; die v2.6-Ebenen liegen unter `docs/fork/design/app-icon/archive/v2.6/`. | `FujiCookbook/Assets.xcassets` |
+| ✅ | App-Icon (`AppIcon.icon`, PR #10) und Ladescreen (`DarkslideLaunchMark`, PR #11). App-Icon v3 „Lichtnetz“ (Design-System v2.7) ersetzt v2.6; die v2.6-Ebenen liegen unter `docs/fork/design/app-icon/archive/v2.6/`. Der Ladescreen zeigt dazu die Karte auf dem Klein-Blau des Icons (`DarkslideLaunchCard`, `DarkslideLaunchBath`). | `FujiCookbook/Assets.xcassets` |
 | ✅ | Entfällt: Share Cards samt `BrandMark`/`CardWordmark` entfernt (PR #11) | `FujiCookbook/Features/Library/ShareCard/ShareCardTypography.swift` |
 | ☐ | Die fünf Beispielfotos: `photos`-Schlüssel löschen oder eigene Fotos einsetzen | `FujiCookbook/Resources/Lua de Mel.fujirecipe` |
 | ☐ | `APP_IDENTIFIER_BASE` und `DEVELOPMENT_TEAM` dauerhaft | `Config/Base.xcconfig` |

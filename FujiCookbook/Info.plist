@@ -32,18 +32,22 @@
 	     export-compliance question on every upload. Revisit if the app ever ships its own crypto. -->
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<!-- Launch screen: the app icon's card in its tank on the icon's field colour (#E8E7E3, dark
-	     #0F0F0F), so the icon's zoom on launch lands on the same colour. A static UILaunchScreen only
-	     centres an image at its natural size, so DarkslideLaunchMark is the artwork pre-rendered from the
-	     AppIcon.icon layers at each scale, with no wordmark. Both assets carry a dark variant.
-	     They have new names on purpose: iOS keeps a launch screen it rendered before, even across
-	     restarts, until the UILaunchScreen entries change (simulator, iOS 26, 2026-11-15). -->
+	<!-- Launch screen: the app icon's card and its shadow on the icon's bath colour (#1F3BD6, dark
+	     #16278F), so the icon's zoom on launch lands on the same colour. A static UILaunchScreen only
+	     centres an image at its natural size, so DarkslideLaunchCard is the artwork pre-rendered from
+	     AppIcon.icon by scripts/render-launch-mark.swift, with no wordmark. The Lichtnetz is left out:
+	     it only shows as Liquid Glass relief, which a flat launch image cannot carry. Both assets carry
+	     a dark variant. Rename both assets whenever the launch screen changes: iOS keeps a launch
+	     screen it rendered before, even across restarts, until the UILaunchScreen entries change
+	     (simulator, iOS 26, 2026-11-15). Check a changed launch screen on a device: the iOS 26.x
+	     simulator showed a blank launch screen for every newly installed configuration, the old
+	     one included, and only replayed screens it had cached (2026-11-15). -->
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIImageName</key>
-		<string>DarkslideLaunchMark</string>
+		<string>DarkslideLaunchCard</string>
 		<key>UIColorName</key>
-		<string>DarkslideLaunchBackground</string>
+		<string>DarkslideLaunchBath</string>
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
