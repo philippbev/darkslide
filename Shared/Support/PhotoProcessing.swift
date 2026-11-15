@@ -54,15 +54,6 @@ enum PhotoProcessing {
         return jpeg(image, quality: thumbnailQuality)
     }
 
-    /// The full-size JPEG `process` would store, without the thumbnail: what ``RecipeScanner``
-    /// uploads, from the app and the Share Extension alike.
-    static func uploadJPEG(_ data: Data) -> Data? {
-        guard let image = ImageDownsampler.downsample(data, maxLongEdge: maxLongEdge) else {
-            return nil
-        }
-        return jpeg(image, quality: jpegQuality)
-    }
-
     // MARK: Private
 
     private static func prepare(_ data: Data, preservingSmallJPEG: Bool) -> Processed? {

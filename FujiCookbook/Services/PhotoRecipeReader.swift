@@ -59,9 +59,8 @@ struct PhotoRecipeReading {
     var proxy: UIImage?
 }
 
-/// Turns a Fujifilm JPEG into a `PhotoRecipeReading`. The deterministic counterpart to
-/// `RecipeScanner`: that one sends a screenshot to an LLM and guesses at a recipe; this one reads
-/// candidate settings from recorded metadata, retaining uncertainty when intent isn't recoverable.
+/// Turns a Fujifilm JPEG into a `PhotoRecipeReading`. Reads candidate settings from recorded
+/// metadata, retaining uncertainty when intent isn't recoverable.
 enum PhotoRecipeReader {
     /// How to scale the recorded WB fine-tune pair. The app reads with `.automatic`; the explicit
     /// cases, which match the record's options of the same names, exist for parser tests.

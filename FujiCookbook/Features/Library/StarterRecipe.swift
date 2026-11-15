@@ -52,7 +52,7 @@ enum StarterRecipe {
     static let seededDefaultsKey = "library.starterRecipeSeeded"
 
     /// Add the starter to a new library, once per install. A library that already holds recipes (one
-    /// from an earlier build, or a recipe the Share Extension saved) is marked done and left alone.
+    /// from an earlier build, say) is marked done and left alone.
     /// On failure the mark stays unset, so the next launch tries again.
     @MainActor
     static func seedIfNeeded(into context: ModelContext, defaults: UserDefaults = .standard) async {

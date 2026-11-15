@@ -7,9 +7,8 @@ import PhotosUI
 /// white balance and more, written at capture time. If a recipe in the library matches, this says
 /// so; if none does, it offers to save what it read as a new one.
 ///
-/// The deterministic counterpart to `LibraryView`'s "Scan Screenshot (AI)": that one sends a
-/// picture of somebody else's recipe card to an LLM and guesses. This reads what the camera
-/// recorded in the file, preserving ambiguities when the original recipe choice isn't recoverable.
+/// It reads what the camera recorded in the file, preserving ambiguities when the original recipe
+/// choice isn't recoverable.
 ///
 /// No camera needed — this is entirely on-device, which is why the Darkroom lists it under that
 /// zone rather than with the develop pathways.

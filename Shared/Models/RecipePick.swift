@@ -1,6 +1,7 @@
 import Foundation
 
-/// One recommended library recipe: the recipe's stable identity, the shooting situation it covers in
+/// Part of the removed Ideas feature, kept for ``Recommendation``'s stored data. One recommended
+/// library recipe: the recipe's stable identity, the shooting situation it covers in
 /// this set, and the model's one-line reason it earns a slot. Codable so a whole recommendation persists
 /// verbatim (see ``Recommendation``); referencing by `Recipe.uuid` (like ``Chapter``) means a result
 /// degrades gracefully if the recipe is later deleted.

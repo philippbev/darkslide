@@ -18,24 +18,26 @@ Persönlicher Fork von zgrimz/fuji-cookbook für Philipp (Fujifilm X100VI), Name
   `xcodebuild test -scheme FujiCookbook -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -collect-test-diagnostics never`
 - Nach jeder Änderung bauen und die betroffenen Tests laufen lassen; vor einem Merge die ganze Suite.
 - Kamera ohne Hardware: Simulator → Settings ▸ Diagnostics ▸ Show Diagnostic Tools ▸ Connect Demo Camera.
-- Mac (Mac Catalyst, ohne Apple-Team): `scripts/run-mac.sh` baut, signiert lokal mit `Config/LocalMac.entitlements` und startet. Dieser Build hat eine eigene Bibliothek (`SharedContainer`), kein iCloud, keine Share Extension und keinen USB-Kamerazugriff (`SharedContainer.isLocalMacBuild`). Location Track gibt es am Mac nicht (Tracks entstehen auf dem iPhone unterwegs). Mac-UI-Prüfung: Menüs per `osascript`/System Events, Fenster per `screencapture -l`.
+- Mac (Mac Catalyst, ohne Apple-Team): `scripts/run-mac.sh` baut, signiert lokal mit `Config/LocalMac.entitlements` und startet. Dieser Build hat eine eigene Bibliothek (`SharedContainer`), kein iCloud und keinen USB-Kamerazugriff (`SharedContainer.isLocalMacBuild`). Location Track gibt es am Mac nicht (Tracks entstehen auf dem iPhone unterwegs). Mac-UI-Prüfung: Menüs per `osascript`/System Events, Fenster per `screencapture -l`.
 
 ## Niemals committen
 - `Config/Local.xcconfig` (git-ignored)
 - ein `DEVELOPMENT_TEAM` in `project.pbxproj` (Signing nur über `Local.xcconfig`, nicht über den Xcode-Signing-Pane)
 
 ## Struktur
-- `Shared/` – Modelle (Recipe, Chapter, RecipeFile/PortableChapter), Import, Matching, KI-Scan; von App und ShareExtension genutzt
+- `Shared/` – Modelle (Recipe, Chapter, RecipeFile/PortableChapter), Import, Matching, Design-Tokens
 - `FujiCookbook/Camera/` – PTP-Protokoll, Session, Slots lesen/schreiben, RAW-Konvertierung, Diagnose
 - `FujiCookbook/Features/` – UI: Library, Editor, Chapters, Camera, Kitchen, Recommender, ImportExport, Settings
 - `FujiCookbook/Support/` – EXIF/MakerNote, RAF-Header, Rendering, Feature Flags
 
 ## Feature Flags (`FujiCookbook/Support/FeatureFlags.swift`)
-- `ideasEnabled = false`: Ideas-Tab aus; Einschalten ist ein Datenschutz-Gate (siehe Doc-Kommentar).
 - `reportsEnabled = false`: Darkslide sammelt keine Berichte/kein Feedback. Ausgeblendet: Send Feedback, Teilen und Support-Adresse im Diagnose-Screen, „Report a Problem“-Hinweise in Camera/Darkroom, der Camera Test. Welche View was zeigt, steht zentral in `ReportSurfaces` – Views lesen `ReportSurfaces.current`, nicht das Flag. Der Diagnosebericht bleibt unter Settings lesbar und kopierbar. Wiedereinschalten nur zusammen mit `docs/privacy-policy.md`.
 - Kontakt: `SupportContact.address` = `hello@bevier.cloud`. Datenschutzerklärung: `docs/privacy-policy.md`, in der App auf GitHub verlinkt.
-- `ShareExtension/` – KI-Scan aus Screenshots
 - `docs/` – Protokoll, Rezeptformat, Kameras, CloudKit, Rebranding
+
+## KI-Funktionen
+- KI-Scan, Share Extension und Ideas sind entfernt (15.11.2026). Kein Code darf Anthropic, OpenAI oder einen anderen KI-Dienst ansprechen; Neues in diese Richtung vorher mit Philipp klären und `docs/privacy-policy.md` im selben Change anpassen.
+- `RetiredAIData` löscht beim Start, was frühere Builds gespeichert haben (API-Keys im Keychain, `ai.*`-Defaults, Screenshot-Inbox). Das SwiftData-Modell `Recommendation` bleibt nur fürs Schema.
 
 ## Regeln für Kamera-Code (aus CONTRIBUTING.md, verbindlich)
 - Alles, was auf die Kamera schreibt (Push, Undo Last Push, RAW-Conversion-Profil, `CameraModelRegistry`), nur mit besonderer Sorgfalt ändern.
@@ -51,7 +53,7 @@ Persönlicher Fork von zgrimz/fuji-cookbook für Philipp (Fujifilm X100VI), Name
 
 ## Design-System
 - Spezifikation: `docs/fork/design-system.md` (v2.6: Hardware-Instrument + technisches Archiv, Signalfarbe Klein-Blau, Begriffe aus dem Fotolabor). Vor jeder UI-Arbeit lesen. Referenz-PNGs folgen in `docs/fork/design/`.
-- Code mit Präfix `DS`: Tokens in `Shared/DesignSystem/` (auch für die Share Extension), Komponenten in `FujiCookbook/DesignSystem/Components/`:
+- Code mit Präfix `DS`: Tokens in `Shared/DesignSystem/`, Komponenten in `FujiCookbook/DesignSystem/Components/`:
   - Tokens: `DSColor` (`DSColors.swift`), Simulationsfarben als Extension `FilmSimulation.dsStyle`/`dsCode`/`dsFill`/`dsText` (`DSSimulationColors.swift`), `DSFont` + Modifier `dsObjectNumber`/`dsFieldLabel`/`dsMetaMono`/`dsKeyLabel` (feste Größen skalieren über `@ScaledMetric`), `DSSpacing`, `DSRadius`, `DSLine`, `DSSize` (`DSMetrics.swift`), Navigationsleiste `DSAppearance` und `DSSectionLabel` (`DSAppearance.swift`).
   - Komponenten unter `Components/`: `DSHardwareKeyStyle` (`.dsPrimary`, `.dsSecondary`, `DSIconKey`, `DSTextKey`), `DSLED`, `DSSlotKey`, `DSKnob`, `DSHardwareSwitchStyle` (`.dsHardware`, `.dsHardwareSwitchOnly`), `DSDevicePanel`, `DSArchiveCard` + Teile, `DSDataFieldRow`, `DSRecipeRow`/`DSArchiveList`, `DSBarcode`, `DSContactSheetTile`/`DSContactSheetGrid`, `DSTag`, `DSFloatingActionBar`, `DSStepHeader`, `DSFlowLayout`, `DSArchiveSection`. Komponenten bekommen Daten nur als Parameter.
   - Vorschau: Settings ▸ Diagnostics ▸ Show Diagnostic Tools ▸ Design System, plus `#Preview` in jeder Komponenten-Datei.

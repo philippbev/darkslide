@@ -2,9 +2,9 @@ import SwiftUI
 
 /// The Settings gear — one leading toolbar item plus the sheet it opens — for the root of every tab.
 ///
-/// Settings is app-wide (iCloud sync, AI features and keys, export, the diagnostics report), so an
-/// entry point only on Recipes would read like a Recipes feature: from Kitchen or Camera, "turn on
-/// AI" and "report a problem" would mean switching tabs with nothing on screen saying so.
+/// Settings is app-wide (iCloud sync, export, the diagnostics report), so an entry point only on
+/// Recipes would read like a Recipes feature: from Kitchen or Camera, "turn on sync" and "report a
+/// problem" would mean switching tabs with nothing on screen saying so.
 ///
 /// A modifier rather than four copies of the same button: the placement, the accessibility label and
 /// the sheet are exactly the details that drift once they're duplicated.
@@ -14,9 +14,9 @@ extension View {
         modifier(SelfPresentingSettingsToolbarItem())
     }
 
-    /// The gear, driven by a flag the caller already owns — for a screen that also opens Settings
-    /// from somewhere else (Library's "AI Scanning Isn't Set Up" alert), where a second, private
-    /// `isPresented` would mean two sheets racing for one slot.
+    /// The gear, driven by a flag the caller already owns — for a screen that may also open Settings
+    /// from somewhere else, where a second, private `isPresented` would mean two sheets racing for
+    /// one slot.
     func settingsToolbarItem(isPresented: Binding<Bool>) -> some View {
         modifier(SettingsToolbarItem(isPresented: isPresented))
     }

@@ -30,9 +30,6 @@ struct AppCommands: Commands {
 
     /// The tabs in sidebar order, so ⌘1 is the first one shown.
     static var tabs: [(title: String, tab: AppTab)] {
-        var tabs: [(String, AppTab)] = [("Recipes", .library), ("Rolls", .chapters)]
-        if FeatureFlags.ideasEnabled { tabs.append(("Ideas", .ideas)) }
-        tabs += [("Darkroom", .kitchen), ("Camera", .camera)]
-        return tabs
+        [("Recipes", .library), ("Rolls", .chapters), ("Darkroom", .kitchen), ("Camera", .camera)]
     }
 }

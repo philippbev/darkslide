@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// Small views shared by the app and the Share Extension that predate the design system's own
+/// Small shared views that predate the design system's own
 /// components. They draw with its tokens (`DSColor`, `DSFont`); new UI uses the `DS` components.
 
 // MARK: - Components

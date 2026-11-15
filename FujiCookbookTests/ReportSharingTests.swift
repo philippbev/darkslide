@@ -88,7 +88,7 @@ final class ReportSharingTests: XCTestCase {
             .init(timestamp: start.addingTimeInterval(offset), category: category, isError: false, message: message)
         }
         let entries = [event(-1, .camera, "Earlier GFX demo"), event(0, .camera, "This test connected"),
-                       event(2, .kitchen, "JPEG produced"), event(2, .ai, "Unrelated activity"),
+                       event(2, .kitchen, "JPEG produced"), event(2, .data, "Unrelated activity"),
                        event(4, .camera, "After snapshot")]
         let text = DiagnosticsReportSnapshot.scopedActivityText(entries: entries, startedAt: start,
                                                                 capturedAt: start.addingTimeInterval(3))

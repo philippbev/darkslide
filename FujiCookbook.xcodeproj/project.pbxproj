@@ -6,18 +6,7 @@
 	objectVersion = 70;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		FC000000000000000000002B /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FC0000000000000000000020 /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
-		FC000000000000000000002D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = FC000000000000000000000A /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = FC0000000000000000000021;
-			remoteInfo = ShareExtension;
-		};
 		FC000000000000000000004A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = FC000000000000000000000A /* Project object */;
@@ -27,23 +16,8 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		FC000000000000000000002C /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				FC000000000000000000002B /* ShareExtension.appex in Embed Foundation Extensions */,
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
 		FC0000000000000000000002 /* FujiCookbook.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FujiCookbook.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FC0000000000000000000020 /* ShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		FC0000000000000000000040 /* FujiCookbookTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FujiCookbookTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FC0000000000000000000050 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		FC0000000000000000000051 /* Local.example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.example.xcconfig; sourceTree = "<group>"; };
@@ -57,31 +31,16 @@
 			);
 			target = FC0000000000000000000006 /* FujiCookbook */;
 		};
-		FC000000000000000000002A /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = FC0000000000000000000021 /* ShareExtension */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		FC0000000000000000000001 /* FujiCookbook */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (FC0000000000000000000010 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = FujiCookbook; sourceTree = "<group>"; };
-		FC0000000000000000000028 /* ShareExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (FC000000000000000000002A /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = ShareExtension; sourceTree = "<group>"; };
 		FC0000000000000000000029 /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Shared; sourceTree = "<group>"; };
 		FC0000000000000000000041 /* FujiCookbookTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = FujiCookbookTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		FC0000000000000000000003 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FC0000000000000000000026 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -103,7 +62,6 @@
 			children = (
 				FC0000000000000000000001 /* FujiCookbook */,
 				FC0000000000000000000029 /* Shared */,
-				FC0000000000000000000028 /* ShareExtension */,
 				FC0000000000000000000041 /* FujiCookbookTests */,
 				FC0000000000000000000052 /* Config */,
 				FC0000000000000000000005 /* Products */,
@@ -123,7 +81,6 @@
 			isa = PBXGroup;
 			children = (
 				FC0000000000000000000002 /* FujiCookbook.app */,
-				FC0000000000000000000020 /* ShareExtension.appex */,
 				FC0000000000000000000040 /* FujiCookbookTests.xctest */,
 			);
 			name = Products;
@@ -139,12 +96,10 @@
 				FC0000000000000000000008 /* Sources */,
 				FC0000000000000000000003 /* Frameworks */,
 				FC0000000000000000000009 /* Resources */,
-				FC000000000000000000002C /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				FC000000000000000000002E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				FC0000000000000000000001 /* FujiCookbook */,
@@ -154,27 +109,6 @@
 			productName = FujiCookbook;
 			productReference = FC0000000000000000000002 /* FujiCookbook.app */;
 			productType = "com.apple.product-type.application";
-		};
-		FC0000000000000000000021 /* ShareExtension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = FC0000000000000000000022 /* Build configuration list for PBXNativeTarget "ShareExtension" */;
-			buildPhases = (
-				FC0000000000000000000025 /* Sources */,
-				FC0000000000000000000026 /* Frameworks */,
-				FC0000000000000000000027 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				FC0000000000000000000028 /* ShareExtension */,
-				FC0000000000000000000029 /* Shared */,
-			);
-			name = ShareExtension;
-			productName = ShareExtension;
-			productReference = FC0000000000000000000020 /* ShareExtension.appex */;
-			productType = "com.apple.product-type.app-extension";
 		};
 		FC0000000000000000000042 /* FujiCookbookTests */ = {
 			isa = PBXNativeTarget;
@@ -210,9 +144,6 @@
 					FC0000000000000000000006 = {
 						CreatedOnToolsVersion = 26.5;
 					};
-					FC0000000000000000000021 = {
-						CreatedOnToolsVersion = 26.5;
-					};
 					FC0000000000000000000042 = {
 						CreatedOnToolsVersion = 26.5;
 						TestTargetID = FC0000000000000000000006;
@@ -234,7 +165,6 @@
 			projectRoot = "";
 			targets = (
 				FC0000000000000000000006 /* FujiCookbook */,
-				FC0000000000000000000021 /* ShareExtension */,
 				FC0000000000000000000042 /* FujiCookbookTests */,
 			);
 		};
@@ -242,13 +172,6 @@
 
 /* Begin PBXResourcesBuildPhase section */
 		FC0000000000000000000009 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FC0000000000000000000027 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -272,13 +195,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FC0000000000000000000025 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		FC0000000000000000000043 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -289,11 +205,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		FC000000000000000000002E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = FC0000000000000000000021 /* ShareExtension */;
-			targetProxy = FC000000000000000000002D /* PBXContainerItemProxy */;
-		};
 		FC0000000000000000000049 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = FC0000000000000000000006 /* FujiCookbook */;
@@ -485,54 +396,6 @@
 			};
 			name = Release;
 		};
-		FC0000000000000000000023 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "$(FC_EXTENSION_ENTITLEMENTS)";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = ShareExtension/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_IDENTIFIER_BASE).ShareExtension";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		FC0000000000000000000024 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "$(FC_EXTENSION_ENTITLEMENTS)";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = ShareExtension/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_IDENTIFIER_BASE).ShareExtension";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 		FC0000000000000000000047 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -582,15 +445,6 @@
 			buildConfigurations = (
 				FC000000000000000000000C /* Debug */,
 				FC000000000000000000000D /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		FC0000000000000000000022 /* Build configuration list for PBXNativeTarget "ShareExtension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				FC0000000000000000000023 /* Debug */,
-				FC0000000000000000000024 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

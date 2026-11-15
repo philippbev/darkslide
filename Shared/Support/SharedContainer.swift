@@ -1,15 +1,15 @@
 import Foundation
 
-/// The folder the app and the Share Extension share: the library, the logs, saved camera reports
-/// and the screenshot inbox live in it.
+/// The App Group folder: the library, the logs and saved camera reports live in it. Only the app
+/// uses it now; it stays an App Group because that is where every existing install keeps its data.
 ///
 /// On iOS, and on a Mac build signed by a team, it is the App Group container, exactly as
 /// `containerURL(forSecurityApplicationGroupIdentifier:)` gives it.
 ///
 /// A Mac Catalyst build signed to run locally (`scripts/run-mac.sh`) has no provisioning profile,
 /// and macOS refuses such an app its `group.` container. That build falls back to a folder in its
-/// own Application Support, so it opens a library of its own instead of stopping at launch. The
-/// Share Extension and iCloud sync don't work there; nothing else changes.
+/// own Application Support, so it opens a library of its own instead of stopping at launch. iCloud
+/// sync doesn't work there; nothing else changes.
 enum SharedContainer {
     /// Nil only where the App Group is missing on iOS, which `AppIdentifiers` already stops at.
     static let url: URL? = resolve()

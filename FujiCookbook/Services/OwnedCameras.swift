@@ -2,8 +2,7 @@ import Foundation
 import Observation
 
 /// The registry bodies the user owns: first on each recipe's Works With card, and chips in the
-/// Library's filter. Stored as model ids in the standard `UserDefaults` suite, not the App Group
-/// one: the Share Extension never reads them.
+/// Library's filter. Stored as model ids in the standard `UserDefaults` suite.
 ///
 /// Two ways in: the user ticks bodies in Settings ▸ My Cameras, and a camera that connects with a
 /// trusted identification adds itself (`noteConnected`). A removal holds until that body next

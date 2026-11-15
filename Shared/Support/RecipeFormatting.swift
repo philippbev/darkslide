@@ -155,7 +155,7 @@ extension RecipeSettingsFormatter {
         var chips: [String] = []
         // Under a priority the range and tones are the camera's, not the recipe's, so the headline
         // is the priority — `rows(for:)` notes the same three fields in the table below the chips.
-        // No body here (the share extension has none), so an on priority is taken at its word.
+        // No body here, so an on priority is taken at its word.
         if RecipeApplicability.priorityOverrides(s, on: nil), let drp = s.dRangePriority {
             chips.append("DRP \(drp.displayName)")
         } else {

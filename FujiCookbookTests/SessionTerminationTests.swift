@@ -12,7 +12,7 @@ final class SessionTerminationTests: XCTestCase {
 
     private var markerURL: URL? {
         FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: ScreenshotInbox.appGroupID)?
+            .containerURL(forSecurityApplicationGroupIdentifier: AppIdentifiers.appGroup)?
             .appendingPathComponent("Logs", isDirectory: true)
             .appendingPathComponent("session-foreground.marker")
     }

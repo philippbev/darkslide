@@ -13,10 +13,8 @@ extension EnvironmentValues {
     }
 }
 
-/// App settings: display, iCloud sync, export, AI features and keys, help and feedback,
-/// diagnostics, about.
+/// App settings: display, cameras, iCloud sync, export, help and feedback, diagnostics, about.
 struct SettingsView: View {
-    @Environment(AISettings.self) private var settings
     @Environment(CameraServices.self) private var camera
     @Environment(OwnedCameras.self) private var ownedCameras
     @Environment(\.cloudStoreState) private var cloudStoreState
@@ -41,8 +39,6 @@ struct SettingsView: View {
     private var appearance: AppearancePreference = .system
 
     @State private var showingRestartPrompt = false
-    @State private var showingAIConsent = false
-    @State private var showingCredentialDeleteConfirm = false
     @State private var showingDiagnosticsClearConfirm = false
     /// Set after a successful Clear Diagnostics so the row can confirm it did something — the
     /// things it erases are all off-screen, so without this the tap has no visible effect at all.
@@ -55,13 +51,6 @@ struct SettingsView: View {
     @State private var backupError: String?
     @State private var backupRunner = RecipeExportRunner()
     @State private var showingBackupPhotoChoice = false
-
-    /// Progress of the "which models can this key use?" lookup.
-    @State private var modelRefresh: ModelRefreshState = .idle
-
-    private enum ModelRefreshState: Equatable {
-        case idle, loading, failed(String), loaded(Int)
-    }
 
     /// Whether this device is signed in to iCloud (needed for sync to actually move data).
     private var signedInToICloud: Bool { FileManager.default.ubiquityIdentityToken != nil }
@@ -106,93 +95,6 @@ struct SettingsView: View {
             LabeledContent("Privacy Policy") {
                 Image(systemName: "arrow.up.right")
                     .font(.footnote.weight(.semibold))
-            }
-        }
-    }
-
-    private var aiFeaturesSection: some View {
-        Section {
-            Toggle("Enable AI Features", isOn: aiEnableBinding)
-        } header: {
-            Text("AI Features")
-        } footer: {
-            Text("Scan recipe screenshots with your chosen AI provider, using your own API key. Turning AI off keeps your keys and model choices.")
-        }
-    }
-
-    /// Provider, key, and model pickers — everything that only means anything while AI is on.
-    @ViewBuilder
-    private var aiConfigurationSections: some View {
-        // A local `@Bindable`, because the pickers below bind to `settings` and `@Environment` offers no `$settings`.
-        @Bindable var settings = settings
-        if settings.isEnabled {
-            Section {
-                Picker("Provider", selection: $settings.provider) {
-                    ForEach(AIProvider.allCases) { Text($0.displayName).tag($0) }
-                }
-                SecureField(settings.provider.keyFieldLabel, text: $settings.apiKey)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .onSubmit { Task { await refreshModels(force: true) } }
-                if settings.hasAPIKey {
-                    Button { Task { await refreshModels(force: true) } } label: {
-                        HStack {
-                            Label("Refresh Models", systemImage: "arrow.clockwise")
-                            if modelRefresh == .loading {
-                                Spacer()
-                                ProgressView()
-                            }
-                        }
-                    }
-                    .disabled(modelRefresh == .loading)
-                    switch modelRefresh {
-                    case .failed(let message):
-                        Label(message, systemImage: "exclamationmark.triangle")
-                            .font(.footnote)
-                            .foregroundStyle(DSColor.caution)
-                    case .loaded(let count):
-                        Text("\(count) model\(count == 1 ? "" : "s") available with this key.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    case .idle, .loading:
-                        EmptyView()
-                    }
-                } else {
-                    Label("Enter your API key to continue.", systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(DSColor.caution)
-                }
-            } header: {
-                Text("Provider")
-            } footer: {
-                Text("Get an API key at \(settings.provider.apiKeyPageAddress). Keys are stored in this device’s Keychain and sent only to their provider. Your provider’s terms and limits apply.")
-            }
-
-            Section {
-                AIModelPicker(title: "Model", provider: settings.provider,
-                              selection: $settings.modelID)
-                if settings.hasAPIKey, !settings.hasScanningModel {
-                    Label("Choose a model to start scanning.", systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(DSColor.caution)
-                }
-            } header: {
-                Text("Recipe Scanning")
-            } footer: {
-                Text("Turn a screenshot into a recipe you can review. Screenshots are sent to \(settings.provider.displayName).")
-            }
-
-            if FeatureFlags.ideasEnabled {
-                Section {
-                    AIModelPicker(title: "Model", provider: settings.provider,
-                                  selection: $settings.recommenderModelID)
-                    if settings.hasAPIKey, !settings.hasRecommenderModel {
-                        Label("Choose a model to get recommendations.", systemImage: "exclamationmark.triangle")
-                            .foregroundStyle(DSColor.caution)
-                    }
-                } header: {
-                    Text("Recipe Ideas")
-                } footer: {
-                    Text("The Ideas tab asks the model which of your recipes fit what you're shooting. It can use a different model than scanning — a more capable one helps here.")
-                }
             }
         }
     }
@@ -248,27 +150,8 @@ struct SettingsView: View {
     private var iCloudFooter: String {
         """
         Sync recipes, chapters, sample photos and Kitchen photos across devices using the same \
-        iCloud account. Restart to apply changes. Turning sync off keeps existing iCloud data. \
-        AI settings stay on this device.
+        iCloud account. Restart to apply changes. Turning sync off keeps existing iCloud data.
         """
-    }
-
-    /// Deletion for the keys, kept outside the `isEnabled` block on purpose: the whole point is
-    /// that it stays reachable once AI is switched off, which is exactly when a user goes looking
-    /// for it and when the rest of the AI configuration disappears.
-    @ViewBuilder
-    private var credentialsSection: some View {
-        if settings.hasAnyStoredKey {
-            Section {
-                Button(role: .destructive) {
-                    showingCredentialDeleteConfirm = true
-                } label: {
-                    Label("Delete API Keys", systemImage: "key.slash")
-                }
-            } footer: {
-                Text(credentialDeleteFooter)
-            }
-        }
     }
 
     /// Two Sections, because Clear Diagnostics needs its own footer: the first section's footer
@@ -329,7 +212,7 @@ struct SettingsView: View {
 
     private var clearDiagnosticsFooter: String {
         """
-        Delete logs, queued screenshots and camera test data, including recovery backups and \
+        Delete logs and camera test data, including recovery backups and \
         Undo Last Push. Export recovery backups first if needed. Recipes and photos stay saved.
         """
     }
@@ -399,12 +282,6 @@ struct SettingsView: View {
 
             backupSection
 
-            aiFeaturesSection
-
-            aiConfigurationSections
-
-            credentialsSection
-
             helpSection
 
             diagnosticModeSection
@@ -426,14 +303,6 @@ struct SettingsView: View {
                 recipeCount = (try? modelContext.fetchCount(FetchDescriptor<Recipe>())) ?? 0
                 chapterCount = (try? modelContext.fetchCount(FetchDescriptor<Chapter>())) ?? 0
             }
-            // Keyed so it re-runs when AI is switched on, the provider changes, or the key field goes
-            // between empty and non-empty, not on every keystroke. Pick a provider, paste a key, and
-            // the real model list arrives behind the picker.
-            .task(id: "\(settings.isEnabled)|\(settings.provider.rawValue)|\(settings.hasAPIKey)") {
-                guard settings.isEnabled else { return }
-                await refreshModels(force: false)
-                adoptPreferredModels()
-            }
             // Prompt only when the new setting actually differs from the running store (a real
             // pending change). Flipping back to the current state won't nag.
             .onChange(of: iCloudSyncEnabled) { _, newValue in
@@ -449,16 +318,6 @@ struct SettingsView: View {
 
     private func presentingDeletionDialogs(_ content: some View) -> some View {
         content
-            .confirmationDialog("Delete API Keys?", isPresented: $showingCredentialDeleteConfirm,
-                                titleVisibility: .visible) {
-                Button("Delete", role: .destructive) {
-                    settings.deleteAllCredentials()
-                    modelRefresh = .idle
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("Deletes \(credentialDeleteSubject) from this device and resets your model choices. To revoke these keys, delete them in your provider account too.")
-            }
             .confirmationDialog("Clear Diagnostics?", isPresented: $showingDiagnosticsClearConfirm,
                                 titleVisibility: .visible) {
                 if !recoveryBackups.isEmpty {
@@ -467,7 +326,7 @@ struct SettingsView: View {
                 Button("Clear Including Recovery Data", role: .destructive) { clearDiagnostics() }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("Erases current, previous and unexpected-exit logs, queued screenshots, Camera Test answers, saved report snapshots, and the original slot settings kept for test recovery. A test in progress is erased too.\n\nClearing removes the app's recovery backups and Undo Last Push. Export the originals first if you may need to restore the camera. Exporting does not erase anything; after saving the files, return here to choose Clear. A backup already saved outside the app is not affected.\n\nThe last camera report keeps the camera's identity and the film simulations written to its slots, and when, so later changes can still be flagged. Your recipe library and photos aren't touched.")
+                Text("Erases current, previous and unexpected-exit logs, Camera Test answers, saved report snapshots, and the original slot settings kept for test recovery. A test in progress is erased too.\n\nClearing removes the app's recovery backups and Undo Last Push. Export the originals first if you may need to restore the camera. Exporting does not erase anything; after saving the files, return here to choose Clear. A backup already saved outside the app is not affected.\n\nThe last camera report keeps the camera's identity and the film simulations written to its slots, and when, so later changes can still be flagged. Your recipe library and photos aren't touched.")
             }
             .sheet(item: $recoveryExport) { bundle in
                 ReportShareSheet(items: bundle.items) { outcome in
@@ -491,15 +350,6 @@ struct SettingsView: View {
                 Button("OK", role: .cancel) {}
             } message: {
                 Text("iCloud sync turns \(iCloudSyncEnabled ? "on" : "off") the next time the app starts. To quit, swipe up from the bottom of the screen and swipe the app away.")
-            }
-            .alert("Turn On AI Features?", isPresented: $showingAIConsent) {
-                Button("Turn On") {
-                    settings.isEnabled = true
-                    UserDefaults.standard.set(Date(), forKey: AISettings.disclosureAcknowledgedDateKey)
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("AI features send your data, including recipe screenshots shared from other apps, to your chosen provider (Anthropic or OpenAI) using your own API key. Your provider’s terms apply.\n\nEntering a key or switching providers may send that provider’s key to load available models. Darkslide never receives any of it.")
             }
     }
 
@@ -558,84 +408,10 @@ struct SettingsView: View {
         AppLog.eraseFiles()
         CameraReportStore.stripLatestToDriftBaseline()
         camera.reports.clear()
-        ScreenshotInbox.removeAll()
         ShareBundle.clearStaging()
         recoveryBackups = []
         recoveryExportStatus = nil
         diagnosticsCleared = true
-    }
-
-    /// "your Anthropic key" / "your Anthropic and OpenAI keys" / "all of your keys" — the dialog
-    /// names what will actually go, because keys are stored per provider and the user may have more
-    /// on the device than the picker is showing.
-    private var credentialDeleteSubject: String {
-        let names = settings.storedKeyProviders.map(\.displayName)
-        switch names.count {
-        case 0: return "your stored keys"
-        case 1: return "your \(names[0]) key"
-        case 2: return "your \(names[0]) and \(names[1]) keys"
-        default: return "all of your keys"
-        }
-    }
-
-    private var credentialDeleteFooter: String {
-        let stored = settings.storedKeyProviders.count == 1
-            ? "1 key saved on this device."
-            : "\(settings.storedKeyProviders.count) keys saved on this device."
-        return "\(stored) Deleting them also resets your model choices."
-    }
-
-    /// The Enable AI Features switch, gated: flipping it on presents the disclosure alert, and
-    /// nothing is enabled until "Turn On" is tapped. No user data goes to an AI provider before
-    /// that: key entry, in-app scans and the Share Extension all wait for this switch. Turning off
-    /// stays immediate.
-    private var aiEnableBinding: Binding<Bool> {
-        Binding(
-            get: { settings.isEnabled },
-            set: { newValue in
-                if newValue { showingAIConsent = true } else { settings.isEnabled = false }
-            }
-        )
-    }
-
-    /// Ask the provider which models this key can actually use. Failure is never fatal: the
-    /// picker keeps whatever it was already showing, so a refresh that can't reach the network
-    /// leaves the user no worse off than before.
-    private func refreshModels(force: Bool) async {
-        let provider = settings.provider
-        let key = settings.trimmedKey
-        guard !key.isEmpty else {
-            modelRefresh = .idle
-            return
-        }
-        guard force || !AIModelCatalog.hasFetchedModels(for: provider) else { return }
-
-        modelRefresh = .loading
-        do {
-            let models = try await AIModelCatalog.refresh(provider: provider, apiKey: key)
-            modelRefresh = .loaded(models.count)
-            adoptPreferredModels()
-        } catch let error as AIClient.CallError {
-            modelRefresh = .failed(error.summary(provider: provider))
-        } catch {
-            modelRefresh = .failed(error.localizedDescription)
-        }
-    }
-
-    /// Choose a model for the current provider when the user hasn't, ranking whatever that
-    /// provider actually returned. Never overrides an existing choice — including one typed into
-    /// the custom field — so this only ever fills a blank.
-    private func adoptPreferredModels() {
-        let models = AIModelCatalog.models(for: settings.provider)
-        guard !models.isEmpty else { return }
-        if settings.modelID.isEmpty,
-           let pick = AIModelCatalog.preferred(from: models, for: .scanning) {
-            settings.modelID = pick
-        }
-        if settings.recommenderModelID.isEmpty,
-           let pick = AIModelCatalog.preferred(from: models, for: .ideas) {
-            settings.recommenderModelID = pick
-        }
     }
 
     private var backupSection: some View {
@@ -694,44 +470,4 @@ struct SettingsView: View {
         }
     }
 
-}
-
-/// A model picker plus a free-text escape hatch.
-///
-/// The currently-selected id **always** gets a row. SwiftUI renders a blank selection, with no
-/// warning at all, whenever the binding matches no child's tag — and between per-provider defaults,
-/// fetched lists that vary by key, and ids typed in by hand, a selection outside the visible list
-/// is routine here rather than exotic.
-private struct AIModelPicker: View {
-    let title: String
-    let provider: AIProvider
-    @Binding var selection: String
-
-    private var rows: [AIModelInfo] {
-        var models = AIModelCatalog.models(for: provider)
-        if !selection.isEmpty, !models.contains(where: { $0.id == selection }) {
-            models.insert(AIModelInfo(id: selection, displayName: selection), at: 0)
-        }
-        return models
-    }
-
-    var body: some View {
-        if rows.isEmpty {
-            // No list and no selection: say so rather than rendering an empty Picker, which
-            // SwiftUI draws as a blank row with no explanation.
-            LabeledContent(title) {
-                Text("Add a key to load models").foregroundStyle(.secondary)
-            }
-        } else {
-            Picker(title, selection: $selection) {
-                ForEach(rows) { Text($0.displayName).tag($0.id) }
-            }
-        }
-        DisclosureGroup("Enter Model ID") {
-            TextField("Model ID", text: $selection)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .font(.footnote.monospaced())
-        }
-    }
 }

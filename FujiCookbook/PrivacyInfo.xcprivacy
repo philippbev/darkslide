@@ -8,27 +8,22 @@
 	<array/>
 	<!-- These entries must stay in step with the App Store Connect App Privacy answers; Apple checks
 	     the two against each other. -->
-	<!-- Empty on purpose — the label is "Data Not Collected". The one thing that leaves the device
-	     to a third party (the screenshot the user scans with their own AI provider key) goes
-	     directly device → provider, is never received by us, and the provider is the user's own
-	     vendor, not our partner; an explicit in-app disclosure and consent alert gates the feature.
-	     Any row added here changes the App Store label, so App Store Connect has to change in the
-	     same release. -->
+	<!-- Empty on purpose — the label is "Data Not Collected". Nothing leaves the device to us or to
+	     a third party; iCloud sync goes to the user's own iCloud account. Any row added here changes
+	     the App Store label, so App Store Connect has to change in the same release. -->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array/>
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>
-		<!-- CA92.1 covers `UserDefaults.standard`, which only the app itself reads and writes. 1C8F.1
-		     covers the App Group suite (`SharedDefaults.suite`), which the app and the Share Extension
-		     share: the extension writes `libraryChangedKey` there and ShareExtensionSaves reads and
-		     clears it, the cross-process case CA92.1's own wording excludes. -->
+		<!-- CA92.1: `UserDefaults.standard` and the App Group suite (`SharedDefaults.suite`), which
+		     only the app itself reads and writes. The App Group has no other member since the Share
+		     Extension was removed, so 1C8F.1 is no longer declared. -->
 		<dict>
 			<key>NSPrivacyAccessedAPIType</key>
 			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
 				<string>CA92.1</string>
-				<string>1C8F.1</string>
 			</array>
 		</dict>
 		<!-- `ImageCaptureTransport` times each PTP round trip with

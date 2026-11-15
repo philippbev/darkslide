@@ -3,8 +3,8 @@ import UIKit
 /// The user's Light or Dark choice, from Settings ▸ Display. `.system`, the default, follows the
 /// device's own setting.
 ///
-/// Stored in the App Group suite rather than `UserDefaults.standard` so the Share Extension can
-/// match the app: someone who picked Light in the app shouldn't get a dark scan sheet.
+/// Stored in the App Group suite, where earlier builds put it so a Share Extension could match the
+/// app; it stays there so existing installs keep their choice.
 enum AppearancePreference: String, CaseIterable, Identifiable {
     case system, light, dark
 
@@ -22,18 +22,13 @@ enum AppearancePreference: String, CaseIterable, Identifiable {
         }
     }
 
-    /// For UIKit's `overrideUserInterfaceStyle`, which is how both the app's windows and the Share
-    /// Extension apply it. `.unspecified` defers to the device.
+    /// For UIKit's `overrideUserInterfaceStyle`, which is how the app's windows apply it.
+    /// `.unspecified` defers to the device.
     var interfaceStyle: UIUserInterfaceStyle {
         switch self {
         case .system: return .unspecified
         case .light: return .light
         case .dark: return .dark
         }
-    }
-
-    /// The stored choice, read once by the Share Extension when its sheet opens.
-    static var current: AppearancePreference {
-        SharedDefaults.suite?.string(forKey: key).flatMap(Self.init(rawValue:)) ?? .system
     }
 }

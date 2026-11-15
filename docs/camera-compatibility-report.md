@@ -219,7 +219,7 @@ hashes, so two testers' reports can't be matched by hash. Every comparison the a
 phone — carrying push history, guided tests, the sweep, harvests and develops forward from the last
 report about the same body, the drift check against Clear Diagnostics' baseline, Camera Test resume,
 recovery matching — so none of them needs more. The value is still **pseudonymous, not anonymous**:
-every report one phone makes about one body carries it. Delete API Keys leaves the key alone; erasing
+every report one phone makes about one body carries it. The launch cleanup of retired AI keys leaves it alone; erasing
 it would make every camera the app has met look like a stranger. When the Keychain can't produce the
 key, the report records no hash, with a `notes[]` line saying why, rather than a weaker one, and the
 body is matched by name and USB identity like one that refuses `GetDeviceInfo`.

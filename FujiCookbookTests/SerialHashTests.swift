@@ -79,16 +79,16 @@ final class SerialHashTests: XCTestCase {
         XCTAssertEqual(SerialHash.legacy(serial), "1a17a3d2c567808e")
     }
 
-    func testTheKeyIsStoredOnceAndOutlivesDeleteAPIKeys() throws {
+    func testTheKeyIsStoredOnceAndOutlivesTheRetiredAICleanup() throws {
         let stored = try XCTUnwrap(KeychainStore.secret(for: SerialHash.keychainAccount, byteCount: 32))
         XCTAssertEqual(KeychainStore.secret(for: SerialHash.keychainAccount, byteCount: 32), stored,
                        "read back, not regenerated")
         XCTAssertEqual(SerialHash.keyed(serial, key: SymmetricKey(data: stored)),
                        SerialHash.keyed(serial, key: try deviceKey()))
 
-        AISettings().deleteAllCredentials()
+        RetiredAIData.purge()
         XCTAssertEqual(KeychainStore.secret(for: SerialHash.keychainAccount, byteCount: 32), stored,
-                       "Delete API Keys is about AI credentials; this key would make every camera a stranger")
+                       "the cleanup is about AI credentials; this key would make every camera a stranger")
     }
 
     /// Never the unkeyed hash as a fallback: it would put the serial within reach of anyone holding

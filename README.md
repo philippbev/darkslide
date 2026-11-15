@@ -23,8 +23,6 @@ Darkslide is not on the App Store. You can only build it from source.
   confirm, every write is read back, and **Undo Last Push** puts back what was there.
 - **Light Table.** Import photos from the camera's memory card over USB, and geotag them from a
   location track the iPhone recorded while you were shooting.
-- **Optional AI scanning.** Off by default. With your own Anthropic or OpenAI API key, share a
-  recipe screenshot to the app and it reads the settings into a new recipe for you to review.
 
 ## Before you connect a camera
 
@@ -80,9 +78,8 @@ entitlement and crashes at launch, before any test runs.
 
 ## Project structure
 
-SwiftUI and SwiftData, in three targets: the app in `FujiCookbook/`, the Share Extension in
-`ShareExtension/`, and `FujiCookbookTests/`. `Shared/` is compiled into both the app and the
-extension, `Config/` holds signing settings, and `docs/` holds the reference docs, indexed in
+SwiftUI and SwiftData, in two targets: the app in `FujiCookbook/` and `FujiCookbookTests/`.
+`Shared/` holds the models and services, `Config/` holds signing settings, and `docs/` holds the reference docs, indexed in
 [docs/README.md](docs/README.md). Plans and specifications for this fork are in
 [`docs/fork/`](docs/fork/) (German).
 
