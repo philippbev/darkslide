@@ -347,6 +347,12 @@ final class CameraCardSource: PhotoSource {
         } catch let error as PhotoImportError where error == .noCamera || error == .permissionDenied {
             // No camera is no camera either way; the catalog would only wait to say so again.
             throw error
+        } catch let error as PhotoImportError where error.isNoPhotos {
+            // The session opened and the camera answered with nothing: an empty card, or the body
+            // is in “USB RAW Conv./Backup Restore”. The catalog doesn't list more; in that mode it
+            // never finishes, which left the screen waiting with no word on the USB mode (X100VI
+            // fw 1.31, iPhone, 2026-11-15).
+            throw error
         } catch {
             CameraLog.error("PhotoImport: PTP listing failed, using the catalog — \(AppLog.bounded(error))")
             PhotoImportTrace.note("Falling back to the catalog — \(error.localizedDescription)")

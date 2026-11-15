@@ -89,7 +89,7 @@ struct PhotoImportView: View {
                 }
                 Text(Self.openingLabel(progress)).dsMetaMono()
                 Text(progress?.note ?? (progress?.looksStuck == true
-                     ? "No progress for a while. A full card can take a minute or two before the first photo appears. If nothing changes, unplug the camera, plug it in again and reopen this screen."
+                     ? Self.stuckNote
                      : "The photos appear as soon as the camera lists the first ones."))
                     .font(DSFont.subhead)
                     .foregroundStyle(DSColor.textSecondary)
@@ -104,6 +104,11 @@ struct PhotoImportView: View {
             sheet
         }
     }
+
+    /// After a minute without progress. A camera in the recipe USB mode never lists its card, so
+    /// the mode is named here too, not only on the error screen.
+    static let stuckNote = "No progress for a while. A full card can take a minute or two before the first photo appears. "
+        + "If nothing changes, unplug the camera, plug it in again and reopen this screen. \(PhotoImportError.cardReaderHint)"
 
     // MARK: Failure
 
@@ -440,7 +445,9 @@ struct PhotoImportView: View {
     }
 
     static func text(for summary: PhotoImportModel.Summary, destination: PhotoImportDestination) -> String {
-        var lines = ["\(summary.imported) photo\(summary.imported == 1 ? "" : "s") copied to \(destination.label). Nothing on the card was changed."]
+        // A pair is one photo but two files, which is what a folder then shows: say both.
+        let files = summary.files > summary.imported ? " (\(summary.files) files)" : ""
+        var lines = ["\(summary.imported) photo\(summary.imported == 1 ? "" : "s")\(files) copied to \(destination.label). Nothing on the card was changed."]
         if let located = summary.located {
             lines.append(located == summary.imported
                          ? "Every one has its location."

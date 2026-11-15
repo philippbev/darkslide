@@ -44,4 +44,14 @@ final class ReportSurfacesTests: XCTestCase {
         XCTAssertEqual(SettingsView.privacyPolicyURL.absoluteString,
                        "https://github.com/philippbev/darkslide/blob/main/docs/privacy-policy.md")
     }
+
+    func testCameraErrorPointsAtTheDiagnosticsTheAppShows() {
+        let off = CameraError.diagnosticsRoute(ReportSurfaces(reportsEnabled: false))
+        XCTAssertEqual(off, "Copy the report from Settings → Help → Diagnostics Report")
+        XCTAssertFalse(off.contains("Report a Problem"), "with reports off there is nothing to send")
+        XCTAssertEqual(CameraError.diagnosticsRoute(ReportSurfaces(reportsEnabled: true)),
+                       "Send a report from Settings → Help & Feedback → Report a Problem")
+        XCTAssertTrue(CameraError.contentsAccessUnavailable.message
+            .contains(CameraError.diagnosticsRoute(.current)))
+    }
 }

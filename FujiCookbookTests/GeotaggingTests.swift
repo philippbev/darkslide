@@ -250,7 +250,7 @@ final class GeotaggingTests: XCTestCase {
 
         await finish(model)
 
-        XCTAssertEqual(model.phase, .finished(.init(imported: 2, located: 1)))
+        XCTAssertEqual(model.phase, .finished(.init(imported: 2, files: 2, located: 1)))
         XCTAssertEqual(writer.positions.first??.latitude ?? 0, 38.55, accuracy: 1e-9)
         XCTAssertNil(writer.positions.last ?? nil)
     }
@@ -262,7 +262,7 @@ final class GeotaggingTests: XCTestCase {
         await model.open()
         XCTAssertFalse(model.addsLocation)
         await finish(model)
-        XCTAssertEqual(model.phase, .finished(.init(imported: 1)))
+        XCTAssertEqual(model.phase, .finished(.init(imported: 1, files: 1)))
         XCTAssertEqual(writer.positions.count, 1)
         XCTAssertNil(writer.positions[0])
     }

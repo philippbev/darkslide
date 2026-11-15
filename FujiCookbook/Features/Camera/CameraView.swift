@@ -851,7 +851,10 @@ struct CameraView: View {
                         Task { await camera.connector.connectHardware() }
                     }
                     DSSeparator()
-                    connectRow(title: "Import Photos (USB)", systemImage: "photo.on.rectangle.angled") {
+                    // Named like the screen it opens, with what it does beneath (device test,
+                    // 2026-11-15: "Import Photos" opening "Light Table" read as two things).
+                    connectRow(title: "Light Table (USB)", subtitle: "Import photos from the camera's card",
+                               systemImage: "photo.on.rectangle.angled") {
                         photoImport = .camera
                     }
                 }
@@ -865,7 +868,7 @@ struct CameraView: View {
                 }
                 if diagnosticMode {
                     DSSeparator()
-                    connectRow(title: "Import Photos from Demo Card", systemImage: "play.circle") {
+                    connectRow(title: "Light Table (Demo Card)", systemImage: "play.circle") {
                         photoImport = .demo
                     }
                     DSSeparator()
@@ -892,15 +895,23 @@ struct CameraView: View {
         }
     }
 
-    private func connectRow(title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+    private func connectRow(title: String, subtitle: String? = nil, systemImage: String,
+                            action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: DSSpacing.m) {
                 Image(systemName: systemImage)
                     .foregroundStyle(DSColor.signalText)
                     .frame(width: 24)
-                Text(title)
-                    .font(DSFont.headline)
-                    .foregroundStyle(DSColor.textPrimary)
+                VStack(alignment: .leading, spacing: DSSpacing.xs) {
+                    Text(title)
+                        .font(DSFont.headline)
+                        .foregroundStyle(DSColor.textPrimary)
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(DSFont.subhead)
+                            .foregroundStyle(DSColor.textSecondary)
+                    }
+                }
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(DSFont.subhead.weight(.semibold))

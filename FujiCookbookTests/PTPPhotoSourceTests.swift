@@ -310,6 +310,21 @@ final class PTPPhotoSourceTests: XCTestCase {
         XCTAssertFalse(unused.opened)
     }
 
+    func testEmptyPTPListingIsReportedRatherThanHandedToTheCatalog() async throws {
+        // In “USB RAW Conv./Backup Restore” the camera lists nothing and the catalog never
+        // finishes: the screen must say so instead of waiting.
+        let primary = StubSource("PTP"), unused = StubSource("Catalog")
+        primary.error = .noPhotos(diagnostics: "PTP  X100VI  0 objects")
+        do {
+            _ = try await CameraCardSource(primary: primary, fallback: { unused }).open(progress: { _ in }, partial: { _ in })
+            XCTFail("an empty card is an answer")
+        } catch {
+            XCTAssertEqual(error as? PhotoImportError, .noPhotos(diagnostics: "PTP  X100VI  0 objects"))
+            XCTAssertTrue(error.localizedDescription.contains("USB Card Reader"))
+        }
+        XCTAssertFalse(unused.opened)
+    }
+
     // MARK: The sheet
 
     func testScrollingToTheEndLoadsOlderPhotos() async throws {
