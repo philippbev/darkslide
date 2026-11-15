@@ -41,6 +41,12 @@ private final class FakeCardTransport: PhotoCardTransport {
     func getObject(_ handle: UInt32, expectedBytes: Int) async throws -> Data {
         objects[handle]?.data ?? Data()
     }
+
+    private(set) var partialRequests: [(handle: UInt32, maxBytes: UInt32)] = []
+    func getPartialObject(_ handle: UInt32, offset: UInt32, maxBytes: UInt32) async throws -> Data {
+        partialRequests.append((handle, maxBytes))
+        return (objects[handle]?.data ?? Data()).prefix(Int(maxBytes))
+    }
 }
 
 /// A source that fails to open, or lists what it was given.
@@ -124,6 +130,20 @@ final class PTPPhotoSourceTests: XCTestCase {
         XCTAssertEqual(info.parentObject, 0x42)
         XCTAssertEqual(info.captureDate, "20261113T120000")
         XCTAssertFalse(info.isFolder)
+    }
+
+    // MARK: Simulation
+
+    /// GetThumb's bare thumbnail has no MakerNote, so the source reads the file's first bytes.
+    func testWithoutAMakerNoteInThePreviewTheFilesHeadIsRead() async throws {
+        let transport = card()
+        let source = PTPPhotoSource(makeTransport: { transport }, firstBatch: 10, nextBatch: 10)
+        let files = try await source.open(progress: { _ in }, partial: { _ in })
+        let file = try XCTUnwrap(files.first)
+        let simulation = await source.filmSimulation(for: file)
+        XCTAssertNil(simulation, "the fake card's files carry no MakerNote")
+        XCTAssertEqual(transport.partialRequests.count, 1)
+        XCTAssertEqual(transport.partialRequests.first?.maxBytes, PTPPhotoSource.headBytes)
     }
 
     // MARK: Listing

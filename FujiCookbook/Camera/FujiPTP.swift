@@ -18,6 +18,10 @@ enum FujiPTP {
         case getObjectInfo      = 0x1008
         case getObject          = 0x1009
         case getThumb           = 0x100A
+        /// Standard PTP read of a byte range of an object. Used only by the photo import to read a
+        /// file's first bytes for its MakerNote; whether a body answers it in card-reader mode is
+        /// recorded in the import trace (X100VI, 2026-11-15: untested).
+        case getPartialObject   = 0x101B
         case deleteObject       = 0x100B
         case getDevicePropDesc  = 0x1014
         case getDevicePropValue = 0x1015

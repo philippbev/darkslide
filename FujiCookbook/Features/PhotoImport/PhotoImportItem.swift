@@ -83,7 +83,12 @@ struct ImportFrame: Identifiable, Hashable, Sendable {
     }
 
     /// "RAF+JPG": the RAF first, as the camera's own quality menu names the pair.
-    var formatLabel: String {
+    var formatLabel: String { Self.label(files) }
+
+    /// What an import with `choice` copies of this frame: "JPG" for a RAF+JPG pair under JPEG/HEIF.
+    func formatLabel(for choice: ImportFileChoice) -> String { Self.label(files(for: choice)) }
+
+    private static func label(_ files: [ImportFile]) -> String {
         let order: [ImportFile.Kind] = [.raw, .jpeg, .heif, .movie]
         return order.filter { kind in files.contains { $0.kind == kind } }.map(\.label).joined(separator: "+")
     }

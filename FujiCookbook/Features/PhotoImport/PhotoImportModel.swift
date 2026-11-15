@@ -261,10 +261,12 @@ final class PhotoImportModel {
             if let image = await source.thumbnail(for: frame.preview) { thumbnails[frame.id] = image }
             guard readsSimulation else { return }
             let thumbnailTime = clock.now - start
-            let simulation = await source.filmSimulation(for: frame.preview)
+            // The JPEG when the frame has one: its EXIF sits at the very start of the file.
+            let carrier = frame.files.first { $0.kind == .jpeg } ?? frame.preview
+            let simulation = await source.filmSimulation(for: carrier)
             let total = clock.now - start
             if let simulation { simulations[frame.id] = simulation }
-            AppLog.info(.importExport, "Import simulation: \(frame.preview.name) \(simulation?.dsCode ?? "none")"
+            AppLog.info(.importExport, "Import simulation: \(simulation?.dsCode ?? "none")"
                 + "   preview \(Self.milliseconds(thumbnailTime)) ms   total \(Self.milliseconds(total)) ms")
         }
     }
